@@ -100,7 +100,7 @@ namespace SnaffCore.Config
             parser.Arguments.Add(grepContextArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
-            if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || helpArg.Parsed))
+            if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
             {
                 parser.ShowUsage();
                 Environment.Exit(0);

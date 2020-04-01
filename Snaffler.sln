@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snaffler", "Snaffler\Snaffler.csproj", "{2AA060B4-DE88-4D2A-A26A-760C1CEFEC3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnaffCore", "SnaffCore\SnaffCore.csproj", "{B118802D-2E46-4E41-AAC7-9EE890268F8B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2AA060B4-DE88-4D2A-A26A-760C1CEFEC3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AA060B4-DE88-4D2A-A26A-760C1CEFEC3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AA060B4-DE88-4D2A-A26A-760C1CEFEC3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AA060B4-DE88-4D2A-A26A-760C1CEFEC3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B118802D-2E46-4E41-AAC7-9EE890268F8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B118802D-2E46-4E41-AAC7-9EE890268F8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B118802D-2E46-4E41-AAC7-9EE890268F8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B118802D-2E46-4E41-AAC7-9EE890268F8B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0807A871-1022-4171-9046-94ADD0EFCCA9}
+	EndGlobalSection
+EndGlobal

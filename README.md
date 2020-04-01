@@ -8,6 +8,12 @@ Snaffler is a tool for **pentesters** to help find delicious candy needles (cred
 
 It might also be useful for other people doing other stuff, but it is explicitly NOT meant to be an "audit" tool.
 
+## I don't want to read all this!!!
+
+Ugh, fine. But we aren't responsible for the results. We wrote all this other stuff for you, but that's okay. We're not mad, just disappointed.
+
+`snaffler.exe  -s -o snaffler.log`
+
 ## What does it do?
 
 It gets a list of Windows computers from Active Directory, then spreads out its snaffly appendages to them all to figure out which ones have file shares, and whether you can read them. 

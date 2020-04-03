@@ -174,7 +174,13 @@ namespace SnaffCore.ShareScan
             return false;
         }
 
-        internal bool regexenCheck(FileInfo fileInfo, Regex[] regexen)
+        internal bool regexContentCheck(FileInfo fileInfo, Regex[] regexen)
+        {
+            string fileContents = File.ReadAllText(fileInfo.FullName);
+            if (RegexInArray(fileContents, regexen)) return true;
+            return false;
+        }
+        internal bool regexNameCheck(FileInfo fileInfo, Regex[] regexen)
         {
             if (RegexInArray(fileInfo.FullName, regexen)) return true;
             return false;

@@ -1,6 +1,6 @@
 ﻿namespace SnaffCore.Config
 {
-    public partial class Config
+    public partial class Options
     {
         public string[] PathsToKeep { get; set; } =
         {

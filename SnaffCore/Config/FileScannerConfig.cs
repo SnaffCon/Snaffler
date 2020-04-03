@@ -1,6 +1,6 @@
 ﻿namespace SnaffCore.Config
 {
-    public partial class Config
+    public partial class Options
     {
         // whether or not to do file scans at all
         public string DirTarget { get; set; }

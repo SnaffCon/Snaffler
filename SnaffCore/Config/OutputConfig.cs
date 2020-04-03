@@ -2,7 +2,7 @@
 
 namespace SnaffCore.Config
 {
-    public partial class Config
+    public partial class Options
     {
         public bool LogToFile { get; set; } = false;
         public string LogFilePath { get; set; }

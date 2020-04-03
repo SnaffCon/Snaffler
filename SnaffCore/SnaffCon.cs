@@ -49,7 +49,7 @@ namespace SnaffCore
             statusUpdateTimer.Elapsed += StatusUpdate;
             statusUpdateTimer.Start();
 
-            if (Config.DirTarget == null)
+            if (Config.Options.DirTarget == null)
             {
                 Config.Mq.Info("Getting computers from AD.");
                 // We do this single threaded cos it's fast and not easily divisible.
@@ -78,10 +78,10 @@ namespace SnaffCore
             }
             else
             {
-                foundShares.Add(Config.DirTarget);
+                foundShares.Add(Config.Options.DirTarget);
             }
 
-            if (Config.ShareFinderEnabled)
+            if (Config.Options.ShareFinderEnabled)
             {
                 Config.Mq.Info("Starting to find readable shares.");
                 foreach (var computer in targetComputers)
@@ -120,7 +120,7 @@ namespace SnaffCore
             }
 
 
-            if (Config.ShareScanEnabled)
+            if (Config.Options.ShareScanEnabled)
             {
                 var shareFinderTasksDone = false;
                 Config.Mq.Info("Starting to search shares for files.");
@@ -175,7 +175,7 @@ namespace SnaffCore
                             // put a result on the queue
                             Config.Mq.ShareResult(new ShareFinder.ShareResult {IsAdminShare = isCDollarShare, Listable = true, SharePath = share});
                             // bail out if we're not scanning admin shares
-                            if (isCDollarShare && !Config.ScanCDollarShares)
+                            if (isCDollarShare && !Config.Options.ScanCDollarShares)
                             {
                                 continue;
                             }

@@ -33,7 +33,7 @@ namespace Snaffler
                 FileTarget logfile = null;
 
                 // Targets where to log to: File and Console
-                if (Config.LogToConsole)
+                if (Config.Options.LogToConsole)
                 {
                     logconsole = new ColoredConsoleTarget("logconsole")
                     {
@@ -75,14 +75,14 @@ namespace Snaffler
                             }
                         }
                     };
-                    nlogConfig.AddRule(Config.LogLevel, LogLevel.Fatal, logconsole);
+                    nlogConfig.AddRule(Config.Options.LogLevel, LogLevel.Fatal, logconsole);
                     logconsole.Layout = "${message}";
                 }
 
-                if (Config.LogToFile)
+                if (Config.Options.LogToFile)
                 {
-                    logfile = new FileTarget("logfile") {FileName = Config.LogFilePath};
-                    nlogConfig.AddRule(Config.LogLevel, LogLevel.Fatal, logfile);
+                    logfile = new FileTarget("logfile") {FileName = Config.Options.LogFilePath };
+                    nlogConfig.AddRule(Config.Options.LogLevel, LogLevel.Fatal, logfile);
                     logfile.Layout = "${message}";
                 }
 
@@ -91,9 +91,9 @@ namespace Snaffler
 
                 //-------------------------------------------
 
-                if (Config.EnableMirror && (Config.MirrorPath.Length > 4))
+                if (Config.Options.EnableMirror && (Config.Options.MirrorPath.Length > 4))
                 {
-                    Directory.CreateDirectory(Config.MirrorPath);
+                    Directory.CreateDirectory(Config.Options.MirrorPath);
                 }
 
                 var thing = Task.Factory.StartNew(() => { controller.Execute(); });

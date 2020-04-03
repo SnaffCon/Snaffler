@@ -23,7 +23,7 @@ namespace SnaffCore.ComputerFind
             Config = config;
 
             // setup the necessary vars
-            if (Config.TargetDomain == null && Config.TargetDc == null)
+            if (Config.Options.TargetDomain == null && Config.Options.TargetDc == null)
             {
                 try
                 {
@@ -38,13 +38,13 @@ namespace SnaffCore.ComputerFind
                     Config.Mq.Terminate();
                 }
             }
-            else if (Config.TargetDc != null)
+            else if (Config.Options.TargetDc != null)
             {
-                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, Config.TargetDc);
+                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, Config.Options.TargetDc);
             }
-            else if (Config.TargetDomain != null)
+            else if (Config.Options.TargetDomain != null)
             {
-                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, Config.TargetDomain);
+                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, Config.Options.TargetDomain);
             }
         }
 
@@ -70,9 +70,9 @@ namespace SnaffCore.ComputerFind
 
         private List<string> GetDomainComputers()
         {
-            if (Config.TargetDc != null)
+            if (Config.Options.TargetDc != null)
             {
-                DomainControllers.Add(Config.TargetDc);
+                DomainControllers.Add(Config.Options.TargetDc);
             }
             else
             {

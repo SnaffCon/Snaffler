@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using CommandLineParser.Arguments;
+using Nett;
 using NLog;
 
 namespace SnaffCore.Config
@@ -10,9 +12,11 @@ namespace SnaffCore.Config
     {
         public BlockingMq Mq { get; private set; }
         public int MaxThreads { get; set; } = 30;
+        public Options Options { get; set; }
 
         public Config(string[] args, BlockingMq mq)
         {
+            this.Options = new Options();
             Mq = mq;
             // parse the args
             try
@@ -38,6 +42,7 @@ namespace SnaffCore.Config
             var success = false;
 
             // define args
+            var configFileArg = new ValueArgument<string>('z', "config","Path to a .toml config file.");
             var outFileArg = new ValueArgument<string>('o', "outfile",
                 "Path for output file. You probably want this if you're not using -s.");
             var verboseArg = new ValueArgument<string>('v', "verbosity",
@@ -80,6 +85,7 @@ namespace SnaffCore.Config
 
             var parser = new CommandLineParser.CommandLineParser();
 
+            parser.Arguments.Add(configFileArg);
             parser.Arguments.Add(outFileArg);
             parser.Arguments.Add(helpArg);
             //parser.Arguments.Add(extMatchArg);
@@ -106,208 +112,230 @@ namespace SnaffCore.Config
                 Environment.Exit(0);
             }
 
+
             try
             {
                 parser.ParseCommandLine(args);
 
-                // get the args into our config
-
-
-                // output args
-                if (outFileArg.Parsed && (outFileArg.Value != null))
+                if (configFileArg.Parsed)
                 {
-                    LogToFile = true;
-                    LogFilePath = outFileArg.Value;
-                    Mq.Degub("Logging to file at " + LogFilePath);
-                }
-
-                // Set loglevel.
-                if (verboseArg.Parsed)
-                {
-                    var logLevelString = verboseArg.Value;
-                    switch (logLevelString.ToLower())
+                    if (configFileArg.Value.Equals("generate"))
                     {
-                        case "debug":
-                            LogLevel = LogLevel.Debug;
-                            Mq.Degub("Set verbosity level to degub.");
-                            break;
-                        case "degub":
-                            LogLevel = LogLevel.Debug;
-                            Mq.Degub("Set verbosity level to degub.");
-                            break;
-                        case "trace":
-                            LogLevel = LogLevel.Trace;
-                            Mq.Degub("Set verbosity level to trace.");
-                            break;
-                        case "data":
-                            LogLevel = LogLevel.Warn;
-                            Mq.Degub("Set verbosity level to data.");
-                            break;
-                        default:
-                            LogLevel = LogLevel.Info;
-                            Mq.Error("Invalid verbosity level " + logLevelString +
-                                     " falling back to default level (info).");
-                            break;
-                    }
-                }
-
-                // if enabled, display findings to the console
-                LogToConsole = stdOutArg.Parsed;
-                Mq.Degub("Enabled logging to stdout.");
-
-                if (maxThreadsArg.Parsed)
-                {
-                    MaxThreads = maxThreadsArg.Value;
-                    Mq.Degub("Max threads set to " + maxThreadsArg.Value);
-                }
-
-                // args that tell us about targeting
-                if ((domainArg.Parsed) && (domainArg.Value != null))
-                {
-                    TargetDomain = domainArg.Value;
-                    Mq.Degub("Target domain is " + domainArg.Value);
-                }
-
-                if ((domainControllerArg.Parsed) && (domainControllerArg.Value != null))
-                {
-                    TargetDc = domainControllerArg.Value;
-                    Mq.Degub("Target DC is " + domainControllerArg.Value);
-                }
-
-                if (dirTargetArg.Parsed)
-                {
-                    ShareFinderEnabled = false;
-                    DirTarget = dirTargetArg.Value;
-                    Mq.Degub("Disabled finding shares.");
-                    Mq.Degub("Target path is " + dirTargetArg.Value);
-                }
-
-                if (adminshareArg.Parsed)
-                {
-                    ScanCDollarShares = true;
-                    Mq.Degub("Scanning of C$ shares enabled.");
-                }
-
-                // if the user passes the various MatchArgs with no value, that disables them.
-                // Otherwise load their wordlist into the appropriate config item.
-                /*
-                if (extMatchArg.Parsed)
-                {
-                    if (extMatchArg.Value.Length <= 0)
-                    {
-                        ExactExtensionCheck = false;
-                        Mq.Degub("Disabled matching based on exact file extension match.");
+                        Toml.WriteFile(this.Options, ".\\default.toml");
+                        Mq.Info("Wrote default config values to .\\default.toml");
+                        Mq.Terminate();
                     }
                     else
                     {
-                        ExtensionsToKeep = File.ReadAllLines(extMatchArg.Value);
-                        Mq.Degub("Using file at " + extMatchArg.Value + " for exact file extension matching.");
+                        string configFile = configFileArg.Value;
+                        this.Options = Toml.ReadFile<Options>(configFile);
+                        Mq.Info("Read config file from " + configFile);
                     }
                 }
+                else
+                {
 
-                if (pathMatchArg.Parsed)
-                {
-                    if (pathMatchArg.Value.Length <= 0)
-                    {
-                        PartialPathCheck = false;
-                        Mq.Degub("Disabled matching based on partial file path.");
-                    }
-                    else
-                    {
-                        PathsToKeep = File.ReadAllLines(pathMatchArg.Value);
-                        Mq.Degub("Using file at " + pathMatchArg.Value + " for partial file path matching.");
-                    }
-                }
+                    // get the args into our config
 
-                if (extSkipMatchArg.Parsed)
-                {
-                    if (extSkipMatchArg.Value.Length <= 0)
-                    {
-                        ExactExtensionSkipCheck = false;
-                        Mq.Degub("Disabled skipping files with extensions on skip-list.");
-                    }
-                    else
-                    {
-                        ExtSkipList = File.ReadAllLines(extSkipMatchArg.Value);
-                        Mq.Degub("Using file at " + extSkipMatchArg.Value + " for extension skip-list.");
-                    }
-                }
 
-                if (nameMatchArg.Parsed)
-                {
-                    if (nameMatchArg.Value.Length <= 0)
+                    // output args
+                    if (outFileArg.Parsed && (outFileArg.Value != null))
                     {
-                        ExactNameCheck = false;
-                        Mq.Degub("Disabled matching based on exact file name");
-                    }
-                    else
-                    {
-                        FileNamesToKeep = File.ReadAllLines(nameMatchArg.Value);
-                        Mq.Degub("Using file at " + nameMatchArg.Value + " for exact file name matching.");
-                    }
-                }
-
-                if (grepMatchArg.Parsed)
-                {
-                    if (grepMatchArg.Value.Length <= 0)
-                    {
-                        GrepByExtensionCheck = false;
-                        Mq.Degub("Disabled matching based on file contents.");
-                    }
-                    else
-                    {
-                        GrepStrings = File.ReadAllLines(grepMatchArg.Value);
-                        Mq.Degub("Using file at " + grepMatchArg.Value + " for file contents matching.");
-                    }
-                }
-
-                if (partialMatchArg.Parsed)
-                {
-                    if (partialMatchArg.Value.Length <= 0)
-                    {
-                        PartialNameCheck = false;
-                        Mq.Degub("Disabled partial file name matching.");
-                    }
-                    else
-                    {
-                        NameStringsToKeep = File.ReadAllLines(partialMatchArg.Value);
-                        Mq.Degub("Using file at " + partialMatchArg.Value + " for partial file name matching.");
-                    }
-                }
-                */
-                if (maxGrepSizeArg.Parsed)
-                {
-                    MaxSizeToGrep = maxGrepSizeArg.Value;
-                    Mq.Degub("We won't bother looking inside files if they're bigger than " + MaxSizeToGrep + " bytes");
-                }
-
-                // how many bytes 
-                if (grepContextArg.Parsed)
-                {
-                    GrepContextBytes = grepContextArg.Value;
-                    Mq.Degub(
-                        "We'll show you " + grepContextArg.Value + " bytes of context around matches inside files.");
-                }
-
-                // if enabled, grab a copy of files that we like.
-                if (mirrorArg.Parsed)
-                {
-                    if (mirrorArg.Value.Length <= 0)
-                    {
-                        Mq.Error("-m or -mirror arg requires a path value.");
-                        throw new ArgumentException("Invalid argument combination.");
+                        Options.LogToFile = true;
+                        Options.LogFilePath = outFileArg.Value;
+                        Mq.Degub("Logging to file at " + Options.LogFilePath);
                     }
 
-                    EnableMirror = true;
-                    MirrorPath = mirrorArg.Value.TrimEnd('\\');
-                    Mq.Degub("Mirroring matched files to path " + MirrorPath);
-                }
+                    // Set loglevel.
+                    if (verboseArg.Parsed)
+                    {
+                        var logLevelString = verboseArg.Value;
+                        switch (logLevelString.ToLower())
+                        {
+                            case "debug":
+                                Options.LogLevel = LogLevel.Debug;
+                                Mq.Degub("Set verbosity level to degub.");
+                                break;
+                            case "degub":
+                                Options.LogLevel = LogLevel.Debug;
+                                Mq.Degub("Set verbosity level to degub.");
+                                break;
+                            case "trace":
+                                Options.LogLevel = LogLevel.Trace;
+                                Mq.Degub("Set verbosity level to trace.");
+                                break;
+                            case "data":
+                                Options.LogLevel = LogLevel.Warn;
+                                Mq.Degub("Set verbosity level to data.");
+                                break;
+                            default:
+                                Options.LogLevel = LogLevel.Info;
+                                Mq.Error("Invalid verbosity level " + logLevelString +
+                                         " falling back to default level (info).");
+                                break;
+                        }
+                    }
 
-                if (!LogToConsole && !LogToFile)
-                {
-                    Mq.Error(
-                        "\nYou didn't enable output to file or to the console so you won't see any results or debugs or anything. Your l0ss.");
-                    throw new ArgumentException("Pointless argument combination.");
+                    // if enabled, display findings to the console
+                    Options.LogToConsole = stdOutArg.Parsed;
+                    Mq.Degub("Enabled logging to stdout.");
+
+                    if (maxThreadsArg.Parsed)
+                    {
+                        MaxThreads = maxThreadsArg.Value;
+                        Mq.Degub("Max threads set to " + maxThreadsArg.Value);
+                    }
+
+                    // args that tell us about targeting
+                    if ((domainArg.Parsed) && (domainArg.Value != null))
+                    {
+                        Options.TargetDomain = domainArg.Value;
+                        Mq.Degub("Target domain is " + domainArg.Value);
+                    }
+
+                    if ((domainControllerArg.Parsed) && (domainControllerArg.Value != null))
+                    {
+                        Options.TargetDc = domainControllerArg.Value;
+                        Mq.Degub("Target DC is " + domainControllerArg.Value);
+                    }
+
+                    if (dirTargetArg.Parsed)
+                    {
+                        Options.ShareFinderEnabled = false;
+                        Options.DirTarget = dirTargetArg.Value;
+                        Mq.Degub("Disabled finding shares.");
+                        Mq.Degub("Target path is " + dirTargetArg.Value);
+                    }
+
+                    if (adminshareArg.Parsed)
+                    {
+                        Options.ScanCDollarShares = true;
+                        Mq.Degub("Scanning of C$ shares enabled.");
+                    }
+
+                    // if the user passes the various MatchArgs with no value, that disables them.
+                    // Otherwise load their wordlist into the appropriate config item.
+                    /*
+                    if (extMatchArg.Parsed)
+                    {
+                        if (extMatchArg.Value.Length <= 0)
+                        {
+                            ExactExtensionCheck = false;
+                            Mq.Degub("Disabled matching based on exact file extension match.");
+                        }
+                        else
+                        {
+                            ExtensionsToKeep = File.ReadAllLines(extMatchArg.Value);
+                            Mq.Degub("Using file at " + extMatchArg.Value + " for exact file extension matching.");
+                        }
+                    }
+    
+                    if (pathMatchArg.Parsed)
+                    {
+                        if (pathMatchArg.Value.Length <= 0)
+                        {
+                            PartialPathCheck = false;
+                            Mq.Degub("Disabled matching based on partial file path.");
+                        }
+                        else
+                        {
+                            PathsToKeep = File.ReadAllLines(pathMatchArg.Value);
+                            Mq.Degub("Using file at " + pathMatchArg.Value + " for partial file path matching.");
+                        }
+                    }
+    
+                    if (extSkipMatchArg.Parsed)
+                    {
+                        if (extSkipMatchArg.Value.Length <= 0)
+                        {
+                            ExactExtensionSkipCheck = false;
+                            Mq.Degub("Disabled skipping files with extensions on skip-list.");
+                        }
+                        else
+                        {
+                            ExtSkipList = File.ReadAllLines(extSkipMatchArg.Value);
+                            Mq.Degub("Using file at " + extSkipMatchArg.Value + " for extension skip-list.");
+                        }
+                    }
+    
+                    if (nameMatchArg.Parsed)
+                    {
+                        if (nameMatchArg.Value.Length <= 0)
+                        {
+                            ExactNameCheck = false;
+                            Mq.Degub("Disabled matching based on exact file name");
+                        }
+                        else
+                        {
+                            FileNamesToKeep = File.ReadAllLines(nameMatchArg.Value);
+                            Mq.Degub("Using file at " + nameMatchArg.Value + " for exact file name matching.");
+                        }
+                    }
+    
+                    if (grepMatchArg.Parsed)
+                    {
+                        if (grepMatchArg.Value.Length <= 0)
+                        {
+                            GrepByExtensionCheck = false;
+                            Mq.Degub("Disabled matching based on file contents.");
+                        }
+                        else
+                        {
+                            GrepStrings = File.ReadAllLines(grepMatchArg.Value);
+                            Mq.Degub("Using file at " + grepMatchArg.Value + " for file contents matching.");
+                        }
+                    }
+    
+                    if (partialMatchArg.Parsed)
+                    {
+                        if (partialMatchArg.Value.Length <= 0)
+                        {
+                            PartialNameCheck = false;
+                            Mq.Degub("Disabled partial file name matching.");
+                        }
+                        else
+                        {
+                            NameStringsToKeep = File.ReadAllLines(partialMatchArg.Value);
+                            Mq.Degub("Using file at " + partialMatchArg.Value + " for partial file name matching.");
+                        }
+                    }
+                    */
+                    if (maxGrepSizeArg.Parsed)
+                    {
+                        Options.MaxSizeToGrep = maxGrepSizeArg.Value;
+                        Mq.Degub("We won't bother looking inside files if they're bigger than " + Options.MaxSizeToGrep +
+                                 " bytes");
+                    }
+
+                    // how many bytes 
+                    if (grepContextArg.Parsed)
+                    {
+                        Options.GrepContextBytes = grepContextArg.Value;
+                        Mq.Degub(
+                            "We'll show you " + grepContextArg.Value +
+                            " bytes of context around matches inside files.");
+                    }
+
+                    // if enabled, grab a copy of files that we like.
+                    if (mirrorArg.Parsed)
+                    {
+                        if (mirrorArg.Value.Length <= 0)
+                        {
+                            Mq.Error("-m or -mirror arg requires a path value.");
+                            throw new ArgumentException("Invalid argument combination.");
+                        }
+
+                        Options.EnableMirror = true;
+                        Options.MirrorPath = mirrorArg.Value.TrimEnd('\\');
+                        Mq.Degub("Mirroring matched files to path " + Options.MirrorPath);
+                    }
+
+                    if (!Options.LogToConsole && !Options.LogToFile)
+                    {
+                        Mq.Error(
+                            "\nYou didn't enable output to file or to the console so you won't see any results or debugs or anything. Your l0ss.");
+                        throw new ArgumentException("Pointless argument combination.");
+                    }
                 }
             }
             catch (Exception e)
@@ -315,6 +343,8 @@ namespace SnaffCore.Config
                 Mq.Error(e.ToString());
                 throw;
             }
+
+
             success = true;
             return success;
         }

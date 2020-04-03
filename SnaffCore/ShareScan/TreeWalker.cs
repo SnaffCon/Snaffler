@@ -103,7 +103,7 @@ namespace SnaffCore.ShareScan
                 foreach (var dirStr in subDirs)
                 {
                     //but skip any dirs in the skiplist.
-                    if (!FileScanner.PartialMatchInArray(dirStr, Config.DirSkipList))
+                    if (!FileScanner.PartialMatchInArray(dirStr, Config.Options.DirSkipList))
                     {
                         dirs.Push(dirStr);
                     }

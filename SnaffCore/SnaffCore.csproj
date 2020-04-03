@@ -34,6 +34,12 @@
     <Reference Include="CommandLineArgumentsParser, Version=3.0.20.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CommandLineArgumentsParser.3.0.20\lib\net40\CommandLineArgumentsParser.dll</HintPath>
     </Reference>
+    <Reference Include="Nett, Version=0.15.0.0, Culture=neutral, PublicKeyToken=605dcfe7a1d3365b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nett.0.15.0\lib\net40\Nett.dll</HintPath>
+    </Reference>
+    <Reference Include="Nett.Coma, Version=0.15.0.0, Culture=neutral, PublicKeyToken=605dcfe7a1d3365b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nett.Coma.0.15.0\lib\net40\Nett.Coma.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.6.8\lib\net40-client\NLog.dll</HintPath>
     </Reference>
@@ -61,6 +67,7 @@
     <Compile Include="Config\ExtSkipMatchConfig.cs" />
     <Compile Include="Config\FileScannerConfig.cs" />
     <Compile Include="Config\GrepMatchConfig.cs" />
+    <Compile Include="Config\Options.cs" />
     <Compile Include="Config\OutputConfig.cs" />
     <Compile Include="Config\PartialNameMatchConfig.cs" />
     <Compile Include="Config\PartialPathMatchConfig.cs" />

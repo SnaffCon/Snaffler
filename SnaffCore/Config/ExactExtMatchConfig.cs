@@ -8,6 +8,7 @@
             ".kdbx",
             ".kdb",
             ".ppk",
+            ".vnc",
             ".vmdk",
             ".vhd",
             ".rdp",

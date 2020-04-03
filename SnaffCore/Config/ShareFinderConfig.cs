@@ -1,6 +1,6 @@
 ﻿namespace SnaffCore.Config
 {
-    public partial class Config
+    public partial class Options
     {
         public bool ShareFinderEnabled { get; set; } = true;
         public string TargetDomain { get; set; }

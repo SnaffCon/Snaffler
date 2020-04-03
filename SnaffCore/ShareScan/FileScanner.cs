@@ -95,12 +95,12 @@ namespace SnaffCore.ShareScan
         {
             // if each check is enabled in FileScannerConfig, run it on the thing.
 
-            if (config.ExactExtensionSkipCheck)
-                if (ExactExtCheck(fileInfo, config.ExtSkipList))
+            if (config.Options.ExactExtensionSkipCheck)
+                if (ExactExtCheck(fileInfo, config.Options.ExtSkipList))
                     return null;
 
-            if (config.PartialPathCheck)
-                if (PartialPathCheck(fileInfo, config.PathsToKeep))
+            if (config.Options.PartialPathCheck)
+                if (PartialPathCheck(fileInfo, config.Options.PathsToKeep))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -108,8 +108,8 @@ namespace SnaffCore.ShareScan
                             {FileInfo = fileInfo, WhyMatched = MatchReason.PartialPathMatch, RwStatus = rwStatus};
                 }
 
-            if (config.ExactNameCheck)
-                if (ExactNameCheck(fileInfo, config.FileNamesToKeep))
+            if (config.Options.ExactNameCheck)
+                if (ExactNameCheck(fileInfo, config.Options.FileNamesToKeep))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -117,8 +117,8 @@ namespace SnaffCore.ShareScan
                             {FileInfo = fileInfo, WhyMatched = MatchReason.ExactFileNameMatch, RwStatus = rwStatus};
                 }
 
-            if (config.ExactExtensionCheck)
-                if (ExactExtCheck(fileInfo, config.ExtensionsToKeep))
+            if (config.Options.ExactExtensionCheck)
+                if (ExactExtCheck(fileInfo, config.Options.ExtensionsToKeep))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -126,8 +126,8 @@ namespace SnaffCore.ShareScan
                             {FileInfo = fileInfo, WhyMatched = MatchReason.ExactExtensionMatch, RwStatus = rwStatus};
                 }
 
-            if (config.PartialNameCheck)
-                if (PartialNameCheck(fileInfo, config.NameStringsToKeep))
+            if (config.Options.PartialNameCheck)
+                if (PartialNameCheck(fileInfo, config.Options.NameStringsToKeep))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -135,11 +135,11 @@ namespace SnaffCore.ShareScan
                             {FileInfo = fileInfo, WhyMatched = MatchReason.PartialFileNameMatch, RwStatus = rwStatus};
                 }
 
-            if (config.GrepByExtensionCheck)
-                if (ExactExtCheck(fileInfo, config.ExtensionsToGrep))
-                    if (fileInfo.Length < config.MaxSizeToGrep)
+            if (config.Options.GrepByExtensionCheck)
+                if (ExactExtCheck(fileInfo, config.Options.ExtensionsToGrep))
+                    if (fileInfo.Length < config.Options.MaxSizeToGrep)
                     {
-                        GrepFileResult grepFileResult = GrepFile(fileInfo, config.GrepStrings, config.GrepContextBytes);
+                        GrepFileResult grepFileResult = GrepFile(fileInfo, config.Options.GrepStrings, config.Options.GrepContextBytes);
 
                         if (grepFileResult != null)
                         {

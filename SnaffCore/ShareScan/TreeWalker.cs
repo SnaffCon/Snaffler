@@ -56,6 +56,11 @@ namespace SnaffCore.ShareScan
                         Config.Mq.Trace(e.Message);
                         continue;
                     }
+                    catch (Exception e)
+                    {
+                        Config.Mq.Trace(e.Message);
+                        continue;
+                    }
 
                     string[] files = null;
                     try
@@ -67,8 +72,12 @@ namespace SnaffCore.ShareScan
                         Config.Mq.Trace(e.Message);
                         continue;
                     }
-
                     catch (DirectoryNotFoundException e)
+                    {
+                        Config.Mq.Trace(e.Message);
+                        continue;
+                    }
+                    catch (Exception e)
                     {
                         Config.Mq.Trace(e.Message);
                         continue;
@@ -97,14 +106,22 @@ namespace SnaffCore.ShareScan
                             //  or thread since the call to TraverseTree()
                             // then just continue.
                             Config.Mq.Trace(e.Message);
+                            continue;
+                        }
+                        catch (UnauthorizedAccessException e)
+                        {
+                            Config.Mq.Trace(e.Message);
+                            continue;
                         }
                         catch (PathTooLongException e)
                         {
                             Config.Mq.Trace(file + " path was too long for me to look at.");
+                            continue;
                         }
                         catch (Exception e)
                         {
                             Config.Mq.Trace(e.Message);
+                            continue;
                         }
                     }
 

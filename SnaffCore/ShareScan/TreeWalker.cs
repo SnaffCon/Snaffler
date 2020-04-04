@@ -26,88 +26,103 @@ namespace SnaffCore.ShareScan
 
         public void WalkTree(string shareRoot)
         {
-            // Walks a tree checking files and generating results as it goes.
-            var dirs = new Stack<string>(20);
-
-            if (!Directory.Exists(shareRoot))
+            try
             {
-                return;
-            }
+                // Walks a tree checking files and generating results as it goes.
+                var dirs = new Stack<string>(20);
 
-            dirs.Push(shareRoot);
-
-            while (dirs.Count > 0)
-            {
-                var currentDir = dirs.Pop();
-                string[] subDirs;
-                try
+                if (!Directory.Exists(shareRoot))
                 {
-                    subDirs = Directory.GetDirectories(currentDir);
-                }
-                catch (UnauthorizedAccessException e)
-                {
-                    Config.Mq.Trace(e.ToString());
-                    continue;
-                }
-                catch (DirectoryNotFoundException e)
-                {
-                    Config.Mq.Trace(e.Message);
-                    continue;
+                    return;
                 }
 
-                string[] files = null;
-                try
-                {
-                    files = Directory.GetFiles(currentDir);
-                }
-                catch (UnauthorizedAccessException e)
-                {
-                    Config.Mq.Trace(e.Message);
-                    continue;
-                }
+                dirs.Push(shareRoot);
 
-                catch (DirectoryNotFoundException e)
+                while (dirs.Count > 0)
                 {
-                    Config.Mq.Trace(e.Message);
-                    continue;
-                }
-
-                // check if we actually like the files
-                foreach (var file in files)
-                {
+                    var currentDir = dirs.Pop();
+                    string[] subDirs;
                     try
                     {
-                        var fileInfo = new FileInfo(file);
+                        subDirs = Directory.GetDirectories(currentDir);
+                    }
+                    catch (UnauthorizedAccessException e)
+                    {
+                        Config.Mq.Trace(e.ToString());
+                        continue;
+                    }
+                    catch (DirectoryNotFoundException e)
+                    {
+                        Config.Mq.Trace(e.Message);
+                        continue;
+                    }
 
-                        var fileResult = FileScanner.Scan(fileInfo, Config);
+                    string[] files = null;
+                    try
+                    {
+                        files = Directory.GetFiles(currentDir);
+                    }
+                    catch (UnauthorizedAccessException e)
+                    {
+                        Config.Mq.Trace(e.Message);
+                        continue;
+                    }
 
-                        if (fileResult != null)
+                    catch (DirectoryNotFoundException e)
+                    {
+                        Config.Mq.Trace(e.Message);
+                        continue;
+                    }
+
+                    // check if we actually like the files
+                    foreach (var file in files)
+                    {
+                        try
                         {
-                            if (fileResult.WhyMatched != FileScanner.MatchReason.NoMatch)
+                            var fileInfo = new FileInfo(file);
+
+                            var fileResult = FileScanner.Scan(fileInfo, Config);
+
+                            if (fileResult != null)
                             {
-                                Config.Mq.FileResult(fileResult);
+                                if (fileResult.WhyMatched != FileScanner.MatchReason.NoMatch)
+                                {
+                                    Config.Mq.FileResult(fileResult);
+                                }
                             }
                         }
+                        catch (FileNotFoundException e)
+                        {
+                            // If file was deleted by a separate application
+                            //  or thread since the call to TraverseTree()
+                            // then just continue.
+                            Config.Mq.Trace(e.Message);
+                        }
+                        catch (PathTooLongException e)
+                        {
+                            Config.Mq.Trace(file + " path was too long for me to look at.");
+                        }
+                        catch (Exception e)
+                        {
+                            Config.Mq.Trace(e.Message);
+                        }
                     }
-                    catch (FileNotFoundException e)
-                    {
-                        // If file was deleted by a separate application
-                        //  or thread since the call to TraverseTree()
-                        // then just continue.
-                        Config.Mq.Trace(e.Message);
-                    }
-                }
 
-                // Push the subdirectories onto the stack for traversal.
-                // This could also be done before handing the files.
-                foreach (var dirStr in subDirs)
-                {
-                    //but skip any dirs in the skiplist.
-                    if (!FileScanner.PartialMatchInArray(dirStr, Config.Options.DirSkipList))
+                    // Push the subdirectories onto the stack for traversal.
+                    // This could also be done before handing the files.
+                    foreach (var dirStr in subDirs)
                     {
-                        dirs.Push(dirStr);
+                        //but skip any dirs in the skiplist.
+                        if (!FileScanner.PartialMatchInArray(dirStr, Config.Options.DirSkipList))
+                        {
+                            dirs.Push(dirStr);
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Config.Mq.Error(e.ToString());
             }
         }
     }

@@ -2,19 +2,8 @@
 using SnaffCore.ShareFind;
 using SnaffCore.ShareScan;
 
-namespace SnaffCore.Config
+namespace SnaffCore.Concurrency
 {
-    public enum SnafflerMessageType
-    {
-        Error,
-        ShareResult,
-        FileResult,
-        Info,
-        Degub,
-        Trace,
-        Fatal
-    }
-
     public class SnafflerMessage
     {
         public DateTime DateTime { get; set; }

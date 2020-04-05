@@ -59,6 +59,8 @@
   <ItemGroup>
     <Compile Include="ComputerFind\ActiveDirectory.cs" />
     <Compile Include="Concurrency\BlockingMq.cs" />
+    <Compile Include="Concurrency\SnafflerMessage.cs" />
+    <Compile Include="Concurrency\SnafflerMessageType.cs" />
     <Compile Include="Concurrency\TaskHandler.cs" />
     <Compile Include="Config\Config.cs" />
     <Compile Include="Config\DirSkipMatchConfig.cs" />
@@ -73,7 +75,7 @@
     <Compile Include="Config\PartialPathMatchConfig.cs" />
     <Compile Include="Config\ShareFinderConfig.cs" />
     <Compile Include="Config\ShareScannerConfig.cs" />
-    <Compile Include="Config\SnafflerMessage.cs" />
+    <Compile Include="Definitions\Classifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShareFind\Finder.cs" />
     <Compile Include="ShareScan\FileScanner.cs" />

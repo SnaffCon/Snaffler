@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using SnaffCore.Config;
 using SnaffCore.ShareFind;
 using SnaffCore.ShareScan;
 
-namespace SnaffCore.Config
+namespace SnaffCore.Concurrency
 {
     public class BlockingMq
     {

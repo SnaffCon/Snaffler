@@ -2,6 +2,7 @@
 {
     public partial class Options
     {
+        [Nett.TomlIgnore]
         public string[] DirSkipList { get; set; } =
         {
             // these are directory names that make us skip a dir instantly when building a tree.

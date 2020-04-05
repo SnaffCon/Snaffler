@@ -8,7 +8,5 @@ namespace SnaffCore.Config
         public string LogFilePath { get; set; }
         public bool LogToConsole { get; set; } = true;
         public LogLevel LogLevel { get; set; } = LogLevel.Info;
-        public bool DegubLog { get; set; } = false;
-        public bool VerboseLog { get; set; } = false;
     }
 }

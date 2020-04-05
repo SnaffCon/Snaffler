@@ -2,6 +2,7 @@
 {
     public partial class Options
     {
+        [Nett.TomlIgnore]
         public string[] ExtensionsToKeep { get; set; } =
         {
             // these are file extensions that we will always want to keep no matter what.

@@ -2,6 +2,7 @@
 {
     public partial class Options
     {
+        [Nett.TomlIgnore]
         public string[] PathsToKeep { get; set; } =
         {
             ".ssh\\config",

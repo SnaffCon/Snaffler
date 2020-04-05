@@ -2,6 +2,7 @@
 {
     public partial class Options
     {
+        [Nett.TomlIgnore]
         public string[] FileNamesToKeep { get; set; } =
         {
             // these are file names that we always want to keep if it's an exact match.

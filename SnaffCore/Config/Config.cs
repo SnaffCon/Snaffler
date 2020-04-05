@@ -5,6 +5,7 @@ using System.Linq;
 using CommandLineParser.Arguments;
 using Nett;
 using NLog;
+using SnaffCore.Concurrency;
 
 namespace SnaffCore.Config
 {

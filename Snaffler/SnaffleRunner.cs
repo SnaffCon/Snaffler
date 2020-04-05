@@ -5,6 +5,7 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using SnaffCore;
+using SnaffCore.Concurrency;
 using SnaffCore.Config;
 
 namespace Snaffler

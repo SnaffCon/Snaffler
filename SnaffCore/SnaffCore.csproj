@@ -58,8 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComputerFind\ActiveDirectory.cs" />
+    <Compile Include="Concurrency\BlockingMq.cs" />
     <Compile Include="Concurrency\TaskHandler.cs" />
-    <Compile Include="Config\BlockingMq.cs" />
     <Compile Include="Config\Config.cs" />
     <Compile Include="Config\DirSkipMatchConfig.cs" />
     <Compile Include="Config\ExactExtMatchConfig.cs" />

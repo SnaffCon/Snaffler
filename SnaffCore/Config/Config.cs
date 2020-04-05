@@ -120,16 +120,21 @@ namespace SnaffCore.Config
 
                 if (configFileArg.Parsed)
                 {
+                    var settings = TomlSettings.Create(cfg => cfg
+                        .ConfigureType<LogLevel>(tc =>
+                            tc.WithConversionFor<TomlString>(conv => conv
+                                .FromToml(s => (LogLevel)Enum.Parse(typeof(LogLevel), s.Value, ignoreCase: true))
+                                .ToToml(e => e.ToString()))));
                     if (configFileArg.Value.Equals("generate"))
                     {
-                        Toml.WriteFile(this.Options, ".\\default.toml");
+                        Toml.WriteFile(this.Options, ".\\default.toml", settings);
                         Mq.Info("Wrote default config values to .\\default.toml");
                         Mq.Terminate();
                     }
                     else
                     {
                         string configFile = configFileArg.Value;
-                        this.Options = Toml.ReadFile<Options>(configFile);
+                        this.Options = Toml.ReadFile<Options>(configFile, settings);
                         Mq.Info("Read config file from " + configFile);
                     }
                 }

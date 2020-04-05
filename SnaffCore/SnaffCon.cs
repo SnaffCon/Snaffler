@@ -83,40 +83,8 @@ namespace SnaffCore
 
             if (Config.Options.ShareFinderEnabled)
             {
-                Config.Mq.Info("Starting to find readable shares.");
-                foreach (var computer in targetComputers)
-                {
-                    Config.Mq.Info("Creating a sharefinder task for " + computer);
-                    var t = SharefinderTaskFactory.StartNew(() =>
-                    {
-                        try
-                        {
-                            var shareFinder = new ShareFinder();
-                            var taskFoundShares = shareFinder.GetReadableShares(computer, Config);
-                            if (taskFoundShares.Count > 0)
-                            {
-                                foreach (var taskFoundShare in taskFoundShares)
-                                {
-                                    if (!String.IsNullOrWhiteSpace(taskFoundShare))
-                                    {
-                                        foundShares.Add(taskFoundShare);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Config.Mq.Info(computer + " had no shares on it");
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Config.Mq.Trace(e.ToString());
-                        }
-                    }, SharefinderCts.Token);
-                    SharefinderTasks.Add(t);
-                }
-
-                Config.Mq.Info("Created all " + SharefinderTasks.Count + " sharefinder tasks.");
+                // TODO: change this to use a method that pulls data from the options classifiers
+                foundShares = ShareFindingMagic(targetComputers);
             }
 
 
@@ -146,6 +114,7 @@ namespace SnaffCore
                         if (!String.IsNullOrWhiteSpace(share))
                         {
                             // skip ipc$ and print$ every time
+                            // TODO: remove this skip logic once the patterns from the config file have been applied when enumerating shares
                             if ((share.ToLower().EndsWith("ipc$")) || (share.ToLower().EndsWith("print$")))
                             {
                                 continue;
@@ -219,6 +188,46 @@ namespace SnaffCore
             Console.ResetColor();
             Environment.Exit(0);
             // This is the main execution thread.
+        }
+
+        private ConcurrentBag<string> ShareFindingMagic(List<string> targetComputers)
+        {
+            ConcurrentBag<string> foundShares = new ConcurrentBag<string>();
+            Config.Mq.Info("Starting to find readable shares.");
+            foreach (var computer in targetComputers)
+            {
+                Config.Mq.Info("Creating a sharefinder task for " + computer);
+                var t = SharefinderTaskFactory.StartNew(() =>
+                {
+                    try
+                    {
+                        var shareFinder = new ShareFinder();
+                        var taskFoundShares = shareFinder.GetReadableShares(computer, Config);
+                        if (taskFoundShares.Count > 0)
+                        {
+                            foreach (var taskFoundShare in taskFoundShares)
+                            {
+                                if (!String.IsNullOrWhiteSpace(taskFoundShare))
+                                {
+                                    foundShares.Add(taskFoundShare);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Config.Mq.Info(computer + " had no shares on it");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Config.Mq.Trace(e.ToString());
+                    }
+                }, SharefinderCts.Token);
+                SharefinderTasks.Add(t);
+            }
+
+            Config.Mq.Info("Created all " + SharefinderTasks.Count + " sharefinder tasks.");
+            return foundShares;
         }
 
         // This method is called every minute

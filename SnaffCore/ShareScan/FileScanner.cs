@@ -91,16 +91,23 @@ namespace SnaffCore.ShareScan
         }
 
         // checks a file to see if it's cool or not.
+        public FileResult ApplyRuleset(FileInfo fileInfo, SnaffCore.Config.Config config)
+        {
+            // TODO: implement the Rulsets for a file path
+            return null;
+        }
+        
+        
         public FileResult Scan(FileInfo fileInfo, Config.Config config)
         {
             // if each check is enabled in FileScannerConfig, run it on the thing.
 
             if (config.Options.ExactExtensionSkipCheck)
-                if (ExactExtCheck(fileInfo, config.Options.ExtSkipList))
+                if (ExactExtCheck(fileInfo, config.Options.DiscardExtExact))
                     return null;
 
             if (config.Options.PartialPathCheck)
-                if (PartialPathCheck(fileInfo, config.Options.PathsToKeep))
+                if (PartialPathCheck(fileInfo, config.Options.KeepFilepathContains))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -109,7 +116,7 @@ namespace SnaffCore.ShareScan
                 }
 
             if (config.Options.ExactNameCheck)
-                if (ExactNameCheck(fileInfo, config.Options.FileNamesToKeep))
+                if (ExactNameCheck(fileInfo, config.Options.KeepFilenameExact))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -118,7 +125,7 @@ namespace SnaffCore.ShareScan
                 }
 
             if (config.Options.ExactExtensionCheck)
-                if (ExactExtCheck(fileInfo, config.Options.ExtensionsToKeep))
+                if (ExactExtCheck(fileInfo, config.Options.KeepExtExact))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -136,7 +143,7 @@ namespace SnaffCore.ShareScan
                 }
 
             if (config.Options.GrepByExtensionCheck)
-                if (ExactExtCheck(fileInfo, config.Options.ExtensionsToGrep))
+                if (ExactExtCheck(fileInfo, config.Options.GrepExtExact))
                     if (fileInfo.Length < config.Options.MaxSizeToGrep)
                     {
                         GrepFileResult grepFileResult = GrepFile(fileInfo, config.Options.GrepStrings, config.Options.GrepContextBytes);
@@ -186,25 +193,25 @@ namespace SnaffCore.ShareScan
             return false;
         }
 
-        internal bool PartialNameCheck(FileInfo fileInfo, string[] nameStringsToKeep)
+        internal bool PartialNameCheck(FileInfo fileInfo, IEnumerable<string> nameStringsToKeep)
         {
             if (PartialMatchInArray(fileInfo.Name, nameStringsToKeep)) return true;
             return false;
         }
 
-        internal bool PartialPathCheck(FileInfo fileInfo, string[] pathsToKeep)
+        internal bool PartialPathCheck(FileInfo fileInfo, IEnumerable<string> pathsToKeep)
         {
             if (PartialMatchInArray(fileInfo.FullName, pathsToKeep)) return true;
             return false;
         }
 
-        internal bool ExactNameCheck(FileInfo fileInfo, string[] fileNamesToKeep)
+        internal bool ExactNameCheck(FileInfo fileInfo, IEnumerable<string> fileNamesToKeep)
         {
             if (ExactMatchInArray(fileInfo.Name, fileNamesToKeep)) return true;
             return false;
         }
 
-        internal bool ExactExtCheck(FileInfo fileInfo, string[] extensionsToKeep)
+        internal bool ExactExtCheck(FileInfo fileInfo, IEnumerable<string> extensionsToKeep)
         {
             if (ExactMatchInArray(fileInfo.Extension, extensionsToKeep)) return true;
             return false;
@@ -220,7 +227,7 @@ namespace SnaffCore.ShareScan
             return false;
         }
 
-        internal bool ExactMatchInArray(string inString, string[] inArr)
+        internal bool ExactMatchInArray(string inString, IEnumerable<string> inArr)
         {
             // finds if inString matches any of the strings in inArr, case-insensitive.
             foreach (string arrString in inArr)
@@ -232,7 +239,7 @@ namespace SnaffCore.ShareScan
             return false;
         }
 
-        internal bool PartialMatchInArray(string inString, string[] inArr)
+        internal bool PartialMatchInArray(string inString, IEnumerable<string> inArr)
         {
             // finds if inString contains any of the strings in inArr, case-insensitive.
             bool matched = false;
@@ -246,7 +253,7 @@ namespace SnaffCore.ShareScan
             return matched;
         }
 
-        internal GrepFileResult GrepFile(FileInfo fileInfo, string[] grepStrings, int contextBytes)
+        internal GrepFileResult GrepFile(FileInfo fileInfo, IEnumerable<string> grepStrings, int contextBytes)
         {
             List<string> foundStrings = new List<string>();
 

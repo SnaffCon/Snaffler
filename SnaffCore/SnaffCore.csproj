@@ -63,16 +63,9 @@
     <Compile Include="Concurrency\SnafflerMessageType.cs" />
     <Compile Include="Concurrency\TaskHandler.cs" />
     <Compile Include="Config\Config.cs" />
-    <Compile Include="Config\DirSkipMatchConfig.cs" />
-    <Compile Include="Config\ExactExtMatchConfig.cs" />
-    <Compile Include="Config\ExactNameMatchConfig.cs" />
-    <Compile Include="Config\ExtSkipMatchConfig.cs" />
     <Compile Include="Config\FileScannerConfig.cs" />
     <Compile Include="Config\GrepMatchConfig.cs" />
     <Compile Include="Config\Options.cs" />
-    <Compile Include="Config\OutputConfig.cs" />
-    <Compile Include="Config\PartialNameMatchConfig.cs" />
-    <Compile Include="Config\PartialPathMatchConfig.cs" />
     <Compile Include="Config\ShareFinderConfig.cs" />
     <Compile Include="Config\ShareScannerConfig.cs" />
     <Compile Include="Definitions\Classifier.cs" />

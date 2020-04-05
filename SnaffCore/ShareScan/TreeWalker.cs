@@ -84,45 +84,10 @@ namespace SnaffCore.ShareScan
                     }
 
                     // check if we actually like the files
-                    foreach (var file in files)
+                    foreach (string file in files)
                     {
-                        try
-                        {
-                            var fileInfo = new FileInfo(file);
-
-                            var fileResult = FileScanner.Scan(fileInfo, Config);
-
-                            if (fileResult != null)
-                            {
-                                if (fileResult.WhyMatched != FileScanner.MatchReason.NoMatch)
-                                {
-                                    Config.Mq.FileResult(fileResult);
-                                }
-                            }
-                        }
-                        catch (FileNotFoundException e)
-                        {
-                            // If file was deleted by a separate application
-                            //  or thread since the call to TraverseTree()
-                            // then just continue.
-                            Config.Mq.Trace(e.Message);
-                            continue;
-                        }
-                        catch (UnauthorizedAccessException e)
-                        {
-                            Config.Mq.Trace(e.Message);
-                            continue;
-                        }
-                        catch (PathTooLongException e)
-                        {
-                            Config.Mq.Trace(file + " path was too long for me to look at.");
-                            continue;
-                        }
-                        catch (Exception e)
-                        {
-                            Config.Mq.Trace(e.Message);
-                            continue;
-                        }
+                        // TODO: this can be sent to the concurrency shit later to speed up traversal
+                        DoFileScanning(file);
                     }
 
                     // Push the subdirectories onto the stack for traversal.
@@ -130,8 +95,9 @@ namespace SnaffCore.ShareScan
                     foreach (var dirStr in subDirs)
                     {
                         //but skip any dirs in the skiplist.
-                        if (!FileScanner.PartialMatchInArray(dirStr, Config.Options.DirSkipList))
+                        if (!FileScanner.PartialMatchInArray(dirStr, Config.Options.DiscardFilepathContains))
                         {
+                            // TODO: concurrency uplift: when there is a pooled concurrency queue, just add the dir as a job to the queue
                             dirs.Push(dirStr);
                         }
                     }
@@ -140,6 +106,47 @@ namespace SnaffCore.ShareScan
             catch (Exception e)
             {
                 Config.Mq.Error(e.ToString());
+            }
+        }
+
+        private void DoFileScanning(string file)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(file);
+
+                var fileResult = FileScanner.Scan(fileInfo, Config);
+
+                if (fileResult != null)
+                {
+                    if (fileResult.WhyMatched != FileScanner.MatchReason.NoMatch)
+                    {
+                        Config.Mq.FileResult(fileResult);
+                    }
+                }
+            }
+            catch (FileNotFoundException e)
+            {
+                // If file was deleted by a separate application
+                //  or thread since the call to TraverseTree()
+                // then just continue.
+                Config.Mq.Trace(e.Message);
+                return;
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                Config.Mq.Trace(e.Message);
+                return;
+            }
+            catch (PathTooLongException e)
+            {
+                Config.Mq.Trace(file + " path was too long for me to look at.");
+                return;
+            }
+            catch (Exception e)
+            {
+                Config.Mq.Trace(e.Message);
+                return;
             }
         }
     }

@@ -27,42 +27,6 @@
             "cpassword"
         };
 
-        [Nett.TomlIgnore]
-        public string[] ExtensionsToGrep { get; set; } =
-        {
-            // these are file extensions that tell us the file is worth grepping.
-            ".ps1",
-            ".bat",
-            ".wsf",
-            ".vbs",
-            ".pl",
-            ".txt",
-            ".cs",
-            ".ascx",
-            ".java",
-            ".config",
-            ".ini",
-            ".inf",
-            ".cnf",
-            ".conf",
-            ".py",
-            ".php",
-            ".aspx",
-            ".ashx",
-            ".asmx",
-            ".asp",
-            ".jsp",
-            ".yaml",
-            ".xml",
-            ".json",
-            ".psd1",
-            ".psm1",
-            ".sh",
-            ".cshtml",
-            ".sql",
-            ".pem",
-            ".log"
-        };
 
         // regexes
 

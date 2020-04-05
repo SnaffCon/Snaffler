@@ -6,6 +6,7 @@ using CommandLineParser.Arguments;
 using Nett;
 using NLog;
 using SnaffCore.Concurrency;
+using SnaffCore.Definitions;
 
 namespace SnaffCore.Config
 {
@@ -127,6 +128,7 @@ namespace SnaffCore.Config
                                 .ToToml(e => e.ToString()))));
                     if (configFileArg.Value.Equals("generate"))
                     {
+                        this.Options = new Options(true);
                         Toml.WriteFile(this.Options, ".\\default.toml", settings);
                         Mq.Info("Wrote default config values to .\\default.toml");
                         Mq.Terminate();
@@ -135,6 +137,7 @@ namespace SnaffCore.Config
                     {
                         string configFile = configFileArg.Value;
                         this.Options = Toml.ReadFile<Options>(configFile, settings);
+                        this.Options.PrepareClassifiers();
                         Mq.Info("Read config file from " + configFile);
                     }
                 }
@@ -231,7 +234,7 @@ namespace SnaffCore.Config
                         }
                         else
                         {
-                            ExtensionsToKeep = File.ReadAllLines(extMatchArg.Value);
+                            KeepExtExact = File.ReadAllLines(extMatchArg.Value);
                             Mq.Degub("Using file at " + extMatchArg.Value + " for exact file extension matching.");
                         }
                     }
@@ -245,7 +248,7 @@ namespace SnaffCore.Config
                         }
                         else
                         {
-                            PathsToKeep = File.ReadAllLines(pathMatchArg.Value);
+                            KeepFilepathContains = File.ReadAllLines(pathMatchArg.Value);
                             Mq.Degub("Using file at " + pathMatchArg.Value + " for partial file path matching.");
                         }
                     }
@@ -259,7 +262,7 @@ namespace SnaffCore.Config
                         }
                         else
                         {
-                            ExtSkipList = File.ReadAllLines(extSkipMatchArg.Value);
+                            DiscardExtExact = File.ReadAllLines(extSkipMatchArg.Value);
                             Mq.Degub("Using file at " + extSkipMatchArg.Value + " for extension skip-list.");
                         }
                     }
@@ -273,7 +276,7 @@ namespace SnaffCore.Config
                         }
                         else
                         {
-                            FileNamesToKeep = File.ReadAllLines(nameMatchArg.Value);
+                            KeepFilenameExact = File.ReadAllLines(nameMatchArg.Value);
                             Mq.Degub("Using file at " + nameMatchArg.Value + " for exact file name matching.");
                         }
                     }

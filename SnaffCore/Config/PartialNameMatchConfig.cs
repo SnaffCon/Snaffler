@@ -2,6 +2,7 @@
 {
     public partial class Options
     {
+        [Nett.TomlIgnore]
         public string[] NameStringsToKeep { get; set; } =
         {
             // these are strings that make a file NAME interesting if found within.

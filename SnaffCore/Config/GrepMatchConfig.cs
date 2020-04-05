@@ -2,6 +2,7 @@
 {
     public partial class Options
     {
+        [Nett.TomlIgnore]
         public string[] GrepStrings { get; set; } =
         {
             // these are strings that make a file interesting if found within.
@@ -26,6 +27,7 @@
             "cpassword"
         };
 
+        [Nett.TomlIgnore]
         public string[] ExtensionsToGrep { get; set; } =
         {
             // these are file extensions that tell us the file is worth grepping.

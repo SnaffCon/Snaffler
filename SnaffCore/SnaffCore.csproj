@@ -57,20 +57,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classifiers\DirClassifier.cs" />
+    <Compile Include="Classifiers\FileClassifier.cs" />
+    <Compile Include="Classifiers\ShareClassifier.cs" />
     <Compile Include="ComputerFind\ActiveDirectory.cs" />
     <Compile Include="Concurrency\BlockingMq.cs" />
     <Compile Include="Concurrency\SnafflerMessage.cs" />
     <Compile Include="Concurrency\SnafflerMessageType.cs" />
     <Compile Include="Concurrency\TaskHandler.cs" />
+    <Compile Include="Config\ClassifierOptions.cs" />
     <Compile Include="Config\Config.cs" />
-    <Compile Include="Config\FileScannerConfig.cs" />
-    <Compile Include="Config\GrepMatchConfig.cs" />
     <Compile Include="Config\Options.cs" />
-    <Compile Include="Config\ShareFinderConfig.cs" />
-    <Compile Include="Config\ShareScannerConfig.cs" />
-    <Compile Include="Definitions\Classifier.cs" />
+    <Compile Include="Classifiers\Classifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShareFind\Finder.cs" />
+    <Compile Include="ShareFind\ShareFinder.cs" />
     <Compile Include="ShareScan\FileScanner.cs" />
     <Compile Include="ShareScan\TreeWalker.cs" />
     <Compile Include="SnaffCon.cs" />

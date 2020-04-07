@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using SnaffCore.ComputerFind;
 using SnaffCore.Concurrency;
+using Classifiers;
 using SnaffCore.ShareFind;
 using SnaffCore.ShareScan;
 using Timer = System.Timers.Timer;
+using ShareResult = SnaffCore.ShareFind.ShareFinder.ShareResult;
 
 namespace SnaffCore
 {
@@ -41,7 +45,7 @@ namespace SnaffCore
         public void Execute()
         {
             var targetComputers = new List<string>();
-            var foundShares = new ConcurrentBag<string>();
+            ConcurrentBag<ShareResult> foundShares = new ConcurrentBag<ShareResult>();
 
             var statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(1)
@@ -78,15 +82,37 @@ namespace SnaffCore
             }
             else
             {
-                foundShares.Add(Config.Options.DirTarget);
+                foundShares.Add(new ShareResult(){SharePath = Config.Options.DirTarget, ScanShare = true});
             }
 
             if (Config.Options.ShareFinderEnabled)
             {
-                // TODO: change this to use a method that pulls data from the options classifiers
-                foundShares = ShareFindingMagic(targetComputers);
-            }
+                Config.Mq.Info("Starting to find readable shares.");
+                foreach (var computer in targetComputers)
+                {
+                    // ShareFinder Task Creation
+                    Config.Mq.Info("Creating a sharefinder task for " + computer);
+                    var t = SharefinderTaskFactory.StartNew(() =>
+                    {
+                        try
+                        {
+                            ShareFinder shareFinder = new ShareFinder();
+                            List<ShareResult> shareResults = shareFinder.GetComputerShares(computer, Config);
+                            foreach (ShareResult shareResult in shareResults)
+                            {
+                                foundShares.Add(shareResult);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Config.Mq.Trace(e.ToString());
+                        }
+                    }, SharefinderCts.Token);
+                    SharefinderTasks.Add(t);
+                }
 
+                Config.Mq.Info("Created all " + SharefinderTasks.Count + " sharefinder tasks.");
+            }
 
             if (Config.Options.ShareScanEnabled)
             {
@@ -109,18 +135,13 @@ namespace SnaffCore
                     }
 
                     //pull shares out of the result bag and make scanner tasks for them.
-                    while (foundShares.TryTake(out var share))
+                    while (foundShares.TryTake(out ShareResult share))
                     {
-                        if (!String.IsNullOrWhiteSpace(share))
+                        string sharePath = share.SharePath;
+                        if (!String.IsNullOrWhiteSpace(sharePath))
                         {
-                            // skip ipc$ and print$ every time
-                            // TODO: remove this skip logic once the patterns from the config file have been applied when enumerating shares
-                            if ((share.ToLower().EndsWith("ipc$")) || (share.ToLower().EndsWith("print$")))
-                            {
-                                continue;
-                            }
-
-                            if (share.ToLower().EndsWith("sysvol"))
+                            // handle anoying sysvol/netlogon duplication in DCs
+                            if (sharePath.ToLower().EndsWith("sysvol"))
                             {
                                 if (SysvolTaskCreated)
                                 {
@@ -129,7 +150,7 @@ namespace SnaffCore
 
                                 SysvolTaskCreated = true;
                             }
-                            else if (share.ToLower().EndsWith("netlogon"))
+                            else if (sharePath.ToLower().EndsWith("netlogon"))
                             {
                                 if (NetlogonTaskCreated)
                                 {
@@ -140,9 +161,9 @@ namespace SnaffCore
                             }
 
                             // check if it's an admin share
-                            var isCDollarShare = share.EndsWith("C$");
+                            var isCDollarShare = sharePath.EndsWith("C$");
                             // put a result on the queue
-                            Config.Mq.ShareResult(new ShareFinder.ShareResult {IsAdminShare = isCDollarShare, Listable = true, SharePath = share});
+                            Config.Mq.ShareResult(share);
                             // bail out if we're not scanning admin shares
                             if (isCDollarShare && !Config.Options.ScanCDollarShares)
                             {
@@ -155,7 +176,7 @@ namespace SnaffCore
                             {
                                 try
                                 {
-                                    var treeWalker = new TreeWalker(Config, share);
+                                    var treeWalker = new TreeWalker(Config, sharePath);
                                 }
                                 catch (Exception e)
                                 {
@@ -188,46 +209,6 @@ namespace SnaffCore
             Console.ResetColor();
             Environment.Exit(0);
             // This is the main execution thread.
-        }
-
-        private ConcurrentBag<string> ShareFindingMagic(List<string> targetComputers)
-        {
-            ConcurrentBag<string> foundShares = new ConcurrentBag<string>();
-            Config.Mq.Info("Starting to find readable shares.");
-            foreach (var computer in targetComputers)
-            {
-                Config.Mq.Info("Creating a sharefinder task for " + computer);
-                var t = SharefinderTaskFactory.StartNew(() =>
-                {
-                    try
-                    {
-                        var shareFinder = new ShareFinder();
-                        var taskFoundShares = shareFinder.GetReadableShares(computer, Config);
-                        if (taskFoundShares.Count > 0)
-                        {
-                            foreach (var taskFoundShare in taskFoundShares)
-                            {
-                                if (!String.IsNullOrWhiteSpace(taskFoundShare))
-                                {
-                                    foundShares.Add(taskFoundShare);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Config.Mq.Info(computer + " had no shares on it");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Config.Mq.Trace(e.ToString());
-                    }
-                }, SharefinderCts.Token);
-                SharefinderTasks.Add(t);
-            }
-
-            Config.Mq.Info("Created all " + SharefinderTasks.Count + " sharefinder tasks.");
-            return foundShares;
         }
 
         // This method is called every minute

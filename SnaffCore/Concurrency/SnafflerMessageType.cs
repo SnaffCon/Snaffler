@@ -4,6 +4,7 @@
     {
         Error,
         ShareResult,
+        DirResult,
         FileResult,
         Info,
         Degub,

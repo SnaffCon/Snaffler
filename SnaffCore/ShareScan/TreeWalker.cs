@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Classifiers;
 
 namespace SnaffCore.ShareScan
 {
     public class TreeWalker
     {
+        public class DirResult
+        {
+            public bool Snaffle { get; set; }
+            public bool ScanDir { get; set; }
+            public string DirPath { get; set; }
+        }
         private Config.Config Config { get; set; }
         private FileScanner FileScanner { get; set; }
 
@@ -90,16 +97,21 @@ namespace SnaffCore.ShareScan
                         DoFileScanning(file);
                     }
 
-                    // Push the subdirectories onto the stack for traversal.
-                    // This could also be done before handing the files.
+                    // Push the subdirectories onto the stack for traversal if they aren't on any discard-lists etc.
                     foreach (var dirStr in subDirs)
                     {
-                        //but skip any dirs in the skiplist.
-                        if (!FileScanner.PartialMatchInArray(dirStr, Config.Options.DiscardFilepathContains))
+                        foreach (Classifier dirClassifier in Config.Options.DirClassifiers)
                         {
+                            DirResult dirResult = dirClassifier.ClassifyDir(dirStr, Config);
                             // TODO: concurrency uplift: when there is a pooled concurrency queue, just add the dir as a job to the queue
-                            dirs.Push(dirStr);
+                            if (dirResult.ScanDir) { dirs.Push(dirStr);}
+
+                            if (dirResult.Snaffle)
+                            {
+                                Config.Mq.DirResult(dirResult);
+                            }
                         }
+
                     }
                 }
             }

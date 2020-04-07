@@ -81,7 +81,16 @@ namespace SnaffCore.Concurrency
                 FileResult = fileResult
             });
         }
-
+        internal void DirResult(TreeWalker.DirResult dirResult)
+        {
+            // say we did a thing
+            Q.Add(new SnafflerMessage
+            {
+                DateTime = DateTime.Now,
+                DirResult = dirResult,
+                Type = SnafflerMessageType.ShareResult
+            });
+        }
         internal void ShareResult(ShareFinder.ShareResult shareResult)
         {
             // say we did a thing

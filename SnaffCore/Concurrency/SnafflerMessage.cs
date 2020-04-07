@@ -11,5 +11,6 @@ namespace SnaffCore.Concurrency
         public SnafflerMessageType Type { get; set; }
         public FileScanner.FileResult FileResult { get; set; }
         public ShareFinder.ShareResult ShareResult { get; set; }
+        public TreeWalker.DirResult DirResult { get; set; }
     }
 }

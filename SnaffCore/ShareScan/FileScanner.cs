@@ -93,7 +93,7 @@ namespace SnaffCore.ShareScan
         // checks a file to see if it's cool or not.
         public FileResult ApplyRuleset(FileInfo fileInfo, SnaffCore.Config.Config config)
         {
-            // TODO: implement the Rulsets for a file path
+            // TODO: implement the Rulesets for a file path
             return null;
         }
         

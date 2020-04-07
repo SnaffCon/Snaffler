@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Classifiers;
 
 namespace SnaffCore.ShareFind
 {
@@ -11,43 +12,32 @@ namespace SnaffCore.ShareFind
     {
         public class ShareResult
         {
+            public bool Snaffle { get; set; }
+            public bool ScanShare { get; set; }
             public string SharePath { get; set; }
             public bool Listable { get; set; }
             public bool IsAdminShare { get; set; }
         }
-
-        internal List<string> GetReadableShares(string computer, Config.Config config)
+        internal List<ShareResult> GetComputerShares(string computer, Config.Config config)
         {
-            var readableShares = new List<string>();
+            var foundShares = new List<ShareResult>();
             var hostShareInfos = GetHostShareInfo(computer);
             foreach (var hostShareInfo in hostShareInfos)
             {
                 var shareName = GetShareName(hostShareInfo, computer, config);
                 if (!String.IsNullOrWhiteSpace(shareName))
                 {
-                    if (IsShareReadable(shareName, config))
+                    foreach (Classifier shareClassifier in config.Options.ShareClassifiers)
                     {
-                        readableShares.Add(shareName);
+                        ShareResult shareResult = shareClassifier.ClassifyShare(shareName, config);
+                        if (shareResult != null)
+                        {
+                            foundShares.Add(shareResult);
+                        }
                     }
                 }
             }
-
-            return readableShares;
-        }
-
-        internal bool IsShareReadable(string share, Config.Config config)
-        {
-            try
-            {
-                var files = Directory.GetFiles(share);
-                return true;
-            }
-            catch (Exception e)
-            {
-                config.Mq.Trace(e.ToString());
-            }
-
-            return false;
+            return foundShares;
         }
 
         private string GetShareName(HostShareInfo hostShareInfo, string computer, Config.Config config)

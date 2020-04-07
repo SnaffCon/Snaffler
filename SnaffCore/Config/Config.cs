@@ -6,7 +6,7 @@ using CommandLineParser.Arguments;
 using Nett;
 using NLog;
 using SnaffCore.Concurrency;
-using SnaffCore.Definitions;
+using Classifiers;
 
 namespace SnaffCore.Config
 {
@@ -50,18 +50,6 @@ namespace SnaffCore.Config
             var verboseArg = new ValueArgument<string>('v', "verbosity",
                 "Controls verbosity level, options are Trace (most verbose), Debug (less verbose), Info (less verbose still, default), and Data (results only). e.g '-v debug' ");
             var helpArg = new SwitchArgument('h', "help", "Displays this help.", false);
-            //var extMatchArg = new ValueArgument<string>('e', "extmatch",
-            //    "Path to wordlist for searching by exact extension match.");
-            //var nameMatchArg = new ValueArgument<string>('n', "namematch",
-            //    "Path to wordlist for searching by exact filename match.");
-            //var grepMatchArg = new ValueArgument<string>('g', "grepmatch",
-            //    "Path to wordlist for searching by grepping the contents of files with \"interesting\" extensions.");
-            //var partialMatchArg = new ValueArgument<string>('p', "partialmatch",
-            //    "Path to wordlist for searching by partial filename match.");
-            //var pathMatchArg = new ValueArgument<string>('a', "pathmatch",
-            //    "Path to wordlist for searching by partial path match.");
-            //var extSkipMatchArg = new ValueArgument<string>('x', "extskipmatch",
-            //    "Path to wordlist for extensions that should be skipped.");
             var stdOutArg = new SwitchArgument('s', "stdout",
                 "Enables outputting results to stdout as soon as they're found. You probably want this if you're not using -o.",
                 false);

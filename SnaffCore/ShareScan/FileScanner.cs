@@ -43,7 +43,7 @@ namespace SnaffCore.ShareScan
                 Mq.Trace(e.Message);
                 return;
             }
-            catch (PathTooLongException e)
+            catch (PathTooLongException)
             {
                 Mq.Trace(file + " path was too long for me to look at.");
                 return;

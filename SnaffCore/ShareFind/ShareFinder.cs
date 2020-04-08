@@ -11,14 +11,6 @@ namespace SnaffCore.ShareFind
 {
     public class ShareFinder
     {
-        public class ShareResult
-        {
-            public bool Snaffle { get; set; }
-            public bool ScanShare { get; set; }
-            public string SharePath { get; set; }
-            public bool Listable { get; set; }
-            public bool IsAdminShare { get; set; }
-        }
         internal List<ShareResult> GetComputerShares(string computer)
         {
             BlockingMq Mq = BlockingMq.GetMq();

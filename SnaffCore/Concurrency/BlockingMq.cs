@@ -83,7 +83,7 @@ namespace SnaffCore.Concurrency
             });
         }
 
-        internal void FileResult(FileScanner.FileResult fileResult)
+        internal void FileResult(Classifiers.FileResult fileResult)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage
@@ -93,7 +93,7 @@ namespace SnaffCore.Concurrency
                 FileResult = fileResult
             });
         }
-        internal void DirResult(TreeWalker.DirResult dirResult)
+        internal void DirResult(Classifiers.DirResult dirResult)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage

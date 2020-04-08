@@ -6,6 +6,9 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
+using SnaffCore.Concurrency;
+using Config = SnaffCore.Config.Config;
+
 
 namespace SnaffCore.ShareScan
 {
@@ -91,23 +94,25 @@ namespace SnaffCore.ShareScan
         }
 
         // checks a file to see if it's cool or not.
-        public FileResult ApplyRuleset(FileInfo fileInfo, SnaffCore.Config.Config config)
+        public FileResult ApplyRuleset(FileInfo fileInfo)
         {
             // TODO: implement the Rulesets for a file path
             return null;
         }
         
         
-        public FileResult Scan(FileInfo fileInfo, Config.Config config)
+        public FileResult Scan(FileInfo fileInfo)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config.Config myConfig = Config.Config.GetConfig();
             // if each check is enabled in FileScannerConfig, run it on the thing.
 
-            if (config.Options.ExactExtensionSkipCheck)
-                if (ExactExtCheck(fileInfo, config.Options.DiscardExtExact))
+            if (myConfig.Options.ExactExtensionSkipCheck)
+                if (ExactExtCheck(fileInfo, myConfig.Options.DiscardExtExact))
                     return null;
 
-            if (config.Options.PartialPathCheck)
-                if (PartialPathCheck(fileInfo, config.Options.KeepFilepathContains))
+            if (myConfig.Options.PartialPathCheck)
+                if (PartialPathCheck(fileInfo, myConfig.Options.KeepFilepathContains))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -115,8 +120,8 @@ namespace SnaffCore.ShareScan
                             {FileInfo = fileInfo, WhyMatched = MatchReason.PartialPathMatch, RwStatus = rwStatus};
                 }
 
-            if (config.Options.ExactNameCheck)
-                if (ExactNameCheck(fileInfo, config.Options.KeepFilenameExact))
+            if (myConfig.Options.ExactNameCheck)
+                if (ExactNameCheck(fileInfo, myConfig.Options.KeepFilenameExact))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -124,8 +129,8 @@ namespace SnaffCore.ShareScan
                             {FileInfo = fileInfo, WhyMatched = MatchReason.ExactFileNameMatch, RwStatus = rwStatus};
                 }
 
-            if (config.Options.ExactExtensionCheck)
-                if (ExactExtCheck(fileInfo, config.Options.KeepExtExact))
+            if (myConfig.Options.ExactExtensionCheck)
+                if (ExactExtCheck(fileInfo, myConfig.Options.KeepExtExact))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -133,8 +138,8 @@ namespace SnaffCore.ShareScan
                             {FileInfo = fileInfo, WhyMatched = MatchReason.ExactExtensionMatch, RwStatus = rwStatus};
                 }
 
-            if (config.Options.PartialNameCheck)
-                if (PartialNameCheck(fileInfo, config.Options.NameStringsToKeep))
+            if (myConfig.Options.PartialNameCheck)
+                if (PartialNameCheck(fileInfo, myConfig.Options.NameStringsToKeep))
                 {
                     RwStatus rwStatus = CanRw(fileInfo);
                     if (rwStatus.CanRead || rwStatus.CanWrite)
@@ -142,11 +147,11 @@ namespace SnaffCore.ShareScan
                             {FileInfo = fileInfo, WhyMatched = MatchReason.PartialFileNameMatch, RwStatus = rwStatus};
                 }
 
-            if (config.Options.GrepByExtensionCheck)
-                if (ExactExtCheck(fileInfo, config.Options.GrepExtExact))
-                    if (fileInfo.Length < config.Options.MaxSizeToGrep)
+            if (myConfig.Options.GrepByExtensionCheck)
+                if (ExactExtCheck(fileInfo, myConfig.Options.GrepExtExact))
+                    if (fileInfo.Length < myConfig.Options.MaxSizeToGrep)
                     {
-                        GrepFileResult grepFileResult = GrepFile(fileInfo, config.Options.GrepStrings, config.Options.GrepContextBytes);
+                        GrepFileResult grepFileResult = GrepFile(fileInfo, myConfig.Options.GrepStrings, myConfig.Options.GrepContextBytes);
 
                         if (grepFileResult != null)
                         {

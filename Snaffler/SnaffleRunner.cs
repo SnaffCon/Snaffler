@@ -12,19 +12,19 @@ namespace Snaffler
 {
     public class SnaffleRunner
     {
-        internal Config Config { get; set; }
-        private BlockingMq MqHandle { get; set; }
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         public void Run(string[] args)
         {
             PrintBanner();
-            MqHandle = new BlockingMq();
+            BlockingMq.MakeMq();
+            BlockingMq myMq = BlockingMq.GetMq();
             SnaffCon controller = null;
             try
             {
-                Config = new Config(args, MqHandle);
-                controller = new SnaffCon(Config);
+                Config.Configure(args);
+                Config myConfig = Config.GetConfig();
+                controller = new SnaffCon();
                 //------------------------------------------
                 // set up new fangled logging
                 //------------------------------------------
@@ -34,7 +34,7 @@ namespace Snaffler
                 FileTarget logfile = null;
 
                 // Targets where to log to: File and Console
-                if (Config.Options.LogToConsole)
+                if (myConfig.Options.LogToConsole)
                 {
                     logconsole = new ColoredConsoleTarget("logconsole")
                     {
@@ -76,14 +76,14 @@ namespace Snaffler
                             }
                         }
                     };
-                    nlogConfig.AddRule(Config.Options.LogLevel, LogLevel.Fatal, logconsole);
+                    nlogConfig.AddRule(myConfig.Options.LogLevel, LogLevel.Fatal, logconsole);
                     logconsole.Layout = "${message}";
                 }
 
-                if (Config.Options.LogToFile)
+                if (myConfig.Options.LogToFile)
                 {
-                    logfile = new FileTarget("logfile") {FileName = Config.Options.LogFilePath };
-                    nlogConfig.AddRule(Config.Options.LogLevel, LogLevel.Fatal, logfile);
+                    logfile = new FileTarget("logfile") {FileName = myConfig.Options.LogFilePath };
+                    nlogConfig.AddRule(myConfig.Options.LogLevel, LogLevel.Fatal, logfile);
                     logfile.Layout = "${message}";
                 }
 
@@ -92,9 +92,9 @@ namespace Snaffler
 
                 //-------------------------------------------
 
-                if (Config.Options.EnableMirror && (Config.Options.MirrorPath.Length > 4))
+                if (myConfig.Options.EnableMirror && (myConfig.Options.MirrorPath.Length > 4))
                 {
-                    Directory.CreateDirectory(Config.Options.MirrorPath);
+                    Directory.CreateDirectory(myConfig.Options.MirrorPath);
                 }
 
                 var thing = Task.Factory.StartNew(() => { controller.Execute(); });
@@ -113,7 +113,8 @@ namespace Snaffler
 
         private void DumpQueue()
         {
-            while (MqHandle.Q.TryTake(out var message))
+            BlockingMq Mq = BlockingMq.GetMq();
+            while (Mq.Q.TryTake(out var message))
             {
                 // emergency dump of queue contents to console
                 Console.WriteLine(message.Message);
@@ -124,7 +125,8 @@ namespace Snaffler
 
         private void HandleOutput()
         {
-            foreach (var message in MqHandle.Q.GetConsumingEnumerable())
+            BlockingMq Mq = BlockingMq.GetMq();
+            foreach (var message in Mq.Q.GetConsumingEnumerable())
             {
                 ProcessMessage(message);
             }

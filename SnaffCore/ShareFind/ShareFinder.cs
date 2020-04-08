@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Classifiers;
+using SnaffCore.Concurrency;
 
 namespace SnaffCore.ShareFind
 {
@@ -18,18 +19,21 @@ namespace SnaffCore.ShareFind
             public bool Listable { get; set; }
             public bool IsAdminShare { get; set; }
         }
-        internal List<ShareResult> GetComputerShares(string computer, Config.Config config)
+        internal List<ShareResult> GetComputerShares(string computer)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config.Config myConfig = SnaffCore.Config.Config.GetConfig();
+
             var foundShares = new List<ShareResult>();
             var hostShareInfos = GetHostShareInfo(computer);
             foreach (var hostShareInfo in hostShareInfos)
             {
-                var shareName = GetShareName(hostShareInfo, computer, config);
+                var shareName = GetShareName(hostShareInfo, computer);
                 if (!String.IsNullOrWhiteSpace(shareName))
                 {
-                    foreach (Classifier shareClassifier in config.Options.ShareClassifiers)
+                    foreach (Classifier shareClassifier in myConfig.Options.ShareClassifiers)
                     {
-                        ShareResult shareResult = shareClassifier.ClassifyShare(shareName, config);
+                        ShareResult shareResult = shareClassifier.ClassifyShare(shareName);
                         if (shareResult != null)
                         {
                             foundShares.Add(shareResult);
@@ -40,15 +44,16 @@ namespace SnaffCore.ShareFind
             return foundShares;
         }
 
-        private string GetShareName(HostShareInfo hostShareInfo, string computer, Config.Config config)
+        private string GetShareName(HostShareInfo hostShareInfo, string computer)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
             // takes a HostShareInfo object and a computer name and turns it into a usable path.
 
             // first we want to throw away any errored out ones.
             string[] errors = {"ERROR=53", "ERROR=5"};
             if (errors.Contains(hostShareInfo.shi1_netname))
             {
-                config.Mq.Trace(hostShareInfo.shi1_netname + " on " + computer +
+                Mq.Trace(hostShareInfo.shi1_netname + " on " + computer +
                                 ", but this is usually no cause for alarm.");
                 return null;
             }

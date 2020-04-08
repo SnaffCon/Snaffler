@@ -1,12 +1,15 @@
-﻿using SnaffCore.ShareScan;
+﻿using SnaffCore.Concurrency;
+using SnaffCore.ShareScan;
 using Config = SnaffCore.Config.Config;
 
 namespace Classifiers
 {
     public partial class Classifier
     {
-        public TreeWalker.DirResult ClassifyDir(string dir, Config config)
+        public TreeWalker.DirResult ClassifyDir(string dir)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config myConfig = Config.GetConfig();
             // check if it matches
             if (SimpleMatch(dir))
             {

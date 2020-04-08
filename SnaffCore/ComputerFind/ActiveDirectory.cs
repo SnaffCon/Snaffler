@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.DirectoryServices.ActiveDirectory;
+using SnaffCore.Concurrency;
 
 namespace SnaffCore.ComputerFind
 {
@@ -18,12 +19,13 @@ namespace SnaffCore.ComputerFind
         private DirectoryContext DirectoryContext { get; set; }
         private List<string> DomainControllers { get; set; } = new List<string>();
 
-        public ActiveDirectory(Config.Config config)
+        public ActiveDirectory()
         {
-            Config = config;
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config.Config myConfig = SnaffCore.Config.Config.GetConfig();
 
             // setup the necessary vars
-            if (Config.Options.TargetDomain == null && Config.Options.TargetDc == null)
+            if (myConfig.Options.TargetDomain == null && myConfig.Options.TargetDc == null)
             {
                 try
                 {
@@ -32,24 +34,26 @@ namespace SnaffCore.ComputerFind
                 }
                 catch (Exception e)
                 {
-                    Config.Mq.Error(
+                    Mq.Error(
                         "Problem figuring out DirectoryContext, you might need to define manually with -d and/or -c.");
-                    Config.Mq.Degub(e.ToString());
-                    Config.Mq.Terminate();
+                    Mq.Degub(e.ToString());
+                    Mq.Terminate();
                 }
             }
-            else if (!String.IsNullOrEmpty(Config.Options.TargetDc))
+            else if (!String.IsNullOrEmpty(myConfig.Options.TargetDc))
             {
-                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, Config.Options.TargetDc);
+                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, myConfig.Options.TargetDc);
             }
-            else if (!String.IsNullOrEmpty(Config.Options.TargetDomain))
+            else if (!String.IsNullOrEmpty(myConfig.Options.TargetDomain))
             {
-                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, Config.Options.TargetDomain);
+                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, myConfig.Options.TargetDomain);
             }
         }
 
         private void GetDomainControllers()
         {
+            BlockingMq Mq = BlockingMq.GetMq();
+
             try
             {
                 var dcCollection = DomainController.FindAll(DirectoryContext);
@@ -60,19 +64,22 @@ namespace SnaffCore.ComputerFind
             }
             catch (Exception e)
             {
-                Config.Mq.Error(
+                Mq.Error(
                     "Something went wrong trying to find domain controllers. Try defining manually with -c?");
-                Config.Mq.Degub(e.ToString());
-                Config.Mq.Terminate();
+                Mq.Degub(e.ToString());
+                Mq.Terminate();
             }
         }
 
 
         private List<string> GetDomainComputers()
         {
-            if (!String.IsNullOrEmpty(Config.Options.TargetDc))
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config.Config myConfig = SnaffCore.Config.Config.GetConfig();
+
+            if (!String.IsNullOrEmpty(myConfig.Options.TargetDc))
             {
-                DomainControllers.Add(Config.Options.TargetDc);
+                DomainControllers.Add(myConfig.Options.TargetDc);
             }
             else
             {
@@ -125,7 +132,7 @@ namespace SnaffCore.ComputerFind
                 }
                 catch (Exception e)
                 {
-                    Config.Mq.Trace(e.ToString());
+                    Mq.Trace(e.ToString());
                     throw;
                 }
             }

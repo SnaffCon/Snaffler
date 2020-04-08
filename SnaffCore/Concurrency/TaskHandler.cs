@@ -7,8 +7,55 @@ namespace SnaffCore.Concurrency
 {
     // Provides a task scheduler that ensures a maximum concurrency level while 
     // running on top of the thread pool.
+
     public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
     {
+        private static LimitedConcurrencyLevelTaskScheduler _shareFinderLclts;
+        private static LimitedConcurrencyLevelTaskScheduler _shareScannerLclts;
+        private static TaskFactory _shareFinderTaskFactory;
+        private static TaskFactory _shareScannerTaskFactory;
+        private static CancellationTokenSource _shareFinderCts;
+        private static CancellationTokenSource _shareScannerCts;
+
+        public static void CreateLCLTSes(int maxDegreeOfParallelism)
+        {
+            _shareFinderLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
+            _shareScannerLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
+            _shareFinderTaskFactory = new TaskFactory(_shareFinderLclts);
+            _shareScannerTaskFactory = new TaskFactory(_shareScannerLclts);
+            _shareFinderCts = new CancellationTokenSource();
+            _shareScannerCts = new CancellationTokenSource();
+        }
+
+        public static LimitedConcurrencyLevelTaskScheduler GetShareFinderLCLTS()
+        {
+            return _shareFinderLclts;
+        }
+
+        public static LimitedConcurrencyLevelTaskScheduler GetShareScannerLCLTS()
+        {
+            return _shareScannerLclts;
+        }
+
+        public static TaskFactory GetShareFinderTaskFactory()
+        {
+            return _shareFinderTaskFactory;
+        }
+
+        public static TaskFactory GetShareScannerTaskFactory()
+        {
+            return _shareScannerTaskFactory;
+        }
+
+        public static CancellationTokenSource GetShareFinderCts()
+        {
+            return _shareFinderCts;
+        }
+
+        public static CancellationTokenSource GetShareScannerCts()
+        {
+            return _shareScannerCts;
+        }
         // Indicates whether the current thread is processing work items.
         [ThreadStatic] private static bool _currentThreadIsProcessingItems;
 
@@ -22,7 +69,7 @@ namespace SnaffCore.Concurrency
         private int _delegatesQueuedOrRunning;
 
         // Creates a new instance with the specified degree of parallelism. 
-        public LimitedConcurrencyLevelTaskScheduler(int maxDegreeOfParallelism)
+        private LimitedConcurrencyLevelTaskScheduler(int maxDegreeOfParallelism)
         {
             if (maxDegreeOfParallelism < 1) throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
             _maxDegreeOfParallelism = maxDegreeOfParallelism;

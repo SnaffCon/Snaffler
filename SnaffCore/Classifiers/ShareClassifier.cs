@@ -10,8 +10,10 @@ namespace Classifiers
 {
     public partial class Classifier
     {
-        public ShareFinder.ShareResult ClassifyShare(string share, Config config)
+        public ShareFinder.ShareResult ClassifyShare(string share)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config myConfig = SnaffCore.Config.Config.GetConfig();
             // check if it matches
             if (SimpleMatch(share))
             {
@@ -24,13 +26,13 @@ namespace Classifiers
                         return null;
                         break;
                     case MatchAction.Snaffle:
-                        if (IsShareReadable(share, config))
+                        if (IsShareReadable(share))
                         {
                             sendToMq = true;
                         }
                         break;
                     case MatchAction.SendToNextScope:
-                        if (IsShareReadable(share, config))
+                        if (IsShareReadable(share))
                         {
                             sendToMq = true;
                             sendToNextScope = true;
@@ -53,8 +55,9 @@ namespace Classifiers
             else return null;
         }
 
-        internal bool IsShareReadable(string share, Config config)
+        internal bool IsShareReadable(string share)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
             try
             {
                 string[] files = Directory.GetFiles(share);
@@ -62,7 +65,7 @@ namespace Classifiers
             }
             catch (Exception e)
             {
-                config.Mq.Trace(e.ToString());
+                Mq.Trace(e.ToString());
             }
             return false;
         }

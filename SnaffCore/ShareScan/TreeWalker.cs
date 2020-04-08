@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Classifiers;
+using SnaffCore.Concurrency;
 
 namespace SnaffCore.ShareScan
 {
@@ -13,26 +14,29 @@ namespace SnaffCore.ShareScan
             public bool ScanDir { get; set; }
             public string DirPath { get; set; }
         }
-        private Config.Config Config { get; set; }
+
         private FileScanner FileScanner { get; set; }
 
-        public TreeWalker(Config.Config config, string shareRoot)
+        public TreeWalker(string shareRoot)
         {
-            Config = config;
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config.Config myConfig = Config.Config.GetConfig();
             if (shareRoot == null)
             {
-                config.Mq.Trace("A null made it into TreeWalker. Wtf.");
+                Mq.Trace("A null made it into TreeWalker. Wtf.");
                 return;
             }
 
-            config.Mq.Trace("About to start a TreeWalker on share " + shareRoot);
+            Mq.Trace("About to start a TreeWalker on share " + shareRoot);
             FileScanner = new FileScanner();
             WalkTree(shareRoot);
-            config.Mq.Trace("Finished TreeWalking share " + shareRoot);
+            Mq.Trace("Finished TreeWalking share " + shareRoot);
         }
 
         public void WalkTree(string shareRoot)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config.Config myConfig = Config.Config.GetConfig();
             try
             {
                 // Walks a tree checking files and generating results as it goes.
@@ -55,17 +59,17 @@ namespace SnaffCore.ShareScan
                     }
                     catch (UnauthorizedAccessException e)
                     {
-                        Config.Mq.Trace(e.ToString());
+                        Mq.Trace(e.ToString());
                         continue;
                     }
                     catch (DirectoryNotFoundException e)
                     {
-                        Config.Mq.Trace(e.Message);
+                        Mq.Trace(e.Message);
                         continue;
                     }
                     catch (Exception e)
                     {
-                        Config.Mq.Trace(e.Message);
+                        Mq.Trace(e.Message);
                         continue;
                     }
 
@@ -76,17 +80,17 @@ namespace SnaffCore.ShareScan
                     }
                     catch (UnauthorizedAccessException e)
                     {
-                        Config.Mq.Trace(e.Message);
+                        Mq.Trace(e.Message);
                         continue;
                     }
                     catch (DirectoryNotFoundException e)
-                    {
-                        Config.Mq.Trace(e.Message);
+                    { 
+                        Mq.Trace(e.Message);
                         continue;
                     }
                     catch (Exception e)
                     {
-                        Config.Mq.Trace(e.Message);
+                        Mq.Trace(e.Message);
                         continue;
                     }
 
@@ -100,15 +104,15 @@ namespace SnaffCore.ShareScan
                     // Push the subdirectories onto the stack for traversal if they aren't on any discard-lists etc.
                     foreach (var dirStr in subDirs)
                     {
-                        foreach (Classifier dirClassifier in Config.Options.DirClassifiers)
+                        foreach (Classifier dirClassifier in myConfig.Options.DirClassifiers)
                         {
-                            DirResult dirResult = dirClassifier.ClassifyDir(dirStr, Config);
+                            DirResult dirResult = dirClassifier.ClassifyDir(dirStr);
                             // TODO: concurrency uplift: when there is a pooled concurrency queue, just add the dir as a job to the queue
                             if (dirResult.ScanDir) { dirs.Push(dirStr);}
 
                             if (dirResult.Snaffle)
                             {
-                                Config.Mq.DirResult(dirResult);
+                                Mq.DirResult(dirResult);
                             }
                         }
 
@@ -117,23 +121,25 @@ namespace SnaffCore.ShareScan
             }
             catch (Exception e)
             {
-                Config.Mq.Error(e.ToString());
+                Mq.Error(e.ToString());
             }
         }
 
         private void DoFileScanning(string file)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config.Config myConfig = Config.Config.GetConfig();
             try
             {
                 var fileInfo = new FileInfo(file);
 
-                var fileResult = FileScanner.Scan(fileInfo, Config);
+                var fileResult = FileScanner.Scan(fileInfo);
 
                 if (fileResult != null)
                 {
                     if (fileResult.WhyMatched != FileScanner.MatchReason.NoMatch)
                     {
-                        Config.Mq.FileResult(fileResult);
+                        Mq.FileResult(fileResult);
                     }
                 }
             }
@@ -142,22 +148,22 @@ namespace SnaffCore.ShareScan
                 // If file was deleted by a separate application
                 //  or thread since the call to TraverseTree()
                 // then just continue.
-                Config.Mq.Trace(e.Message);
+                Mq.Trace(e.Message);
                 return;
             }
             catch (UnauthorizedAccessException e)
             {
-                Config.Mq.Trace(e.Message);
+                Mq.Trace(e.Message);
                 return;
             }
             catch (PathTooLongException e)
             {
-                Config.Mq.Trace(file + " path was too long for me to look at.");
+                Mq.Trace(file + " path was too long for me to look at.");
                 return;
             }
             catch (Exception e)
             {
-                Config.Mq.Trace(e.Message);
+                Mq.Trace(e.Message);
                 return;
             }
         }

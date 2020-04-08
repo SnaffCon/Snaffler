@@ -136,7 +136,7 @@ namespace SnaffCore.Config
 
 
                     // output args
-                    if (outFileArg.Parsed && (outFileArg.Value != null))
+                    if (outFileArg.Parsed && (!String.IsNullOrEmpty(outFileArg.Value)))
                     {
                         Options.LogToFile = true;
                         Options.LogFilePath = outFileArg.Value;
@@ -184,13 +184,13 @@ namespace SnaffCore.Config
                     }
 
                     // args that tell us about targeting
-                    if ((domainArg.Parsed) && (domainArg.Value != null))
+                    if ((domainArg.Parsed) && (!String.IsNullOrEmpty(domainArg.Value)))
                     {
                         Options.TargetDomain = domainArg.Value;
                         Mq.Degub("Target domain is " + domainArg.Value);
                     }
 
-                    if ((domainControllerArg.Parsed) && (domainControllerArg.Value != null))
+                    if ((domainControllerArg.Parsed) && (!String.IsNullOrEmpty(domainControllerArg.Value)))
                     {
                         Options.TargetDc = domainControllerArg.Value;
                         Mq.Degub("Target DC is " + domainControllerArg.Value);

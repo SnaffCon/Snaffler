@@ -20,15 +20,7 @@ namespace SnaffCore
 {
     public class SnaffCon
     {
-        //private LimitedConcurrencyLevelTaskScheduler SharefinderLcts { get; set; }
-        //private TaskFactory SharefinderTaskFactory { get; set; }
-        //private CancellationTokenSource SharefinderCts { get; set; }
         private List<Task> SharefinderTasks { get; set; } = new List<Task>();
-
-        //private LimitedConcurrencyLevelTaskScheduler SharescannerLcts { get; set; }
-        //private TaskFactory SharescannerTaskFactory { get; set; }
-        //private CancellationTokenSource SharescannerCts { get; set; }
-        
         private List<Task> SharescannerTasks { get; set; } = new List<Task>();
         private bool SysvolTaskCreated { get; set; }
         private bool NetlogonTaskCreated { get; set; }
@@ -37,12 +29,6 @@ namespace SnaffCore
         {
             Config.Config myConfig = Config.Config.GetConfig();
             Concurrency.LimitedConcurrencyLevelTaskScheduler.CreateLCLTSes(myConfig.MaxThreads);
-            //SharefinderLcts = new LimitedConcurrencyLevelTaskScheduler(myConfig.MaxThreads);
-            //SharefinderTaskFactory = new TaskFactory(SharefinderLcts);
-            //SharefinderCts = new CancellationTokenSource();
-            //SharescannerLcts = new LimitedConcurrencyLevelTaskScheduler(myConfig.MaxThreads);
-            //SharescannerTaskFactory = new TaskFactory(SharescannerLcts);
-            //SharescannerCts = new CancellationTokenSource();
         }
 
         public void Execute()
@@ -53,7 +39,6 @@ namespace SnaffCore
             TaskFactory SharescannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareScannerTaskFactory();
             CancellationTokenSource SharefinderCts = LimitedConcurrencyLevelTaskScheduler.GetShareFinderCts();
             CancellationTokenSource SharescannerCts = LimitedConcurrencyLevelTaskScheduler.GetShareScannerCts();
-
 
             List<string> targetComputers = new List<string>();
             ConcurrentBag<ShareResult> foundShares = new ConcurrentBag<ShareResult>();

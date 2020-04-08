@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Classifiers;
 using SnaffCore.Concurrency;
 
@@ -37,6 +39,8 @@ namespace SnaffCore.ShareScan
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Config.Config myConfig = Config.Config.GetConfig();
+            TaskFactory taskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareScannerTaskFactory();
+            CancellationTokenSource cts = LimitedConcurrencyLevelTaskScheduler.GetShareScannerCts();
             try
             {
                 // Walks a tree checking files and generating results as it goes.
@@ -97,8 +101,17 @@ namespace SnaffCore.ShareScan
                     // check if we actually like the files
                     foreach (string file in files)
                     {
-                        // TODO: this can be sent to the concurrency shit later to speed up traversal
-                        DoFileScanning(file);
+                        var t = taskFactory.StartNew(() =>
+                        {
+                            try
+                            {
+                                FileScanner.ScanFile(file);
+                            }
+                            catch (Exception e)
+                            {
+                                Mq.Trace(e.ToString());
+                            }
+                        }, cts.Token);
                     }
 
                     // Push the subdirectories onto the stack for traversal if they aren't on any discard-lists etc.
@@ -122,49 +135,6 @@ namespace SnaffCore.ShareScan
             catch (Exception e)
             {
                 Mq.Error(e.ToString());
-            }
-        }
-
-        private void DoFileScanning(string file)
-        {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = Config.Config.GetConfig();
-            try
-            {
-                var fileInfo = new FileInfo(file);
-
-                var fileResult = FileScanner.Scan(fileInfo);
-
-                if (fileResult != null)
-                {
-                    if (fileResult.WhyMatched != Classifier.MatchReason.NoMatch)
-                    {
-                        Mq.FileResult(fileResult);
-                    }
-                }
-            }
-            catch (FileNotFoundException e)
-            {
-                // If file was deleted by a separate application
-                //  or thread since the call to TraverseTree()
-                // then just continue.
-                Mq.Trace(e.Message);
-                return;
-            }
-            catch (UnauthorizedAccessException e)
-            {
-                Mq.Trace(e.Message);
-                return;
-            }
-            catch (PathTooLongException e)
-            {
-                Mq.Trace(file + " path was too long for me to look at.");
-                return;
-            }
-            catch (Exception e)
-            {
-                Mq.Trace(e.Message);
-                return;
             }
         }
     }

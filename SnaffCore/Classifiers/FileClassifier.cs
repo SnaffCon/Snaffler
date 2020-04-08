@@ -5,6 +5,7 @@ using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Nett.Coma;
 using SnaffCore.Config;
 using Config = SnaffCore.Config.Config;

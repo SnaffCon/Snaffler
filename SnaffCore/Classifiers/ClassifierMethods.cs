@@ -14,7 +14,6 @@ namespace Classifiers
         internal bool SimpleMatch(string input)
         {
             // generic match checking
-            bool match = false;
             switch (this.WordListType)
             {
                 case MatchListType.Contains:
@@ -82,7 +81,7 @@ namespace Classifiers
                 X509Certificate2 parsedCert = new X509Certificate2(fileInfo.FullName);
                 if (parsedCert.HasPrivateKey) return true;
             }
-            catch (CryptographicException e)
+            catch (CryptographicException)
             {
                 return false;
             }

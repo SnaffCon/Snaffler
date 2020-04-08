@@ -8,7 +8,10 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
-        //Logging Options
+        // Concurrency Options
+        public int MaxThreads { get; set; } = 30;
+
+        // Logging Options
         public bool LogToFile { get; set; } = false;
         public string LogFilePath { get; set; }
         public bool LogToConsole { get; set; } = true;

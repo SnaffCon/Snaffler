@@ -6,7 +6,7 @@ namespace Classifiers
 {
     public partial class Classifier
     {
-        public TreeWalker.DirResult ClassifyDir(string dir)
+        public DirResult ClassifyDir(string dir)
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
@@ -14,27 +14,35 @@ namespace Classifiers
             if (SimpleMatch(dir))
             {
                 bool scanDir = true;
-                bool sendToMq = false;
                 // if it does, see what we're gonna do with it
+                DirResult dirResult = new DirResult()
+                {
+                    DirPath = dir,
+                    Triage = Triage,
+                    ScanDir = scanDir,
+                };
                 switch (MatchAction)
                 {
                     case MatchAction.Discard:
                         scanDir = false;
                         break;
                     case MatchAction.Snaffle:
-                        sendToMq = true;
+                        Mq.DirResult(dirResult);
+                        break;
+                    default:
+                        Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
                         break;
                 }
-
-                TreeWalker.DirResult dirResult = new TreeWalker.DirResult()
-                {
-                    DirPath = dir,
-                    Snaffle = sendToMq,
-                    ScanDir = scanDir
-                };
                 return dirResult;
             }
             else return null;
         }
+    }
+
+    public class DirResult
+    {
+        public bool ScanDir { get; set; }
+        public string DirPath { get; set; }
+        public Triage Triage { get; set; }
     }
 }

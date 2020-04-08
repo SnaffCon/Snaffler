@@ -14,15 +14,6 @@ namespace SnaffCore.Config
         public List<Classifier> FileClassifiers { get; set; } = new List<Classifier>();
         public List<Classifier> ContentsClassifiers { get; set; } = new List<Classifier>();
 
-        // lists which correspond to classifier settings
-        [Nett.TomlIgnore] public List<string> DiscardShareExact { get; set; }
-        [Nett.TomlIgnore] public List<string> KeepExtExact { get; set; }
-        [Nett.TomlIgnore] public List<string> DiscardExtExact { get; set; }
-        [Nett.TomlIgnore] public List<string> KeepFilenameExact { get; set; }
-        [Nett.TomlIgnore] public List<string> DiscardFilepathContains { get; set; }
-        [Nett.TomlIgnore] public List<string> GrepExtExact { get; set; }
-        [Nett.TomlIgnore] public List<string> KeepFilepathContains { get; set; }
-
         // classifier lists still needing to be classifier lists
         [Nett.TomlIgnore]
         public List<string> NameStringsToKeep { get; set; } =

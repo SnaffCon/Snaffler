@@ -11,7 +11,7 @@ namespace Classifiers
 {
     public partial class Classifier
     {
-        public ShareFinder.ShareResult ClassifyShare(string share)
+        public ShareResult ClassifyShare(string share)
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
@@ -25,7 +25,6 @@ namespace Classifiers
                 {
                     case MatchAction.Discard:
                         return null;
-                        break;
                     case MatchAction.Snaffle:
                         if (IsShareReadable(share))
                         {
@@ -40,11 +39,11 @@ namespace Classifiers
                         }
                         break;
                     default:
-                        return null;
+                        Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
                         break;
                 }
 
-                ShareFinder.ShareResult shareResult = new ShareFinder.ShareResult()
+                ShareResult shareResult = new ShareResult()
                 {
                     Listable = true,
                     SharePath = share,
@@ -70,5 +69,14 @@ namespace Classifiers
             }
             return false;
         }
+    }
+
+    public class ShareResult
+    {
+        public bool Snaffle { get; set; }
+        public bool ScanShare { get; set; }
+        public string SharePath { get; set; }
+        public bool Listable { get; set; }
+        public bool IsAdminShare { get; set; }
     }
 }

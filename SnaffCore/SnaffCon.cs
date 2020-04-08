@@ -28,7 +28,7 @@ namespace SnaffCore
         public SnaffCon()
         {
             Config.Config myConfig = Config.Config.GetConfig();
-            Concurrency.LimitedConcurrencyLevelTaskScheduler.CreateLCLTSes(myConfig.MaxThreads);
+            Concurrency.LimitedConcurrencyLevelTaskScheduler.CreateLCLTSes(myConfig.Options.MaxThreads);
         }
 
         public void Execute()

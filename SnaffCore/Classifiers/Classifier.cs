@@ -18,7 +18,7 @@ namespace Classifiers
 
         // define a way to chain classifiers together
         public string ClassifierName { get; set; } = "Default";
-        public MatchAction MatchAction { get; set; } = MatchAction.Discard;
+        public MatchAction MatchAction { get; set; } = MatchAction.Snaffle;
         public string RelayTarget { get; set; } = null;
 
         // define the behaviour of this classifier
@@ -28,7 +28,6 @@ namespace Classifiers
 
         // define the severity of this classification
         public Triage Triage { get; set; } = Triage.Black;
-
     }
 
     public enum EnumerationScope

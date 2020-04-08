@@ -12,7 +12,6 @@ namespace SnaffCore.Config
 {
     public partial class Config
     {
-        public int MaxThreads { get; set; } = 30;
         public Options Options { get; set; }
         private static Config _instance;
 
@@ -190,7 +189,7 @@ namespace SnaffCore.Config
 
                     if (maxThreadsArg.Parsed)
                     {
-                        MaxThreads = maxThreadsArg.Value;
+                        Options.MaxThreads = maxThreadsArg.Value;
                         Mq.Degub("Max threads set to " + maxThreadsArg.Value);
                     }
 

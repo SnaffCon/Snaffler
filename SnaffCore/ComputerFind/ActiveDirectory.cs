@@ -38,11 +38,11 @@ namespace SnaffCore.ComputerFind
                     Config.Mq.Terminate();
                 }
             }
-            else if (Config.Options.TargetDc != null)
+            else if (!String.IsNullOrEmpty(Config.Options.TargetDc))
             {
                 DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, Config.Options.TargetDc);
             }
-            else if (Config.Options.TargetDomain != null)
+            else if (!String.IsNullOrEmpty(Config.Options.TargetDomain))
             {
                 DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, Config.Options.TargetDomain);
             }
@@ -70,7 +70,7 @@ namespace SnaffCore.ComputerFind
 
         private List<string> GetDomainComputers()
         {
-            if (Config.Options.TargetDc != null)
+            if (!String.IsNullOrEmpty(Config.Options.TargetDc))
             {
                 DomainControllers.Add(Config.Options.TargetDc);
             }

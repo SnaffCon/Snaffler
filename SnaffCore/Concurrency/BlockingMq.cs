@@ -8,10 +8,22 @@ namespace SnaffCore.Concurrency
 {
     public class BlockingMq
     {
+        private static BlockingMq _instance;
+
+        public static void MakeMq()
+        {
+            _instance = new BlockingMq();
+        }
+
+        public static BlockingMq GetMq()
+        {
+            return _instance;
+        }
+
         // Message Queue
         public BlockingCollection<SnafflerMessage> Q { get; private set; }
 
-        public BlockingMq()
+        private BlockingMq()
         {
             Q = new BlockingCollection<SnafflerMessage>();
         }

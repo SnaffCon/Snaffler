@@ -12,14 +12,24 @@ namespace SnaffCore.Config
 {
     public partial class Config
     {
-        public BlockingMq Mq { get; private set; }
         public int MaxThreads { get; set; } = 30;
         public Options Options { get; set; }
+        private static Config _instance;
 
-        public Config(string[] args, BlockingMq mq)
+        public static void Configure(string[] args)
+        {
+            _instance = new Config(args);
+        }
+
+        public static Config GetConfig()
+        {
+            return _instance;
+        }
+
+        private Config(string[] args)
         {
             this.Options = new Options();
-            Mq = mq;
+            BlockingMq Mq = BlockingMq.GetMq();
             // parse the args
             try
             {
@@ -40,6 +50,7 @@ namespace SnaffCore.Config
 
         public bool Parse(string[] args)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
             Mq.Info("Parsing args...");
             var success = false;
 

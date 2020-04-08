@@ -49,11 +49,16 @@ namespace SnaffCore
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Config.Config myConfig = Config.Config.GetConfig();
+            TaskFactory SharefinderTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareFinderTaskFactory();
+            TaskFactory SharescannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareScannerTaskFactory();
+            CancellationTokenSource SharefinderCts = LimitedConcurrencyLevelTaskScheduler.GetShareFinderCts();
+            CancellationTokenSource SharescannerCts = LimitedConcurrencyLevelTaskScheduler.GetShareScannerCts();
 
-            var targetComputers = new List<string>();
+
+            List<string> targetComputers = new List<string>();
             ConcurrentBag<ShareResult> foundShares = new ConcurrentBag<ShareResult>();
 
-            var statusUpdateTimer =
+            Timer statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(1)
                     .TotalMilliseconds) {AutoReset = true}; // Set the time (5 mins in this case)
             statusUpdateTimer.Elapsed += StatusUpdate;

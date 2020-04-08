@@ -1,7 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Security.AccessControl;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.Text.RegularExpressions;
 using SnaffCore.Config;
+using SnaffCore.ShareScan;
 
 namespace Classifiers
 {
@@ -23,69 +29,6 @@ namespace Classifiers
         // define the severity of this classification
         public Triage Triage { get; set; } = Triage.Black;
 
-
-        // Methods for classification
-        internal bool SimpleMatch(string input)
-        {
-            // generic match checking
-            bool match = false;
-            switch (this.WordListType)
-            {
-                case MatchListType.Contains:
-                    foreach (string matchString in this.WordList)
-                    {
-                        if (input.Contains(matchString))
-                        {
-                            return true;
-                        }
-                    }
-
-                    break;
-                case MatchListType.EndsWith:
-                    foreach (string matchString in this.WordList)
-                    {
-                        if (input.EndsWith(matchString))
-                        {
-                            return true;
-                        }
-                    }
-
-                    break;
-                case MatchListType.Exact:
-                    foreach (string matchString in this.WordList)
-                    {
-                        if (input == matchString)
-                        {
-                            return true;
-                        }
-                    }
-
-                    break;
-                case MatchListType.StartsWith:
-                    foreach (string matchString in this.WordList)
-                    {
-                        if (input.StartsWith(matchString))
-                        {
-                            return true;
-                        }
-                    }
-
-                    break;
-                case MatchListType.Regex:
-                    foreach (string matchString in this.WordList)
-                    {
-                        Regex regex = new Regex(matchString);
-                        if (regex.IsMatch(input))
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-                default:
-                    return false;
-            }
-            return false;
-        }
     }
 
     public enum EnumerationScope
@@ -95,7 +38,7 @@ namespace Classifiers
         FileEnumeration,
         ContentsEnumeration
     }
-    
+
     public enum MatchLoc
     {
         ShareName,
@@ -133,4 +76,102 @@ namespace Classifiers
         Red
     }
 
+
+    public class RwStatus
+    {
+        public bool CanRead { get; set; }
+        public bool CanWrite { get; set; }
+    }
+
+    public class CurrentUserSecurity
+    {
+        private readonly WindowsPrincipal _currentPrincipal;
+        private readonly WindowsIdentity _currentUser;
+
+        public CurrentUserSecurity()
+        {
+            _currentUser = WindowsIdentity.GetCurrent();
+            _currentPrincipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+        }
+
+        public bool HasAccess(DirectoryInfo directory, FileSystemRights right)
+        {
+            try
+            {
+                // Get the collection of authorization rules that apply to the directory.
+                AuthorizationRuleCollection acl = directory.GetAccessControl()
+                    .GetAccessRules(true, true, typeof(SecurityIdentifier));
+                return HasFileOrDirectoryAccess(right, acl);
+            }
+
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
+        public bool HasAccess(FileInfo file, FileSystemRights right)
+        {
+            try
+            {
+                // Get the collection of authorization rules that apply to the file.
+                AuthorizationRuleCollection acl = file.GetAccessControl()
+                    .GetAccessRules(true, true, typeof(SecurityIdentifier));
+
+                return HasFileOrDirectoryAccess(right, acl);
+            }
+
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
+        private bool HasFileOrDirectoryAccess(FileSystemRights right,
+            AuthorizationRuleCollection acl)
+        {
+            bool allow = false;
+            bool inheritedAllow = false;
+            bool inheritedDeny = false;
+
+            for (int i = 0; i < acl.Count; i++)
+            {
+                FileSystemAccessRule currentRule = (FileSystemAccessRule) acl[i];
+                // If the current rule applies to the current user.
+                if (_currentUser.User.Equals(currentRule.IdentityReference) ||
+                    _currentPrincipal.IsInRole(
+                        (SecurityIdentifier) currentRule.IdentityReference))
+                {
+                    if (currentRule.AccessControlType.Equals(AccessControlType.Deny))
+                    {
+                        if ((currentRule.FileSystemRights & right) == right)
+                        {
+                            if (currentRule.IsInherited)
+                                inheritedDeny = true;
+                            else
+                                // Non inherited "deny" takes overall precedence.
+                                return false;
+                        }
+                    }
+                    else if (currentRule.AccessControlType
+                        .Equals(AccessControlType.Allow))
+                    {
+                        if ((currentRule.FileSystemRights & right) == right)
+                        {
+                            if (currentRule.IsInherited)
+                                inheritedAllow = true;
+                            else
+                                allow = true;
+                        }
+                    }
+                }
+            }
+
+            if (allow)
+                // Non inherited "allow" takes precedence over inherited rules.
+                return true;
+
+            return inheritedAllow && !inheritedDeny;
+        }
+    }
 }

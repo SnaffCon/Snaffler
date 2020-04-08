@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classifiers\ClassifierMethods.cs" />
     <Compile Include="Classifiers\DirClassifier.cs" />
     <Compile Include="Classifiers\FileClassifier.cs" />
     <Compile Include="Classifiers\ShareClassifier.cs" />

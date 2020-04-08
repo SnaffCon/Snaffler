@@ -137,7 +137,7 @@ namespace SnaffCore.ShareScan
 
                 if (fileResult != null)
                 {
-                    if (fileResult.WhyMatched != FileScanner.MatchReason.NoMatch)
+                    if (fileResult.WhyMatched != Classifier.MatchReason.NoMatch)
                     {
                         Mq.FileResult(fileResult);
                     }

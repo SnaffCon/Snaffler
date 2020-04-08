@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Security.AccessControl;
 using System.Text.RegularExpressions;
 using SnaffCore.Concurrency;
 using SnaffCore.ShareFind;
@@ -13,7 +14,7 @@ namespace Classifiers
         public ShareFinder.ShareResult ClassifyShare(string share)
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            Config myConfig = SnaffCore.Config.Config.GetConfig();
+            Config myConfig = Config.GetConfig();
             // check if it matches
             if (SimpleMatch(share))
             {

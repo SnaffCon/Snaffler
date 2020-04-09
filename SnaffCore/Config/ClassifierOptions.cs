@@ -208,8 +208,7 @@ namespace SnaffCore.Config
                     {
                         // these are share names that make us skip the share instantly.
                         "print$",
-                        "ipc$",
-                        ""
+                        "ipc$"
                     },
                 },
                 new Classifier()

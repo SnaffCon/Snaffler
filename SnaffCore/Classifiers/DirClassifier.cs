@@ -10,32 +10,32 @@ namespace Classifiers
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
+
+            DirResult dirResult = new DirResult()
+            {
+                DirPath = dir,
+                Triage = Triage,
+                ScanDir = true,
+            };
             // check if it matches
             if (SimpleMatch(dir))
             {
-                bool scanDir = true;
                 // if it does, see what we're gonna do with it
-                DirResult dirResult = new DirResult()
-                {
-                    DirPath = dir,
-                    Triage = Triage,
-                    ScanDir = scanDir,
-                };
                 switch (MatchAction)
                 {
                     case MatchAction.Discard:
-                        scanDir = false;
-                        break;
+                        dirResult.ScanDir = false;
+                        return dirResult;
                     case MatchAction.Snaffle:
+                        dirResult.ScanDir = false;
                         Mq.DirResult(dirResult);
-                        break;
+                        return dirResult;
                     default:
                         Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
-                        break;
+                        return null;
                 }
-                return dirResult;
             }
-            else return null;
+            return dirResult;
         }
     }
 

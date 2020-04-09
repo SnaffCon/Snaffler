@@ -126,7 +126,8 @@ namespace SnaffCore.Config
                                 .ToToml(e => e.ToString()))));
                     if (configFileArg.Value.Equals("generate"))
                     {
-                        this.Options = new Options(true);
+                        this.Options = new Options();
+                        Options.ParseLogLevelString(Options.LogLevelString);
                         Toml.WriteFile(this.Options, ".\\default.toml", settings);
                         Mq.Info("Wrote default config values to .\\default.toml");
                         Mq.Terminate();
@@ -136,14 +137,13 @@ namespace SnaffCore.Config
                         string configFile = configFileArg.Value;
                         this.Options = Toml.ReadFile<Options>(configFile, settings);
                         this.Options.PrepareClassifiers();
+                        Options.ParseLogLevelString(Options.LogLevelString);
                         Mq.Info("Read config file from " + configFile);
                     }
                 }
                 else
                 {
-
                     // get the args into our config
-
 
                     // output args
                     if (outFileArg.Parsed && (!String.IsNullOrEmpty(outFileArg.Value)))
@@ -157,30 +157,7 @@ namespace SnaffCore.Config
                     if (verboseArg.Parsed)
                     {
                         var logLevelString = verboseArg.Value;
-                        switch (logLevelString.ToLower())
-                        {
-                            case "debug":
-                                Options.LogLevel = LogLevel.Debug;
-                                Mq.Degub("Set verbosity level to degub.");
-                                break;
-                            case "degub":
-                                Options.LogLevel = LogLevel.Debug;
-                                Mq.Degub("Set verbosity level to degub.");
-                                break;
-                            case "trace":
-                                Options.LogLevel = LogLevel.Trace;
-                                Mq.Degub("Set verbosity level to trace.");
-                                break;
-                            case "data":
-                                Options.LogLevel = LogLevel.Warn;
-                                Mq.Degub("Set verbosity level to data.");
-                                break;
-                            default:
-                                Options.LogLevel = LogLevel.Info;
-                                Mq.Error("Invalid verbosity level " + logLevelString +
-                                         " falling back to default level (info).");
-                                break;
-                        }
+                        Options.ParseLogLevelString(logLevelString);
                     }
 
                     // if enabled, display findings to the console

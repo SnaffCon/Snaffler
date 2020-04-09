@@ -18,7 +18,10 @@ namespace SnaffCore.FileScan
                 // send the file to all the classifiers.
                 foreach (Classifier classifier in myConfig.Options.FileClassifiers)
                 {
-                    classifier.ClassifyFile(fileInfo);
+                    if (classifier.ClassifyFile(fileInfo))
+                    {
+                        return;
+                    };
                 }
             }
             catch (FileNotFoundException e)
@@ -26,12 +29,12 @@ namespace SnaffCore.FileScan
                 // If file was deleted by a separate application
                 //  or thread since the call to TraverseTree()
                 // then just continue.
-                Mq.Trace(e.Message);
+                Mq.Trace(e.ToString());
                 return;
             }
             catch (UnauthorizedAccessException e)
             {
-                Mq.Trace(e.Message);
+                Mq.Trace(e.ToString());
                 return;
             }
             catch (PathTooLongException)
@@ -41,7 +44,7 @@ namespace SnaffCore.FileScan
             }
             catch (Exception e)
             {
-                Mq.Trace(e.Message);
+                Mq.Trace(e.ToString());
                 return;
             }
         }

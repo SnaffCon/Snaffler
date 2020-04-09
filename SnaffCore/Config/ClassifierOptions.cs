@@ -13,50 +13,6 @@ namespace SnaffCore.Config
         public List<Classifier> FileClassifiers { get; set; } = new List<Classifier>();
         public List<Classifier> ContentsClassifiers { get; set; } = new List<Classifier>();
 
-        // classifier lists still needing to be classifier lists
-        // NOT FOR LONG, SUCKA
-        [Nett.TomlIgnore]
-        public List<string> NameStringsToKeep { get; set; } =
-        new List<string>(){
-            // these are strings that make a file NAME interesting if found within.
-            "passw",
-            "as-built",
-            "handover",
-            "secret",
-            "thycotic",
-            "cyberark",
-            "_rsa",
-            "_dsa",
-            "_ed25519",
-            "_ecdsa"
-        };
-
-        [Nett.TomlIgnore]
-        public string[] GrepStrings { get; set; } =
-        {
-            // these are strings that make a file interesting if found within.
-            "net user ",
-            "net localgroup ",
-            "psexec ",
-            "runas ",
-            " -Credential ",
-            " -AsSecureString",
-            //"jdbc",
-            //"odbc",
-            "password",
-            "PRIVATE KEY----",
-            " connectionString=\"",
-            "sqlConnectionString=\"",
-            "validationKey=",
-            "decryptionKey=",
-            //"credential",
-            //"root:",
-            //"admin:",
-            //"login",
-            "cpassword"
-        };
-
-
         // regexes
 
         /*public class Regexes
@@ -164,6 +120,7 @@ namespace SnaffCore.Config
         name: 'NuGet API Key'
 
         */
+
         // other lists
         [Nett.TomlIgnore]
         public string[] ShareStringsToPrioritise { get; set; } =
@@ -181,7 +138,6 @@ namespace SnaffCore.Config
             "vmware",
             "sccm"
         };
-
         
         public void PrepareClassifiers()
         {
@@ -301,24 +257,28 @@ namespace SnaffCore.Config
                     WordList = new List<string>()
                     {
                         // always skip these file extensions
-                        ".jpg",
-                        ".jpeg",
-                        ".jpe",
-                        ".jif",
-                        ".jfif",
-                        ".jfi",
-                        ".webp",
-                        ".ico",
-                        ".psd",
-                        ".png",
-                        ".gif",
+                        // image formats
                         ".bmp",
-                        ".tiff",
-                        ".tif",
-                        ".otf",
                         ".eps",
+                        ".gif",
+                        ".ico",
+                        ".jfi",
+                        ".jfif",
+                        ".jif",
+                        ".jpe",
+                        ".jpeg",
+                        ".jpg",
+                        ".png",
+                        ".psd",
+                        ".svg",
+                        ".tif",
+                        ".tiff",
+                        ".webp",
                         ".xcf",
+                        // fonts
                         ".ttf",
+                        ".otf",
+                        // misc
                         ".lock",
                         ".css",
                         ".less"
@@ -326,7 +286,121 @@ namespace SnaffCore.Config
                 },
                 new Classifier()
                 {
-                    ClassifierName = "KeepFilenameExact",
+                    ClassifierName = "KeepExtExactBlack",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Black,
+                    WordList = new List<string>()
+                    {
+                        // keepass databases
+                        ".kdbx",
+                        ".kdb",
+                        // putty private keys
+                        ".ppk",
+                        // virtual disks
+                        ".vmdk",
+                        ".vhdx",
+                        ".wim",
+                        // virtual machines
+                        ".ova",
+                        ".ovf",
+                        // password safe
+                        ".psafe3",
+                        // cloud service config
+                        ".cscfg",
+                        // kde wallet manager
+                        ".kwallet",
+                        // vpn profiles
+                        ".tblk",
+                        ".ovpn",
+                        // db backups
+                        ".mdf",
+                        ".sdf",
+                        ".sqldump"
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "KeepExtExactRed",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Red,
+                    WordList = new List<string>()
+                    {
+                        // backups
+                        ".bak",
+                        // priv keys and certs
+                        ".key",
+                        ".pk12",
+                        ".p12",
+                        ".pkcs12",
+                        ".pfx",
+                        ".jks",
+                        // rdp
+                        ".rdp",
+                        ".rdg",
+                        // actionscript
+                        ".asc",
+                        // bitlocker recovery keys
+                        ".bek",
+                        // tpm backups
+                        ".tpm",
+                        ".fve",
+                        // packet capture
+                        ".pcap",
+                        // misc key material
+                        ".key",
+                        ".keypair",
+                        ".keychain",
+                    },
+                },
+
+                new Classifier()
+                {
+                    ClassifierName = "KeepNameContainsYellow",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileName,
+                    WordListType = MatchListType.Contains,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Yellow,
+                    WordList = new List<string>()
+                    {
+                        //magic words
+                        "passw",
+                        "as-built",
+                        "handover",
+                        "secret",
+                        "thycotic",
+                        "cyberark",
+                    },
+                },
+
+                new Classifier()
+                {
+                    ClassifierName = "KeepPathContainsRed",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FilePath,
+                    WordListType = MatchListType.Contains,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Red,
+                    WordList = new List<string>()
+                    {
+                        ".ssh\\",
+                        ".purple\\accounts.xml",
+                        ".aws\\",
+                        ".gem\\credentials",
+                        "doctl\\config.yaml",
+                        "config\\hub",
+                        "wwwroot"
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "KeepFilenameExactBlack",
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileName,
                     WordListType = MatchListType.Exact,
@@ -392,63 +466,203 @@ namespace SnaffCore.Config
                 },
                 new Classifier()
                 {
-                    ClassifierName = "GrepExtExact",
+                    ClassifierName = "KeepCertContainsPrivKeyRed",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.CheckForKeys,
+                    Triage = Triage.Red,
+                    WordList = new List<string>()
+                    {
+                        ".der",
+                        ".pfx"
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "GeneralGrepExtExact",
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileExtension,
                     WordListType = MatchListType.Exact,
                     MatchAction = MatchAction.Relay,
-                    RelayTarget = "", //TODO
+                    RelayTarget = "KeepGeneralGrepContainsYellow",
                     WordList = new List<string>()
                     {
-                        // these are file extensions that tell us the file is worth grepping.
-                        ".ps1",
-                        ".bat",
-                        ".wsf",
-                        ".vbs",
-                        ".pl",
                         ".txt",
+                        ".sql",
+                        ".log",
+                        ".sqlite",
+                        ".sqlite3",
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "KeepGeneralGrepContainsYellow",
+                    EnumerationScope = EnumerationScope.ContentsEnumeration,
+                    MatchLocation = MatchLoc.FileContentAsString,
+                    WordListType = MatchListType.Contains,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Yellow,
+                    WordList = new List<string>()
+                    {
+                        "password=",
+                        "password = ",
+                        "cpassword"
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "CodeGrepExtExact",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.Relay,
+                    RelayTarget = "KeepCodeGrepContainsYellow",
+                    WordList = new List<string>()
+                    {
+                        // python
+                        ".py",
+                        // php
+                        ".php",
+                        // asp.net
+                        ".aspx",
+                        ".ashx",
+                        ".asmx",
+                        ".asp",
+                        ".cshtml",
                         ".cs",
                         ".ascx",
+                        // java
+                        ".jsp",
                         ".java",
+                        // coldfusion
+                        ".cfm",
+                        // ruby
+                        ".rb",
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "KeepCodeGrepContainsYellow",
+                    EnumerationScope = EnumerationScope.ContentsEnumeration,
+                    MatchLocation = MatchLoc.FileContentAsString,
+                    WordListType = MatchListType.Contains,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Yellow,
+                    WordList = new List<string>()
+                    {
+                        "password",
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "ScriptGrepExtExact",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.Relay,
+                    RelayTarget = "KeepScriptGrepContainsYellow",
+                    WordList = new List<string>()
+                    {
+                        // powershell
+                        ".psd1",
+                        ".psm1",
+                        ".ps1",
+                        // sh
+                        ".sh",
+                        // batch
+                        ".bat",
+                        // vbscript etc
+                        ".wsf",
+                        ".vbs",
+                        // perl
+                        ".pl",
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "KeepScriptGrepContainsYellow",
+                    EnumerationScope = EnumerationScope.ContentsEnumeration,
+                    MatchLocation = MatchLoc.FileContentAsString,
+                    WordListType = MatchListType.Contains,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Yellow,
+                    WordList = new List<string>()
+                    {
+                        "get-credential",
+                        "net user ",
+                        "net localgroup ",
+                        "psexec ",
+                        "runas ",
+                        " -Credential "
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "ConfigGrepExtExact",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.Relay,
+                    RelayTarget = "KeepConfigGrepContainsYellow",
+                    WordList = new List<string>()
+                    {
+                        ".yaml",
+                        ".xml",
+                        ".json",
                         ".config",
                         ".ini",
                         ".inf",
                         ".cnf",
                         ".conf",
-                        ".py",
-                        ".php",
-                        ".aspx",
-                        ".ashx",
-                        ".asmx",
-                        ".asp",
-                        ".jsp",
-                        ".yaml",
-                        ".xml",
-                        ".json",
-                        ".psd1",
-                        ".psm1",
-                        ".sh",
-                        ".cshtml",
-                        ".sql",
-                        ".pem",
-                        ".log"
                     },
                 },
                 new Classifier()
                 {
-                    ClassifierName = "KeepFilepathContains",
-                    EnumerationScope = EnumerationScope.FileEnumeration,
-                    MatchLocation = MatchLoc.FilePath,
+                    ClassifierName = "KeepConfigGrepContainsYellow",
+                    EnumerationScope = EnumerationScope.ContentsEnumeration,
+                    MatchLocation = MatchLoc.FileContentAsString,
                     WordListType = MatchListType.Contains,
                     MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Yellow,
                     WordList = new List<string>()
                     {
-                        ".ssh\\config",
-                        ".purple\\accounts.xml",
-                        ".aws\\credentials",
-                        ".gem\\credentials",
-                        "doctl\\config.yaml",
-                        "config\\hub"
+                        "password=",
+                        " connectionString=\"",
+                        "sqlConnectionString=\"",
+                        "validationKey=",
+                        "decryptionKey=",
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "PrivKeyGrepNameContains",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.Relay,
+                    RelayTarget = "KeepConfigGrepContainsYellow",
+                    WordList = new List<string>()
+                    {
+                        // keys
+                        "_rsa",
+                        "_dsa",
+                        "_ed25519",
+                        "_ecdsa",
+                        ".pem",
+                    },
+                },
+                new Classifier()
+                {
+                    ClassifierName = "KeepPrivKeyGrepContainsRed",
+                    EnumerationScope = EnumerationScope.ContentsEnumeration,
+                    MatchLocation = MatchLoc.FileContentAsString,
+                    WordListType = MatchListType.Contains,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Red,
+                    WordList = new List<string>()
+                    {
+                        "PRIVATE KEY----",
                     },
                 },
             };

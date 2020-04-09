@@ -20,6 +20,10 @@ namespace Classifiers
             {
                 case MatchLoc.FileExtension:
                     stringToMatch = fileInfo.Extension;
+                    if (stringToMatch == "")
+                    {
+                        return;
+                    }
                     break;
                 case MatchLoc.FileName:
                     stringToMatch = fileInfo.Name;

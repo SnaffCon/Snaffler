@@ -85,7 +85,7 @@ namespace SnaffCore.ShareFind
         // HERE BE WIN32 DRAGONS
 
         [DllImport("Netapi32.dll", SetLastError = true)]
-        public static extern int NetWkstaGetInfo(string servername, int level, out IntPtr bufptr);
+        private static extern int NetWkstaGetInfo(string servername, int level, out IntPtr bufptr);
 
         [DllImport("Netapi32.dll", SetLastError = true)]
         private static extern int NetApiBufferFree(IntPtr buffer);

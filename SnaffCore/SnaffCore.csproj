@@ -41,7 +41,7 @@
       <HintPath>..\packages\Nett.Coma.0.15.0\lib\net40\Nett.Coma.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.6.8\lib\net40-client\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.7.0\lib\net40-client\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

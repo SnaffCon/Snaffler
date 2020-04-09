@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Classifiers;
 
 namespace SnaffCore.Config
@@ -15,6 +14,7 @@ namespace SnaffCore.Config
         public List<Classifier> ContentsClassifiers { get; set; } = new List<Classifier>();
 
         // classifier lists still needing to be classifier lists
+        // NOT FOR LONG, SUCKA
         [Nett.TomlIgnore]
         public List<string> NameStringsToKeep { get; set; } =
         new List<string>(){

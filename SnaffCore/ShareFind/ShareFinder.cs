@@ -15,9 +15,6 @@ namespace SnaffCore.ShareFind
     {
         internal void GetComputerShares(string computer)
         {
-            TaskFactory treeWalkerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetTreeWalkerTaskFactory();
-            CancellationTokenSource treeWalkerCts = LimitedConcurrencyLevelTaskScheduler.GetTreeWalkerCts();
-
             BlockingMq Mq = BlockingMq.GetMq();
             Config.Config myConfig = Config.Config.GetConfig();
 
@@ -32,24 +29,7 @@ namespace SnaffCore.ShareFind
                     // classify them
                     foreach (Classifier shareClassifier in myConfig.Options.ShareClassifiers)
                     {
-                        ShareResult shareResult = shareClassifier.ClassifyShare(shareName);
-                        if (shareResult != null)
-                        {
-                            // send them to TreeWalker
-                            Mq.Info("Creating a ShareFinder task for " + shareResult.SharePath);
-                            var t = treeWalkerTaskFactory.StartNew(() =>
-                            {
-                                try
-                                {
-                                    new TreeWalker(shareResult.SharePath);
-                                }
-                                catch (Exception e)
-                                {
-                                    Mq.Trace(e.ToString());
-                                }
-                            }, treeWalkerCts.Token);
-                            return;
-                        }
+                        shareClassifier.ClassifyShare(shareName);
                     }
                 }
             }

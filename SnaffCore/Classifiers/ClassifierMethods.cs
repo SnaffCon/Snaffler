@@ -10,6 +10,7 @@ namespace Classifiers
 {
     public partial class Classifier
     {
+        // TODO fix case sensitivity
         // Methods for classification
         internal bool SimpleMatch(string input)
         {
@@ -19,7 +20,7 @@ namespace Classifiers
                 case MatchListType.Contains:
                     foreach (string matchString in this.WordList)
                     {
-                        if (input.Contains(matchString))
+                        if (input.ToLower().Contains(matchString.ToLower()))
                         {
                             return true;
                         }
@@ -29,7 +30,7 @@ namespace Classifiers
                 case MatchListType.EndsWith:
                     foreach (string matchString in this.WordList)
                     {
-                        if (input.EndsWith(matchString))
+                        if (input.ToLower().EndsWith(matchString.ToLower()))
                         {
                             return true;
                         }
@@ -39,7 +40,7 @@ namespace Classifiers
                 case MatchListType.Exact:
                     foreach (string matchString in this.WordList)
                     {
-                        if (input == matchString)
+                        if (input.ToLower() == matchString.ToLower())
                         {
                             return true;
                         }
@@ -49,7 +50,7 @@ namespace Classifiers
                 case MatchListType.StartsWith:
                     foreach (string matchString in this.WordList)
                     {
-                        if (input.StartsWith(matchString))
+                        if (input.ToLower().StartsWith(matchString.ToLower()))
                         {
                             return true;
                         }

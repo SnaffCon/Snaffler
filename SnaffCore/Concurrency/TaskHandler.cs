@@ -11,20 +11,26 @@ namespace SnaffCore.Concurrency
     public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
     {
         private static LimitedConcurrencyLevelTaskScheduler _shareFinderLclts;
-        private static LimitedConcurrencyLevelTaskScheduler _shareScannerLclts;
+        private static LimitedConcurrencyLevelTaskScheduler _treeWalkerLclts;
+        private static LimitedConcurrencyLevelTaskScheduler _fileScannerLclts;
         private static TaskFactory _shareFinderTaskFactory;
-        private static TaskFactory _shareScannerTaskFactory;
+        private static TaskFactory _treeWalkerTaskFactory;
+        private static TaskFactory _fileScannerTaskFactory;
         private static CancellationTokenSource _shareFinderCts;
-        private static CancellationTokenSource _shareScannerCts;
+        private static CancellationTokenSource _treeWalkerCts;
+        private static CancellationTokenSource _fileScannerCts;
 
         public static void CreateLCLTSes(int maxDegreeOfParallelism)
         {
             _shareFinderLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
-            _shareScannerLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
+            _treeWalkerLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
+            _fileScannerLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
             _shareFinderTaskFactory = new TaskFactory(_shareFinderLclts);
-            _shareScannerTaskFactory = new TaskFactory(_shareScannerLclts);
+            _treeWalkerTaskFactory = new TaskFactory(_treeWalkerLclts);
+            _fileScannerTaskFactory = new TaskFactory(_fileScannerLclts);
             _shareFinderCts = new CancellationTokenSource();
-            _shareScannerCts = new CancellationTokenSource();
+            _treeWalkerCts = new CancellationTokenSource();
+            _fileScannerCts = new CancellationTokenSource();
         }
 
         public static LimitedConcurrencyLevelTaskScheduler GetShareFinderLCLTS()
@@ -32,9 +38,14 @@ namespace SnaffCore.Concurrency
             return _shareFinderLclts;
         }
 
-        public static LimitedConcurrencyLevelTaskScheduler GetShareScannerLCLTS()
+        public static LimitedConcurrencyLevelTaskScheduler GetTreeWalkerLCLTS()
         {
-            return _shareScannerLclts;
+            return _treeWalkerLclts;
+        }
+
+        public static LimitedConcurrencyLevelTaskScheduler GetFileScannerLCTLS()
+        {
+            return _fileScannerLclts;
         }
 
         public static TaskFactory GetShareFinderTaskFactory()
@@ -42,9 +53,14 @@ namespace SnaffCore.Concurrency
             return _shareFinderTaskFactory;
         }
 
-        public static TaskFactory GetShareScannerTaskFactory()
+        public static TaskFactory GetTreeWalkerTaskFactory()
         {
-            return _shareScannerTaskFactory;
+            return _treeWalkerTaskFactory;
+        }
+
+        public static TaskFactory GetFileScannerTaskFactory()
+        {
+            return _fileScannerTaskFactory;
         }
 
         public static CancellationTokenSource GetShareFinderCts()
@@ -52,10 +68,16 @@ namespace SnaffCore.Concurrency
             return _shareFinderCts;
         }
 
-        public static CancellationTokenSource GetShareScannerCts()
+        public static CancellationTokenSource GetTreeWalkerCts()
         {
-            return _shareScannerCts;
+            return _treeWalkerCts;
         }
+
+        public static CancellationTokenSource GetFileScannerCts()
+        {
+            return _fileScannerCts;
+        }
+
         // Indicates whether the current thread is processing work items.
         [ThreadStatic] private static bool _currentThreadIsProcessingItems;
 

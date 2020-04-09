@@ -1,5 +1,5 @@
 ﻿using SnaffCore.Concurrency;
-using SnaffCore.ShareScan;
+using SnaffCore.TreeWalk;
 using Config = SnaffCore.Config.Config;
 
 namespace Classifiers

@@ -1,39 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Classifiers;
 using SnaffCore.Concurrency;
+using SnaffCore.TreeWalk;
 
 namespace SnaffCore.ShareFind
 {
     public class ShareFinder
     {
-        internal List<ShareResult> GetComputerShares(string computer)
+        internal void GetComputerShares(string computer)
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = SnaffCore.Config.Config.GetConfig();
+            TaskFactory treeWalkerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetTreeWalkerTaskFactory();
+            CancellationTokenSource treeWalkerCts = LimitedConcurrencyLevelTaskScheduler.GetTreeWalkerCts();
 
-            var foundShares = new List<ShareResult>();
+            BlockingMq Mq = BlockingMq.GetMq();
+            Config.Config myConfig = Config.Config.GetConfig();
+
+            // find the shares
             var hostShareInfos = GetHostShareInfo(computer);
+
             foreach (var hostShareInfo in hostShareInfos)
             {
                 var shareName = GetShareName(hostShareInfo, computer);
                 if (!String.IsNullOrWhiteSpace(shareName))
                 {
+                    // classify them
                     foreach (Classifier shareClassifier in myConfig.Options.ShareClassifiers)
                     {
                         ShareResult shareResult = shareClassifier.ClassifyShare(shareName);
                         if (shareResult != null)
                         {
-                            foundShares.Add(shareResult);
+                            // send them to TreeWalker
+                            Mq.Info("Creating a ShareFinder task for " + shareResult.SharePath);
+                            var t = treeWalkerTaskFactory.StartNew(() =>
+                            {
+                                try
+                                {
+                                    new TreeWalker(shareResult.SharePath);
+                                }
+                                catch (Exception e)
+                                {
+                                    Mq.Trace(e.ToString());
+                                }
+                            }, treeWalkerCts.Token);
+                            return;
                         }
                     }
                 }
             }
-            return foundShares;
         }
 
         private string GetShareName(HostShareInfo hostShareInfo, string computer)

@@ -1,6 +1,5 @@
 ﻿using System;
-using SnaffCore.ShareFind;
-using SnaffCore.ShareScan;
+using Classifiers;
 
 namespace SnaffCore.Concurrency
 {
@@ -9,8 +8,8 @@ namespace SnaffCore.Concurrency
         public DateTime DateTime { get; set; }
         public string Message { get; set; }
         public SnafflerMessageType Type { get; set; }
-        public FileScanner.FileResult FileResult { get; set; }
-        public ShareFinder.ShareResult ShareResult { get; set; }
-        public TreeWalker.DirResult DirResult { get; set; }
+        public FileResult FileResult { get; set; }
+        public ShareResult ShareResult { get; set; }
+        public DirResult DirResult { get; set; }
     }
 }

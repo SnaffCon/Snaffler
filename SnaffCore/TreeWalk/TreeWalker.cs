@@ -5,8 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Classifiers;
 using SnaffCore.Concurrency;
+using SnaffCore.FileScan;
 
-namespace SnaffCore.ShareScan
+namespace SnaffCore.TreeWalk
 {
     public class TreeWalker
     {
@@ -32,8 +33,8 @@ namespace SnaffCore.ShareScan
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Config.Config myConfig = Config.Config.GetConfig();
-            TaskFactory taskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareScannerTaskFactory();
-            CancellationTokenSource cts = LimitedConcurrencyLevelTaskScheduler.GetShareScannerCts();
+            CancellationTokenSource fileScannerCts = LimitedConcurrencyLevelTaskScheduler.GetFileScannerCts();
+            TaskFactory fileScannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetFileScannerTaskFactory();
             try
             {
                 // Walks a tree checking files and generating results as it goes.
@@ -94,7 +95,7 @@ namespace SnaffCore.ShareScan
                     // check if we actually like the files
                     foreach (string file in files)
                     {
-                        var t = taskFactory.StartNew(() =>
+                        var t = fileScannerTaskFactory.StartNew(() =>
                         {
                             try
                             {
@@ -104,7 +105,7 @@ namespace SnaffCore.ShareScan
                             {
                                 Mq.Trace(e.ToString());
                             }
-                        }, cts.Token);
+                        }, fileScannerCts.Token);
                     }
 
                     // Push the subdirectories onto the stack for traversal if they aren't on any discard-lists etc.
@@ -116,7 +117,6 @@ namespace SnaffCore.ShareScan
                             // TODO: concurrency uplift: when there is a pooled concurrency queue, just add the dir as a job to the queue
                             if (dirResult.ScanDir) { dirs.Push(dirStr);}
                         }
-
                     }
                 }
             }

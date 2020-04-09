@@ -1,10 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Security.AccessControl;
-using System.Text.RegularExpressions;
 using SnaffCore.Concurrency;
-using SnaffCore.ShareFind;
-using SnaffCore.ShareScan;
 using Config = SnaffCore.Config.Config;
 
 namespace Classifiers
@@ -13,6 +9,8 @@ namespace Classifiers
     {
         public ShareResult ClassifyShare(string share)
         {
+            // TODO add a special case to dedupe sysvol/netlogon scanning
+
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
             // check if it matches

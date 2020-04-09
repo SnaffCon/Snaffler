@@ -73,12 +73,13 @@
     <Compile Include="Classifiers\Classifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShareFind\ShareFinder.cs" />
-    <Compile Include="ShareScan\FileScanner.cs" />
-    <Compile Include="ShareScan\TreeWalker.cs" />
+    <Compile Include="FileScan\FileScanner.cs" />
+    <Compile Include="TreeWalk\TreeWalker.cs" />
     <Compile Include="SnaffCon.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

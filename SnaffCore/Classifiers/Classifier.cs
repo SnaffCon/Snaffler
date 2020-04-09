@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
 using SnaffCore.Config;
-using SnaffCore.ShareScan;
+using SnaffCore.TreeWalk;
 
 namespace Classifiers
 {
@@ -44,7 +44,8 @@ namespace Classifiers
         FilePath,
         FileName,
         FileExtension,
-        FileContent
+        FileContentAsString,
+        FileContentAsBytes
     }
 
     public enum MatchListType
@@ -61,7 +62,6 @@ namespace Classifiers
         Discard,
         SendToNextScope,
         Snaffle,
-        Grep,
         Relay,
         CheckForKeys,
         EnterArchive

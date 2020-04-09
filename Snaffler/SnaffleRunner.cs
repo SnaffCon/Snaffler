@@ -177,7 +177,8 @@ namespace Snaffler
 
         public string FileResultLogFromMessage(SnafflerMessage message)
         {
-            var matchreason = ""; //message.FileResult.WhyMatched.ToString();
+            var matchedclassifier = message.FileResult.MatchedClassifier.ClassifierName; //message.FileResult.WhyMatched.ToString();
+            var triageString = message.FileResult.MatchedClassifier.Triage.ToString();
 
             var canread = "";
             if (message.FileResult.RwStatus.CanRead)
@@ -205,8 +206,8 @@ namespace Snaffler
                 grepcontext = message.FileResult.GrepFileResult.GrepContext;
             }
 
-            var fileResultTemplate = "<{0}|{1}{2}|{3}|{4}>({5}) {6}";
-            return string.Format(fileResultTemplate, matchreason, canread, canwrite, matchedstring, fileSizeString,
+            var fileResultTemplate = "<{0}|{1}{2}|{3}|{4}|{5}>({6}) {7}";
+            return string.Format(fileResultTemplate, matchedclassifier, canread, canwrite, matchedstring, fileSizeString, triageString,
                 filepath, grepcontext);
         }
 

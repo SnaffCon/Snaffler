@@ -2,15 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
-using System.Threading;
-using Nett.Coma;
 using SnaffCore.Concurrency;
-using SnaffCore.Config;
-using SnaffCore.ShareScan;
 using Config = SnaffCore.Config.Config;
 
 namespace Classifiers
@@ -37,10 +29,9 @@ namespace Classifiers
                     break;
                 default:
                     Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
-                    break;
+                    return;
             }
 
-            // if we're using string-based 
             if (!String.IsNullOrEmpty(stringToMatch))
             {
                 // check if it matches
@@ -51,6 +42,7 @@ namespace Classifiers
                 }
             }
 
+            FileResult fileResult;
             // if it matches, see what we're gonna do with it
             switch (MatchAction)
             {
@@ -59,32 +51,51 @@ namespace Classifiers
                     return;
                 case MatchAction.Snaffle:
                     // snaffle that bad boy
-                    FileResult fileResult = new FileResult()
+                    fileResult = new FileResult()
                     {
                         FileInfo = fileInfo,
                         RwStatus = CanRw(fileInfo),
                         MatchedClassifier = this
                     };
                     Mq.FileResult(fileResult);
-                    break;
-                case MatchAction.Grep:
-                    // do a special looking for strings in the file dance
-                    // TODO FUUUUUCK
-                    break;
+                    return;
                 case MatchAction.CheckForKeys:
+                    // TODO this makes me sad cos it should be in the Content context but this way is much easier.
                     // do a special x509 dance
-                    // TODO FUUUUUCK
-                    break;
+                    if (x509PrivKeyMatch(fileInfo))
+                    {
+                        fileResult = new FileResult()
+                        {
+                            FileInfo = fileInfo,
+                            RwStatus = CanRw(fileInfo),
+                            MatchedClassifier = this
+                        };
+                    }
+                    return;
                 case MatchAction.Relay:
                     // bounce it on to the next classifier
+                    // TODO concurrency uplift make this a new task on the poolq
                     Classifier nextClassifier =
                         myConfig.Options.Classifiers.First(thing => thing.ClassifierName == this.RelayTarget);
-                    nextClassifier.ClassifyFile(fileInfo);
-                    break;
+                    if (nextClassifier.EnumerationScope == EnumerationScope.ContentsEnumeration)
+                    {
+                        nextClassifier.ClassifyContent(fileInfo);
+                    }
+                    else if (nextClassifier.EnumerationScope == EnumerationScope.FileEnumeration)
+                    {
+                        nextClassifier.ClassifyFile(fileInfo);
+                    }
+                    else
+                    {
+                        Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
+                    }
+                    return;
                 case MatchAction.EnterArchive:
-                    // do a special looking inside archive files dance
+                // do a special looking inside archive files dance using
+                // https://github.com/adamhathcock/sharpcompress
                     // TODO FUUUUUCK
-                    break;
+                throw new NotImplementedException("Haven't implemented walking dir structures inside archives. Prob needs pool queue.");
+                    return;
             }
         }
     }

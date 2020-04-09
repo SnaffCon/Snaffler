@@ -74,7 +74,7 @@ namespace Classifiers
             return false;
         }
 
-        internal bool x509PrivKeyMatch(FileInfo fileInfo)
+        private bool x509PrivKeyMatch(FileInfo fileInfo)
         {
             try
             {
@@ -87,6 +87,12 @@ namespace Classifiers
             }
 
             return false;
+        }
+
+        private bool ByteMatch(byte[] fileBytes)
+        {
+            // TODO
+            throw new NotImplementedException(message:"Haven't implemented byte-based content searching yet lol.");
         }
 
         private RwStatus CanRw(FileInfo fileInfo)

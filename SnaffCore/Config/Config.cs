@@ -209,104 +209,11 @@ namespace SnaffCore.Config
                     if (dirTargetArg.Parsed)
                     {
                         Options.ShareFinderEnabled = false;
-                        Options.DirTarget = dirTargetArg.Value;
+                        Options.PathTargets = new string[]{dirTargetArg.Value};
                         Mq.Degub("Disabled finding shares.");
                         Mq.Degub("Target path is " + dirTargetArg.Value);
                     }
 
-                    if (adminshareArg.Parsed)
-                    {
-                        Options.ScanCDollarShares = true;
-                        Mq.Degub("Scanning of C$ shares enabled.");
-                    }
-
-                    // if the user passes the various MatchArgs with no value, that disables them.
-                    // Otherwise load their wordlist into the appropriate config item.
-                    /*
-                    if (extMatchArg.Parsed)
-                    {
-                        if (extMatchArg.Value.Length <= 0)
-                        {
-                            ExactExtensionCheck = false;
-                            Mq.Degub("Disabled matching based on exact file extension match.");
-                        }
-                        else
-                        {
-                            KeepExtExact = File.ReadAllLines(extMatchArg.Value);
-                            Mq.Degub("Using file at " + extMatchArg.Value + " for exact file extension matching.");
-                        }
-                    }
-    
-                    if (pathMatchArg.Parsed)
-                    {
-                        if (pathMatchArg.Value.Length <= 0)
-                        {
-                            PartialPathCheck = false;
-                            Mq.Degub("Disabled matching based on partial file path.");
-                        }
-                        else
-                        {
-                            KeepFilepathContains = File.ReadAllLines(pathMatchArg.Value);
-                            Mq.Degub("Using file at " + pathMatchArg.Value + " for partial file path matching.");
-                        }
-                    }
-    
-                    if (extSkipMatchArg.Parsed)
-                    {
-                        if (extSkipMatchArg.Value.Length <= 0)
-                        {
-                            ExactExtensionSkipCheck = false;
-                            Mq.Degub("Disabled skipping files with extensions on skip-list.");
-                        }
-                        else
-                        {
-                            DiscardExtExact = File.ReadAllLines(extSkipMatchArg.Value);
-                            Mq.Degub("Using file at " + extSkipMatchArg.Value + " for extension skip-list.");
-                        }
-                    }
-    
-                    if (nameMatchArg.Parsed)
-                    {
-                        if (nameMatchArg.Value.Length <= 0)
-                        {
-                            ExactNameCheck = false;
-                            Mq.Degub("Disabled matching based on exact file name");
-                        }
-                        else
-                        {
-                            KeepFilenameExact = File.ReadAllLines(nameMatchArg.Value);
-                            Mq.Degub("Using file at " + nameMatchArg.Value + " for exact file name matching.");
-                        }
-                    }
-    
-                    if (grepMatchArg.Parsed)
-                    {
-                        if (grepMatchArg.Value.Length <= 0)
-                        {
-                            GrepByExtensionCheck = false;
-                            Mq.Degub("Disabled matching based on file contents.");
-                        }
-                        else
-                        {
-                            GrepStrings = File.ReadAllLines(grepMatchArg.Value);
-                            Mq.Degub("Using file at " + grepMatchArg.Value + " for file contents matching.");
-                        }
-                    }
-    
-                    if (partialMatchArg.Parsed)
-                    {
-                        if (partialMatchArg.Value.Length <= 0)
-                        {
-                            PartialNameCheck = false;
-                            Mq.Degub("Disabled partial file name matching.");
-                        }
-                        else
-                        {
-                            NameStringsToKeep = File.ReadAllLines(partialMatchArg.Value);
-                            Mq.Degub("Using file at " + partialMatchArg.Value + " for partial file name matching.");
-                        }
-                    }
-                    */
                     if (maxGrepSizeArg.Parsed)
                     {
                         Options.MaxSizeToGrep = maxGrepSizeArg.Value;

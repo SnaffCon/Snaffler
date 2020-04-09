@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using NLog;
 using Classifiers;
 
@@ -8,6 +6,11 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
+        // Manual Targeting Options
+
+        public string[] PathTargets { get; set; }
+        public string[] ComputerTargets { get; set; }
+
         // Concurrency Options
         public int MaxThreads { get; set; } = 30;
 
@@ -24,12 +27,8 @@ namespace SnaffCore.Config
 
         // ShareScanner Options
         public bool ShareScanEnabled { get; set; } = true;
-        public bool ScanCDollarShares { get; set; } = false;
 
         // FileScanner Options
-
-        // whether or not to do file scans at all
-        public string DirTarget { get; set; }
 
         // this sets the maximum size of file to look inside.
         public long MaxSizeToGrep { get; set; } = 500000;

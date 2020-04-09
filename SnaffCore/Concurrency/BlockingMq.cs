@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using Classifiers;
 using SnaffCore.Config;
 using SnaffCore.ShareFind;
-using SnaffCore.ShareScan;
+using SnaffCore.TreeWalk;
 
 namespace SnaffCore.Concurrency
 {
@@ -83,7 +84,7 @@ namespace SnaffCore.Concurrency
             });
         }
 
-        internal void FileResult(Classifiers.FileResult fileResult)
+        internal void FileResult(FileResult fileResult)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage
@@ -93,7 +94,7 @@ namespace SnaffCore.Concurrency
                 FileResult = fileResult
             });
         }
-        internal void DirResult(Classifiers.DirResult dirResult)
+        internal void DirResult(DirResult dirResult)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage
@@ -103,7 +104,7 @@ namespace SnaffCore.Concurrency
                 Type = SnafflerMessageType.ShareResult
             });
         }
-        internal void ShareResult(ShareFinder.ShareResult shareResult)
+        internal void ShareResult(ShareResult shareResult)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage

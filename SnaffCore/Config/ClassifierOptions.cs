@@ -193,6 +193,8 @@ namespace SnaffCore.Config
 
         private void BuildDefaultClassifiers()
         {
+            // TODO need to add a default classifier to handle C$ shares
+
             this.Classifiers = new List<Classifier>
             {
                 new Classifier()
@@ -395,7 +397,8 @@ namespace SnaffCore.Config
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileExtension,
                     WordListType = MatchListType.Exact,
-                    MatchAction = MatchAction.Grep,
+                    MatchAction = MatchAction.Relay,
+                    RelayTarget = "", //TODO
                     WordList = new List<string>()
                     {
                         // these are file extensions that tell us the file is worth grepping.

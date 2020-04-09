@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Security.AccessControl;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Principal;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Classifiers;
 using SnaffCore.Concurrency;
-using Config = SnaffCore.Config.Config;
 
 
-namespace SnaffCore.ShareScan
+namespace SnaffCore.FileScan
 {
     public class FileScanner
     {

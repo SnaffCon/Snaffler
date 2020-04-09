@@ -177,7 +177,7 @@ namespace Snaffler
 
         public string FileResultLogFromMessage(SnafflerMessage message)
         {
-            var matchreason = message.FileResult.WhyMatched.ToString();
+            var matchreason = ""; //message.FileResult.WhyMatched.ToString();
 
             var canread = "";
             if (message.FileResult.RwStatus.CanRead)

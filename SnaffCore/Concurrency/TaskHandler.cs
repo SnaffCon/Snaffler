@@ -10,72 +10,41 @@ namespace SnaffCore.Concurrency
 
     public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
     {
-        private static LimitedConcurrencyLevelTaskScheduler _shareFinderLclts;
-        private static LimitedConcurrencyLevelTaskScheduler _treeWalkerLclts;
-        private static LimitedConcurrencyLevelTaskScheduler _fileScannerLclts;
-        private static TaskFactory _shareFinderTaskFactory;
-        private static TaskFactory _treeWalkerTaskFactory;
-        private static TaskFactory _fileScannerTaskFactory;
-        private static CancellationTokenSource _shareFinderCts;
-        private static CancellationTokenSource _treeWalkerCts;
-        private static CancellationTokenSource _fileScannerCts;
+        private static LimitedConcurrencyLevelTaskScheduler _snafflerLclts;
+        private static TaskFactory _snafflerTaskFactory;
+        private static CancellationTokenSource _snafflerCts;
+        private static List<Task> _snafflerTaskList { get; set; } = new List<Task>();
 
         public static void CreateLCLTSes(int maxDegreeOfParallelism)
         {
-            _shareFinderLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
-            _treeWalkerLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
-            _fileScannerLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
-            _shareFinderTaskFactory = new TaskFactory(_shareFinderLclts);
-            _treeWalkerTaskFactory = new TaskFactory(_treeWalkerLclts);
-            _fileScannerTaskFactory = new TaskFactory(_fileScannerLclts);
-            _shareFinderCts = new CancellationTokenSource();
-            _treeWalkerCts = new CancellationTokenSource();
-            _fileScannerCts = new CancellationTokenSource();
+            _snafflerLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
+            _snafflerTaskFactory = new TaskFactory(_snafflerLclts);
+            _snafflerCts = new CancellationTokenSource();
         }
 
-        public static LimitedConcurrencyLevelTaskScheduler GetShareFinderLCLTS()
+        public static LimitedConcurrencyLevelTaskScheduler GetSnafflerLclts()
         {
-            return _shareFinderLclts;
+            return _snafflerLclts;
         }
 
-        public static LimitedConcurrencyLevelTaskScheduler GetTreeWalkerLCLTS()
+        public static TaskFactory GetSnafflerTaskFactory()
         {
-            return _treeWalkerLclts;
+            return _snafflerTaskFactory;
         }
 
-        public static LimitedConcurrencyLevelTaskScheduler GetFileScannerLCTLS()
+        public static CancellationTokenSource GetSnafflerCts()
         {
-            return _fileScannerLclts;
+            return _snafflerCts;
         }
 
-        public static TaskFactory GetShareFinderTaskFactory()
+        public static List<Task> GetSnafflerTaskList()
         {
-            return _shareFinderTaskFactory;
+            return _snafflerTaskList;
         }
 
-        public static TaskFactory GetTreeWalkerTaskFactory()
+        public IEnumerable<Task> ReallyGetScheduledTasks()
         {
-            return _treeWalkerTaskFactory;
-        }
-
-        public static TaskFactory GetFileScannerTaskFactory()
-        {
-            return _fileScannerTaskFactory;
-        }
-
-        public static CancellationTokenSource GetShareFinderCts()
-        {
-            return _shareFinderCts;
-        }
-
-        public static CancellationTokenSource GetTreeWalkerCts()
-        {
-            return _treeWalkerCts;
-        }
-
-        public static CancellationTokenSource GetFileScannerCts()
-        {
-            return _fileScannerCts;
+            return GetScheduledTasks();
         }
 
         // Indicates whether the current thread is processing work items.
@@ -104,6 +73,7 @@ namespace SnaffCore.Concurrency
             // delegates currently queued or running to process tasks, schedule another. 
             lock (_tasks)
             {
+                _snafflerTaskList.Add(task);
                 _tasks.AddLast(task);
                 if (_delegatesQueuedOrRunning < _maxDegreeOfParallelism)
                 {

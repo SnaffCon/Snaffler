@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using SnaffCore.ComputerFind;
 using SnaffCore.Concurrency;
-using Classifiers;
 using SnaffCore.ShareFind;
 using SnaffCore.TreeWalk;
 using Timer = System.Timers.Timer;
@@ -16,10 +16,12 @@ namespace SnaffCore
 {
     public class SnaffCon
     {
+        public bool AllTasksComplete { get; set; } = false;
+
         public SnaffCon()
         {
             Config.Config myConfig = Config.Config.GetConfig();
-            Concurrency.LimitedConcurrencyLevelTaskScheduler.CreateLCLTSes(myConfig.Options.MaxThreads);
+            LimitedConcurrencyLevelTaskScheduler.CreateLCLTSes(myConfig.Options.MaxThreads);
         }
 
         public void Execute()
@@ -27,14 +29,6 @@ namespace SnaffCore
             // This is the main execution thread.
             BlockingMq Mq = BlockingMq.GetMq();
             Config.Config myConfig = Config.Config.GetConfig();
-            TaskFactory SharefinderTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareFinderTaskFactory();
-            CancellationTokenSource SharefinderCts = LimitedConcurrencyLevelTaskScheduler.GetShareFinderCts();
-
-            TaskFactory treeWalkerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetTreeWalkerTaskFactory();
-            CancellationTokenSource treeWalkerCts = LimitedConcurrencyLevelTaskScheduler.GetTreeWalkerCts();
-
-            List<string> targetComputers = new List<string>();
-            ConcurrentBag<ShareResult> foundShares = new ConcurrentBag<ShareResult>();
 
             Timer statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(1)
@@ -64,9 +58,8 @@ namespace SnaffCore
             }
 
             // TODO (NOT THIS)
-            while (true)
+            while (!AllTasksComplete)
             {
-                string thing = null;
                 // lol whaaaayy
             }
 
@@ -111,8 +104,8 @@ namespace SnaffCore
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Config.Config myConfig = Config.Config.GetConfig();
-            TaskFactory SharefinderTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareFinderTaskFactory();
-            CancellationTokenSource SharefinderCts = LimitedConcurrencyLevelTaskScheduler.GetShareFinderCts();
+            TaskFactory SharefinderTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
+            CancellationTokenSource SharefinderCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
 
             Mq.Info("Starting to find readable shares.");
             foreach (var computer in computerTargets)
@@ -139,8 +132,8 @@ namespace SnaffCore
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Config.Config myConfig = Config.Config.GetConfig();
-            TaskFactory SharescannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetTreeWalkerTaskFactory();
-            CancellationTokenSource SharescannerCts = LimitedConcurrencyLevelTaskScheduler.GetTreeWalkerCts();
+            TaskFactory SharescannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
+            CancellationTokenSource SharescannerCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
 
             foreach (string pathTarget in pathTargets)
             {
@@ -162,35 +155,52 @@ namespace SnaffCore
             Mq.Info("Created all TreeWalker tasks.");
         }
 
-
         // This method is called every minute
         private void StatusUpdate(object sender, ElapsedEventArgs e)
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            /*
-            var totalShareFinderTasksCount = ShareFinderTasks.Count;
-            var totalShareScannerTasksCount = TreeWalkerTasks.Count;
 
-            var completedShareFinderTasks = Array.FindAll(ShareFinderTasks.ToArray(),
-                element => element.Status == TaskStatus.RanToCompletion);
-            var completedShareFinderTasksCount = completedShareFinderTasks.Length;
+            string memorynumber;
 
-            var completedShareScannerTasks = Array.FindAll(TreeWalkerTasks.ToArray(),
+            using (Process proc = Process.GetCurrentProcess())
+            {
+                long memorySize64 = proc.PrivateMemorySize64;
+                memorynumber = BytesToString(memorySize64);
+            }
+
+            List<Task> SnafflerTasks = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskList();
+
+            var totalTasksCount = SnafflerTasks.Count;
+            
+            var completedTasks = Array.FindAll(SnafflerTasks.ToArray(),
                 element => element.Status == TaskStatus.RanToCompletion);
-            var completedShareScannerTasksCount = completedShareScannerTasks.Length;
+            var completedTasksCount = completedTasks.Length;
+            var tasksRemainingCount = totalTasksCount - completedTasksCount;
 
             var updateText = new StringBuilder("Status Update: \n");
 
-            updateText.Append("Sharescanner Tasks Completed: " + completedShareScannerTasksCount + "\n");
-            updateText.Append("Sharescanner Tasks Remaining: " +
-                              (totalShareScannerTasksCount - completedShareScannerTasksCount) + "\n");
-            updateText.Append("TreeWalker Tasks Completed: " + completedShareFinderTasksCount + "\n");
-            updateText.Append("TreeWalker Tasks Remaining: " +
-                              (totalShareFinderTasksCount - completedShareFinderTasksCount) + "\n");
+            updateText.Append("Tasks Completed: " + completedTasksCount + "\n");
+            updateText.Append("Tasks Remaining: " +
+                              (tasksRemainingCount) + "\n");
+            updateText.Append(memorynumber + " RAM in use.");
 
             Mq.Info(updateText.ToString());
-            */
-            Mq.Info("Status Updates are broken still you big goober!");
+
+            if (tasksRemainingCount == 0)
+            {
+                AllTasksComplete = true;
+            }
+        }
+
+        private static String BytesToString(long byteCount)
+        {
+            string[] suf = { "B", "kB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+            if (byteCount == 0)
+                return "0" + suf[0];
+            var bytes = Math.Abs(byteCount);
+            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            var num = Math.Round(bytes / Math.Pow(1024, place), 1);
+            return (Math.Sign(byteCount) * num) + suf[place];
         }
     }
 }

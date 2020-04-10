@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Classifiers;
-using SnaffCore.Config;
-using SnaffCore.ShareFind;
-using SnaffCore.TreeWalk;
 
 namespace SnaffCore.Concurrency
 {

@@ -13,6 +13,8 @@ namespace SnaffCore.TreeWalk
     {
         private FileScanner FileScanner { get; set; }
 
+        public static List<Task> _fileScannerTasks { get; set; }
+
         public TreeWalker(string shareRoot)
         {
             BlockingMq Mq = BlockingMq.GetMq();
@@ -33,8 +35,8 @@ namespace SnaffCore.TreeWalk
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Config.Config myConfig = Config.Config.GetConfig();
-            CancellationTokenSource fileScannerCts = LimitedConcurrencyLevelTaskScheduler.GetFileScannerCts();
-            TaskFactory fileScannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetFileScannerTaskFactory();
+            CancellationTokenSource fileScannerCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
+            TaskFactory fileScannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
             try
             {
                 // Walks a tree checking files and generating results as it goes.

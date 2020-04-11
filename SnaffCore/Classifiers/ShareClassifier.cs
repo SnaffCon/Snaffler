@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SnaffCore.Concurrency;
@@ -25,7 +26,8 @@ namespace Classifiers
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
             // check if it matches
-            if (classifier.SimpleMatch(share))
+            TextClassifier textClassifier = new TextClassifier(classifier);
+            if (textClassifier.SimpleMatch(share))
             {
                 // if it does, see what we're gonna do with it
                 switch (classifier.MatchAction)

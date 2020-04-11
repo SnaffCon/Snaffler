@@ -25,7 +25,8 @@ namespace Classifiers
                 ScanDir = true,
             };
             // check if it matches
-            if (classifier.SimpleMatch(dir))
+            TextClassifier textClassifier = new TextClassifier(classifier);
+            if (textClassifier.SimpleMatch(dir))
             {
                 // if it does, see what we're gonna do with it
                 switch (classifier.MatchAction)

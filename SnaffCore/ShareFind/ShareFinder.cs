@@ -13,11 +13,17 @@ namespace SnaffCore.ShareFind
 {
     public class ShareFinder
     {
+        private Config.Config myConfig { get; set; }
+        private BlockingMq Mq { get; set; }
+
+        public ShareFinder()
+        {
+            myConfig = Config.Config.GetConfig();
+            Mq = BlockingMq.GetMq();
+        }
+
         internal void GetComputerShares(string computer)
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = Config.Config.GetConfig();
-
             // find the shares
             var hostShareInfos = GetHostShareInfo(computer);
 
@@ -27,8 +33,9 @@ namespace SnaffCore.ShareFind
                 if (!String.IsNullOrWhiteSpace(shareName))
                 {
                     // classify them
-                    foreach (Classifier shareClassifier in myConfig.Options.ShareClassifiers)
+                    foreach (Classifier classifier in myConfig.Options.ShareClassifiers)
                     {
+                        ShareClassifier shareClassifier = new ShareClassifier(classifier);
                         shareClassifier.ClassifyShare(shareName);
                     }
                 }
@@ -37,7 +44,6 @@ namespace SnaffCore.ShareFind
 
         private string GetShareName(HostShareInfo hostShareInfo, string computer)
         {
-            BlockingMq Mq = BlockingMq.GetMq();
             // takes a HostShareInfo object and a computer name and turns it into a usable path.
 
             // first we want to throw away any errored out ones.

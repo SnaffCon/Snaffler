@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.DirectoryServices.ActiveDirectory;
+using System.ServiceModel.Channels;
 using SnaffCore.Concurrency;
 
 namespace SnaffCore.ComputerFind
@@ -9,7 +10,8 @@ namespace SnaffCore.ComputerFind
     public class ActiveDirectory
     {
         private List<string> _domainComputers;
-        private Config.Config Config { get; set; }
+        private Config.Config myConfig { get; set; }
+        private BlockingMq Mq { get; set; }
 
         public List<string> DomainComputers =>
             // only compute this once
@@ -21,8 +23,8 @@ namespace SnaffCore.ComputerFind
 
         public ActiveDirectory()
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = SnaffCore.Config.Config.GetConfig();
+            Mq = BlockingMq.GetMq();
+            myConfig = Config.Config.GetConfig();
 
             // setup the necessary vars
             if (myConfig.Options.TargetDomain == null && myConfig.Options.TargetDc == null)
@@ -52,8 +54,6 @@ namespace SnaffCore.ComputerFind
 
         private void GetDomainControllers()
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-
             try
             {
                 var dcCollection = DomainController.FindAll(DirectoryContext);
@@ -74,9 +74,6 @@ namespace SnaffCore.ComputerFind
 
         private List<string> GetDomainComputers()
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = SnaffCore.Config.Config.GetConfig();
-
             if (!String.IsNullOrEmpty(myConfig.Options.TargetDc))
             {
                 DomainControllers.Add(myConfig.Options.TargetDc);

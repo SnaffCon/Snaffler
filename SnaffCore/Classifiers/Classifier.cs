@@ -126,7 +126,7 @@ namespace Classifiers
             }
         }
 
-        private bool HasFileOrDirectoryAccess(FileSystemRights right,
+        public bool HasFileOrDirectoryAccess(FileSystemRights right,
             AuthorizationRuleCollection acl)
         {
             bool allow = false;

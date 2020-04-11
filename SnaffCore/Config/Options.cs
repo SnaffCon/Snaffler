@@ -22,7 +22,6 @@ namespace SnaffCore.Config
 
         [Nett.TomlIgnore]
         public LogLevel LogLevel { get; set; }
-
         public string LogLevelString { get; set; } = "info";
 
         // ShareFinder Options

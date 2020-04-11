@@ -8,8 +8,15 @@ using Config = SnaffCore.Config.Config;
 
 namespace Classifiers
 {
-    public partial class Classifier
+    public class FileClassifier
     {
+        private Classifier classifier { get; set; }
+
+        public FileClassifier(Classifier inClassifier)
+        {
+            this.classifier = inClassifier;
+        }
+
         public bool ClassifyFile(FileInfo fileInfo)
         {
             BlockingMq Mq = BlockingMq.GetMq();
@@ -17,7 +24,7 @@ namespace Classifiers
             // figure out what part we gonna look at
             string stringToMatch = null;
 
-            switch (MatchLocation)
+            switch (classifier.MatchLocation)
             {
                 case MatchLoc.FileExtension:
                     stringToMatch = fileInfo.Extension;
@@ -35,14 +42,14 @@ namespace Classifiers
                     stringToMatch = fileInfo.FullName;
                     break;
                 default:
-                    Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
+                    Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
                     return true;
             }
 
             if (!String.IsNullOrEmpty(stringToMatch))
             {
                 // check if it matches
-                if (!SimpleMatch(stringToMatch))
+                if (!classifier.SimpleMatch(stringToMatch))
                 {
                     // if it doesn't we just bail now.
                     return false;
@@ -51,7 +58,7 @@ namespace Classifiers
 
             FileResult fileResult;
             // if it matches, see what we're gonna do with it
-            switch (MatchAction)
+            switch (classifier.MatchAction)
             {
                 case MatchAction.Discard:
                     // chuck it.
@@ -61,21 +68,21 @@ namespace Classifiers
                     fileResult = new FileResult()
                     {
                         FileInfo = fileInfo,
-                        RwStatus = CanRw(fileInfo),
-                        MatchedClassifier = this
+                        RwStatus = classifier.CanRw(fileInfo),
+                        MatchedClassifier = classifier
                     };
                     Mq.FileResult(fileResult);
                     return true;
                 case MatchAction.CheckForKeys:
                     // TODO this makes me sad cos it should be in the Content context but this way is much easier.
                     // do a special x509 dance
-                    if (x509PrivKeyMatch(fileInfo))
+                    if (classifier.x509PrivKeyMatch(fileInfo))
                     {
                         fileResult = new FileResult()
                         {
                             FileInfo = fileInfo,
-                            RwStatus = CanRw(fileInfo),
-                            MatchedClassifier = this
+                            RwStatus = classifier.CanRw(fileInfo),
+                            MatchedClassifier = classifier
                         };
                         Mq.FileResult(fileResult);
                     }
@@ -86,19 +93,19 @@ namespace Classifiers
                     try
                     {
                         Classifier nextClassifier =
-                            myConfig.Options.Classifiers.First(thing => thing.ClassifierName == this.RelayTarget);
+                            myConfig.Options.Classifiers.First(thing => thing.ClassifierName == classifier.RelayTarget);
 
                         if (nextClassifier.EnumerationScope == EnumerationScope.ContentsEnumeration)
                         {
-                            nextClassifier.ClassifyContent(fileInfo);
+                            ContentClassifier contentClassifier = new ContentClassifier(nextClassifier);
                         }
                         else if (nextClassifier.EnumerationScope == EnumerationScope.FileEnumeration)
                         {
-                            nextClassifier.ClassifyFile(fileInfo);
+                            ClassifyFile(fileInfo);
                         }
                         else
                         {
-                            Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
+                            Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
                         }
                     }
                     catch (Exception e)
@@ -114,7 +121,7 @@ namespace Classifiers
                 throw new NotImplementedException("Haven't implemented walking dir structures inside archives. Prob needs pool queue.");
                     return false;
                 default:
-                    Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
+                    Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
                     return false;
             }
         }

@@ -16,20 +16,20 @@ namespace SnaffCore
 {
     public class SnaffCon
     {
-        public bool AllTasksComplete { get; set; } = false;
+        private bool AllTasksComplete { get; set; } = false;
+        private Config.Config myConfig { get; set; }
+        private BlockingMq Mq { get; set; }
 
         public SnaffCon()
         {
-            Config.Config myConfig = Config.Config.GetConfig();
+            myConfig = Config.Config.GetConfig();
+            Mq = BlockingMq.GetMq();
             LimitedConcurrencyLevelTaskScheduler.CreateLCLTSes(myConfig.Options.MaxThreads);
         }
 
         public void Execute()
         {
             // This is the main execution thread.
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = Config.Config.GetConfig();
-
             Timer statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(1)
                     .TotalMilliseconds) {AutoReset = true}; // Set the time (1 min in this case)
@@ -70,9 +70,6 @@ namespace SnaffCore
 
         private void ComputerDiscovery()
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = Config.Config.GetConfig();
-
             Mq.Info("Getting computers from AD.");
             // We do this single threaded cos it's fast and not easily divisible.
             var activeDirectory = new ActiveDirectory();
@@ -102,8 +99,6 @@ namespace SnaffCore
 
         private void ShareDiscovery(string[] computerTargets)
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = Config.Config.GetConfig();
             TaskFactory SharefinderTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
             CancellationTokenSource SharefinderCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
 
@@ -130,8 +125,6 @@ namespace SnaffCore
 
         private void FileDiscovery(string[] pathTargets)
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = Config.Config.GetConfig();
             TaskFactory SharescannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
             CancellationTokenSource SharescannerCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
 
@@ -158,8 +151,6 @@ namespace SnaffCore
         // This method is called every minute
         private void StatusUpdate(object sender, ElapsedEventArgs e)
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-
             string memorynumber;
 
             using (Process proc = Process.GetCurrentProcess())

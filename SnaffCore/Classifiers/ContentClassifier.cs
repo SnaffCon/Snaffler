@@ -5,8 +5,15 @@ using Config = SnaffCore.Config.Config;
 
 namespace Classifiers
 {
-    public partial class Classifier
+    public class ContentClassifier
     {
+        private Classifier classifier { get; set; }
+
+        public ContentClassifier(Classifier inClassifier)
+        {
+            this.classifier = inClassifier;
+        }
+
         public void ClassifyContent(FileInfo fileInfo)
         {
             BlockingMq Mq = BlockingMq.GetMq();
@@ -15,17 +22,17 @@ namespace Classifiers
             if (myConfig.Options.MaxSizeToGrep >= fileInfo.Length)
             {
                 // figure out if we need to look at the content as bytes or as string.
-                switch (MatchLocation)
+                switch (classifier.MatchLocation)
                 {
                     case MatchLoc.FileContentAsBytes:
                         byte[] fileBytes = File.ReadAllBytes(fileInfo.FullName);
-                        if (ByteMatch(fileBytes))
+                        if (classifier.ByteMatch(fileBytes))
                         {
                             fileResult = new FileResult()
                             {
                                 FileInfo = fileInfo,
-                                RwStatus = CanRw(fileInfo),
-                                MatchedClassifier = this
+                                RwStatus = classifier.CanRw(fileInfo),
+                                MatchedClassifier = classifier
                             };
                             Mq.FileResult(fileResult);
                         }
@@ -33,20 +40,20 @@ namespace Classifiers
                         return;
                     case MatchLoc.FileContentAsString:
                         string fileString = File.ReadAllText(fileInfo.FullName);
-                        if (SimpleMatch(fileString))
+                        if (classifier.SimpleMatch(fileString))
                         {
                             fileResult = new FileResult()
                             {
                                 FileInfo = fileInfo,
-                                RwStatus = CanRw(fileInfo),
-                                MatchedClassifier = this
+                                RwStatus = classifier.CanRw(fileInfo),
+                                MatchedClassifier = classifier
                             };
                             Mq.FileResult(fileResult);
                         }
 
                         return;
                     default:
-                        Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
+                        Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
                         return;
                 }
             }

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Configuration;
-using System.IO;
 using System.Linq;
 using CommandLineParser.Arguments;
 using Nett;
 using NLog;
 using SnaffCore.Concurrency;
-using Classifiers;
 
 namespace SnaffCore.Config
 {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SnaffCore.Concurrency;
@@ -20,11 +19,28 @@ namespace Classifiers
 
         public void ClassifyShare(string share)
         {
-            // TODO add a special case to dedupe sysvol/netlogon scanning
             TaskFactory treeWalkerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
             CancellationTokenSource treeWalkerCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
+            // first time we hit sysvol, toggle the flag and keep going. every other time, bail out.
+            if (share.ToLower().EndsWith("sysvol"))
+            {
+                if (myConfig.Options.ScanSysvol = false)
+                {
+                    return;
+                }
+                myConfig.Options.ScanSysvol = false;
+            };
+            // same for netlogon
+            if (share.ToLower().EndsWith("netlogon"))
+            {
+                if (myConfig.Options.ScanNetlogon = false)
+                {
+                    return;
+                }
+                myConfig.Options.ScanNetlogon = false;
+            }
             // check if it matches
             TextClassifier textClassifier = new TextClassifier(ClassifierRule);
             if (textClassifier.SimpleMatch(share))

@@ -8,9 +8,10 @@ namespace SnaffCore.Config
     public partial class Options
     {
         // Manual Targeting Options
-
         public string[] PathTargets { get; set; }
         public string[] ComputerTargets { get; set; }
+        public bool ScanSysvol { get; set; } = true;
+        public bool ScanNetlogon { get; set; } = true;
 
         // Concurrency Options
         public int MaxThreads { get; set; } = 30;

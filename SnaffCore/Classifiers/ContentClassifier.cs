@@ -35,7 +35,6 @@ namespace Classifiers
                             };
                             Mq.FileResult(fileResult);
                         }
-
                         return;
                     case MatchLoc.FileContentAsString:
                         string fileString = File.ReadAllText(fileInfo.FullName);
@@ -48,7 +47,6 @@ namespace Classifiers
                             };
                             Mq.FileResult(fileResult);
                         }
-
                         return;
                     default:
                         Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");

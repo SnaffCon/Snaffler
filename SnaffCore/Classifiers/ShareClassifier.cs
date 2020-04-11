@@ -11,11 +11,11 @@ namespace Classifiers
 {
     public class ShareClassifier
     {
-        private Classifier classifier { get; set; }
+        private ClassifierRule ClassifierRule { get; set; }
 
-        public ShareClassifier(Classifier inClassifier)
+        public ShareClassifier(ClassifierRule inRule)
         {
-            this.classifier = inClassifier;
+            this.ClassifierRule = inRule;
         }
 
         public void ClassifyShare(string share)
@@ -26,11 +26,11 @@ namespace Classifiers
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
             // check if it matches
-            TextClassifier textClassifier = new TextClassifier(classifier);
+            TextClassifier textClassifier = new TextClassifier(ClassifierRule);
             if (textClassifier.SimpleMatch(share))
             {
                 // if it does, see what we're gonna do with it
-                switch (classifier.MatchAction)
+                switch (ClassifierRule.MatchAction)
                 {
                     case MatchAction.Discard:
                         return;
@@ -46,7 +46,7 @@ namespace Classifiers
                         }
                         return;
                     default:
-                        Mq.Error("You've got a misconfigured share classifier named " + classifier.ClassifierName + ".");
+                        Mq.Error("You've got a misconfigured share ClassifierRule named " + ClassifierRule.RuleName + ".");
                         return;
                 }
             }

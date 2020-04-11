@@ -10,10 +10,10 @@ namespace Classifiers
 {
     public class TextClassifier
     {
-        private Classifier classifier { get; set; }
-        public TextClassifier(Classifier inClassifier)
+        private ClassifierRule ClassifierRule { get; set; }
+        public TextClassifier(ClassifierRule inRule)
         {
-            this.classifier = inClassifier;
+            this.ClassifierRule = inRule;
         }
 
         // TODO fix case sensitivity
@@ -21,10 +21,10 @@ namespace Classifiers
         internal bool SimpleMatch(string input)
         {
             // generic match checking
-            switch (classifier.WordListType)
+            switch (ClassifierRule.WordListType)
             {
                 case MatchListType.Contains:
-                    foreach (string matchString in classifier.WordList)
+                    foreach (string matchString in ClassifierRule.WordList)
                     {
                         if (input.ToLower().Contains(matchString.ToLower()))
                         {
@@ -34,7 +34,7 @@ namespace Classifiers
 
                     break;
                 case MatchListType.EndsWith:
-                    foreach (string matchString in classifier.WordList)
+                    foreach (string matchString in ClassifierRule.WordList)
                     {
                         if (input.ToLower().EndsWith(matchString.ToLower()))
                         {
@@ -44,7 +44,7 @@ namespace Classifiers
 
                     break;
                 case MatchListType.Exact:
-                    foreach (string matchString in classifier.WordList)
+                    foreach (string matchString in ClassifierRule.WordList)
                     {
                         if (input.ToLower() == matchString.ToLower())
                         {
@@ -54,7 +54,7 @@ namespace Classifiers
 
                     break;
                 case MatchListType.StartsWith:
-                    foreach (string matchString in classifier.WordList)
+                    foreach (string matchString in ClassifierRule.WordList)
                     {
                         if (input.ToLower().StartsWith(matchString.ToLower()))
                         {
@@ -64,7 +64,7 @@ namespace Classifiers
 
                     break;
                 case MatchListType.Regex:
-                    foreach (string matchString in classifier.WordList)
+                    foreach (string matchString in ClassifierRule.WordList)
                     {
                         Regex regex = new Regex(matchString);
                         if (regex.IsMatch(input))

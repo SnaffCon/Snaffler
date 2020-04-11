@@ -8,11 +8,11 @@ namespace Classifiers
 {
     public class ContentClassifier
     {
-        private Classifier classifier { get; set; }
+        private ClassifierRule ClassifierRule { get; set; }
 
-        public ContentClassifier(Classifier inClassifier)
+        public ContentClassifier(ClassifierRule inRule)
         {
-            this.classifier = inClassifier;
+            this.ClassifierRule = inRule;
         }
 
         public void ClassifyContent(FileInfo fileInfo)
@@ -23,7 +23,7 @@ namespace Classifiers
             if (myConfig.Options.MaxSizeToGrep >= fileInfo.Length)
             {
                 // figure out if we need to look at the content as bytes or as string.
-                switch (classifier.MatchLocation)
+                switch (ClassifierRule.MatchLocation)
                 {
                     case MatchLoc.FileContentAsBytes:
                         byte[] fileBytes = File.ReadAllBytes(fileInfo.FullName);
@@ -31,25 +31,25 @@ namespace Classifiers
                         {
                             fileResult = new FileResult(fileInfo)
                             {
-                                MatchedClassifier = classifier
+                                MatchedRule = ClassifierRule
                             };
                             Mq.FileResult(fileResult);
                         }
                         return;
                     case MatchLoc.FileContentAsString:
                         string fileString = File.ReadAllText(fileInfo.FullName);
-                        TextClassifier textClassifier = new TextClassifier(classifier);
+                        TextClassifier textClassifier = new TextClassifier(ClassifierRule);
                         if (textClassifier.SimpleMatch(fileString))
                         {
                             fileResult = new FileResult(fileInfo)
                             {
-                                MatchedClassifier = classifier
+                                MatchedRule = ClassifierRule
                             };
                             Mq.FileResult(fileResult);
                         }
                         return;
                     default:
-                        Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
+                        Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                         return;
                 }
             }

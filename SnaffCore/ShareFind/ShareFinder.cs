@@ -54,7 +54,6 @@ namespace SnaffCore.ShareFind
                                 ", but this is usually no cause for alarm.");
                 return null;
             }
-
             return $"\\\\{computer}\\{hostShareInfo.shi1_netname}";
         }
 
@@ -89,6 +88,7 @@ namespace SnaffCore.ShareFind
         }
 
         // HERE BE WIN32 DRAGONS
+        // ---------------------
 
         [DllImport("Netapi32.dll", SetLastError = true)]
         private static extern int NetWkstaGetInfo(string servername, int level, out IntPtr bufptr);

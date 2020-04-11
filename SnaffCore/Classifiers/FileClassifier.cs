@@ -2,7 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Runtime.Remoting.Messaging;
+using System.Security.AccessControl;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using SnaffCore.Concurrency;
 using Config = SnaffCore.Config.Config;
 
@@ -48,8 +53,9 @@ namespace Classifiers
 
             if (!String.IsNullOrEmpty(stringToMatch))
             {
+                TextClassifier textClassifier = new TextClassifier(classifier);
                 // check if it matches
-                if (!classifier.SimpleMatch(stringToMatch))
+                if (!textClassifier.SimpleMatch(stringToMatch))
                 {
                     // if it doesn't we just bail now.
                     return false;
@@ -65,10 +71,8 @@ namespace Classifiers
                     return true;
                 case MatchAction.Snaffle:
                     // snaffle that bad boy
-                    fileResult = new FileResult()
+                    fileResult = new FileResult(fileInfo)
                     {
-                        FileInfo = fileInfo,
-                        RwStatus = classifier.CanRw(fileInfo),
                         MatchedClassifier = classifier
                     };
                     Mq.FileResult(fileResult);
@@ -76,12 +80,10 @@ namespace Classifiers
                 case MatchAction.CheckForKeys:
                     // TODO this makes me sad cos it should be in the Content context but this way is much easier.
                     // do a special x509 dance
-                    if (classifier.x509PrivKeyMatch(fileInfo))
+                    if (x509PrivKeyMatch(fileInfo))
                     {
-                        fileResult = new FileResult()
+                        fileResult = new FileResult(fileInfo)
                         {
-                            FileInfo = fileInfo,
-                            RwStatus = classifier.CanRw(fileInfo),
                             MatchedClassifier = classifier
                         };
                         Mq.FileResult(fileResult);
@@ -97,11 +99,13 @@ namespace Classifiers
 
                         if (nextClassifier.EnumerationScope == EnumerationScope.ContentsEnumeration)
                         {
-                            ContentClassifier contentClassifier = new ContentClassifier(nextClassifier);
+                            ContentClassifier nextContentClassifier = new ContentClassifier(nextClassifier);
+                            nextContentClassifier.ClassifyContent(fileInfo);
                         }
                         else if (nextClassifier.EnumerationScope == EnumerationScope.FileEnumeration)
                         {
-                            ClassifyFile(fileInfo);
+                            FileClassifier nextFileClassifier = new FileClassifier(nextClassifier);
+                            nextFileClassifier.ClassifyFile(fileInfo);
                         }
                         else
                         {
@@ -112,7 +116,6 @@ namespace Classifiers
                     {
                         Mq.Trace(e.ToString());
                     }
-
                     return true;
                 case MatchAction.EnterArchive:
                 // do a special looking inside archive files dance using
@@ -125,6 +128,24 @@ namespace Classifiers
                     return false;
             }
         }
+
+        // TODO fix case sensitivity
+        // Methods for classification
+
+        public bool x509PrivKeyMatch(FileInfo fileInfo)
+        {
+            try
+            {
+                X509Certificate2 parsedCert = new X509Certificate2(fileInfo.FullName);
+                if (parsedCert.HasPrivateKey) return true;
+            }
+            catch (CryptographicException)
+            {
+                return false;
+            }
+
+            return false;
+        }
     }
 
     public class FileResult
@@ -133,6 +154,81 @@ namespace Classifiers
         public GrepFileResult GrepFileResult { get; set; }
         public RwStatus RwStatus { get; set; }
         public Classifier MatchedClassifier { get; set; }
+
+        public FileResult(FileInfo fileInfo)
+        {
+            this.RwStatus = CanRw(fileInfo);
+            this.FileInfo = fileInfo;
+        }
+
+        public static RwStatus CanRw(FileInfo fileInfo)
+        {
+            try
+            {
+                RwStatus rwStatus = new RwStatus { CanWrite = CanIWrite(fileInfo), CanRead = CanIRead(fileInfo) };
+                return rwStatus;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static bool CanIRead(FileInfo fileInfo)
+        {
+            // this will return true if file read perm is available.
+            CurrentUserSecurity currentUserSecurity = new CurrentUserSecurity();
+
+            FileSystemRights[] fsRights =
+            {
+                FileSystemRights.Read,
+                FileSystemRights.ReadAndExecute,
+                FileSystemRights.ReadData
+            };
+
+            bool readRight = false;
+            foreach (FileSystemRights fsRight in fsRights)
+                try
+                {
+                    if (currentUserSecurity.HasAccess(fileInfo, fsRight)) readRight = true;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return false;
+                }
+
+            return readRight;
+        }
+
+        public static bool CanIWrite(FileInfo fileInfo)
+        {
+            // this will return true if write or modify or take ownership or any of those other good perms are available.
+            CurrentUserSecurity currentUserSecurity = new CurrentUserSecurity();
+
+            FileSystemRights[] fsRights =
+            {
+                FileSystemRights.Write,
+                FileSystemRights.Modify,
+                FileSystemRights.FullControl,
+                FileSystemRights.TakeOwnership,
+                FileSystemRights.ChangePermissions,
+                FileSystemRights.AppendData,
+                FileSystemRights.WriteData
+            };
+
+            bool writeRight = false;
+            foreach (FileSystemRights fsRight in fsRights)
+                try
+                {
+                    if (currentUserSecurity.HasAccess(fileInfo, fsRight)) writeRight = true;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return false;
+                }
+
+            return writeRight;
+        }
     }
 
     public class GrepFileResult

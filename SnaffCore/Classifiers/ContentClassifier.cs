@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using SnaffCore.Concurrency;
 using Config = SnaffCore.Config.Config;
 
@@ -26,12 +27,10 @@ namespace Classifiers
                 {
                     case MatchLoc.FileContentAsBytes:
                         byte[] fileBytes = File.ReadAllBytes(fileInfo.FullName);
-                        if (classifier.ByteMatch(fileBytes))
+                        if (ByteMatch(fileBytes))
                         {
-                            fileResult = new FileResult()
+                            fileResult = new FileResult(fileInfo)
                             {
-                                FileInfo = fileInfo,
-                                RwStatus = classifier.CanRw(fileInfo),
                                 MatchedClassifier = classifier
                             };
                             Mq.FileResult(fileResult);
@@ -40,12 +39,11 @@ namespace Classifiers
                         return;
                     case MatchLoc.FileContentAsString:
                         string fileString = File.ReadAllText(fileInfo.FullName);
-                        if (classifier.SimpleMatch(fileString))
+                        TextClassifier textClassifier = new TextClassifier(classifier);
+                        if (textClassifier.SimpleMatch(fileString))
                         {
-                            fileResult = new FileResult()
+                            fileResult = new FileResult(fileInfo)
                             {
-                                FileInfo = fileInfo,
-                                RwStatus = classifier.CanRw(fileInfo),
                                 MatchedClassifier = classifier
                             };
                             Mq.FileResult(fileResult);
@@ -61,6 +59,12 @@ namespace Classifiers
             {
                 Mq.Trace("The following file was bigger than the MaxSizeToGrep config parameter:" + fileInfo.FullName);
             }
+        }
+
+        public bool ByteMatch(byte[] fileBytes)
+        {
+            // TODO
+            throw new NotImplementedException(message: "Haven't implemented byte-based content searching yet lol.");
         }
     }
 }

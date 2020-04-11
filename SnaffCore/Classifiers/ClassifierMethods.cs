@@ -75,7 +75,7 @@ namespace Classifiers
             return false;
         }
 
-        private bool x509PrivKeyMatch(FileInfo fileInfo)
+        public bool x509PrivKeyMatch(FileInfo fileInfo)
         {
             try
             {
@@ -90,13 +90,13 @@ namespace Classifiers
             return false;
         }
 
-        private bool ByteMatch(byte[] fileBytes)
+        public bool ByteMatch(byte[] fileBytes)
         {
             // TODO
             throw new NotImplementedException(message:"Haven't implemented byte-based content searching yet lol.");
         }
 
-        private RwStatus CanRw(FileInfo fileInfo)
+        public RwStatus CanRw(FileInfo fileInfo)
         {
             try
             {
@@ -165,6 +165,7 @@ namespace Classifiers
             return writeRight;
         }
 
+        // TODO fix up simplematch to do like this?
         internal GrepFileResult GrepFile(FileInfo fileInfo, IEnumerable<string> grepStrings, int contextBytes)
         {
             List<string> foundStrings = new List<string>();

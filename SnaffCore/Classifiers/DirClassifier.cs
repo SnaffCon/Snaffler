@@ -4,8 +4,15 @@ using Config = SnaffCore.Config.Config;
 
 namespace Classifiers
 {
-    public partial class Classifier
+    public class DirClassifier
     {
+        private Classifier classifier { get; set; }
+
+        public DirClassifier(Classifier inClassifier)
+        {
+            this.classifier = inClassifier;
+        }
+
         public DirResult ClassifyDir(string dir)
         {
             BlockingMq Mq = BlockingMq.GetMq();
@@ -14,14 +21,14 @@ namespace Classifiers
             DirResult dirResult = new DirResult()
             {
                 DirPath = dir,
-                Triage = Triage,
+                Triage = classifier.Triage,
                 ScanDir = true,
             };
             // check if it matches
-            if (SimpleMatch(dir))
+            if (classifier.SimpleMatch(dir))
             {
                 // if it does, see what we're gonna do with it
-                switch (MatchAction)
+                switch (classifier.MatchAction)
                 {
                     case MatchAction.Discard:
                         dirResult.ScanDir = false;
@@ -31,7 +38,7 @@ namespace Classifiers
                         Mq.DirResult(dirResult);
                         return dirResult;
                     default:
-                        Mq.Error("You've got a misconfigured file classifier named " + this.ClassifierName + ".");
+                        Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
                         return null;
                 }
             }

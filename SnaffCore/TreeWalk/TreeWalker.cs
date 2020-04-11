@@ -11,14 +11,19 @@ namespace SnaffCore.TreeWalk
 {
     public class TreeWalker
     {
-        private FileScanner FileScanner { get; set; }
-
-        public static List<Task> _fileScannerTasks { get; set; }
+        private Config.Config myConfig { get; set; }
+        private BlockingMq Mq { get; set; }
+        private CancellationTokenSource fileScannerCts { get; set; }
+        private TaskFactory fileScannerTaskFactory { get; set; }
 
         public TreeWalker(string shareRoot)
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = Config.Config.GetConfig();
+            myConfig = Config.Config.GetConfig();
+            Mq = BlockingMq.GetMq();
+
+            fileScannerCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
+            fileScannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
+
             if (shareRoot == null)
             {
                 Mq.Trace("A null made it into TreeWalker. Wtf.");
@@ -26,17 +31,12 @@ namespace SnaffCore.TreeWalk
             }
 
             Mq.Trace("About to start a TreeWalker on share " + shareRoot);
-            FileScanner = new FileScanner();
             WalkTree(shareRoot);
             Mq.Trace("Finished TreeWalking share " + shareRoot);
         }
 
         public void WalkTree(string shareRoot)
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = Config.Config.GetConfig();
-            CancellationTokenSource fileScannerCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
-            TaskFactory fileScannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
             try
             {
                 // Walks a tree checking files and generating results as it goes.
@@ -101,7 +101,7 @@ namespace SnaffCore.TreeWalk
                         {
                             try
                             {
-                                FileScanner.ScanFile(file);
+                                FileScanner fileScanner = new FileScanner(file);
                             }
                             catch (Exception e)
                             {
@@ -113,8 +113,9 @@ namespace SnaffCore.TreeWalk
                     // Push the subdirectories onto the stack for traversal if they aren't on any discard-lists etc.
                     foreach (var dirStr in subDirs)
                     {
-                        foreach (Classifier dirClassifier in myConfig.Options.DirClassifiers)
+                        foreach (Classifier classifier in myConfig.Options.DirClassifiers)
                         {
+                            DirClassifier dirClassifier = new DirClassifier(classifier);
                             DirResult dirResult = dirClassifier.ClassifyDir(dirStr);
                             // TODO: concurrency uplift: when there is a pooled concurrency queue, just add the dir as a job to the queue
                             if (dirResult.ScanDir) { dirs.Push(dirStr);}

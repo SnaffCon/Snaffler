@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Classifiers;
 using SnaffCore.Concurrency;
 
@@ -8,17 +10,25 @@ namespace SnaffCore.FileScan
 {
     public class FileScanner
     {
+        private Config.Config myConfig { get; set; }
+        private BlockingMq Mq { get; set; }
+
+        public FileScanner(string file)
+        {
+            myConfig = Config.Config.GetConfig();
+            Mq = BlockingMq.GetMq();
+            ScanFile(file);
+        }
         public void ScanFile(string file)
         {
-            BlockingMq Mq = BlockingMq.GetMq();
-            Config.Config myConfig = Config.Config.GetConfig();
             try
             {
                 FileInfo fileInfo = new FileInfo(file);
                 // send the file to all the classifiers.
                 foreach (Classifier classifier in myConfig.Options.FileClassifiers)
                 {
-                    if (classifier.ClassifyFile(fileInfo))
+                    FileClassifier fileClassifier = new FileClassifier(classifier);
+                    if (fileClassifier.ClassifyFile(fileInfo))
                     {
                         return;
                     };

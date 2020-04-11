@@ -8,8 +8,15 @@ using Config = SnaffCore.Config.Config;
 
 namespace Classifiers
 {
-    public partial class Classifier
+    public class ShareClassifier
     {
+        private Classifier classifier { get; set; }
+
+        public ShareClassifier(Classifier inClassifier)
+        {
+            this.classifier = inClassifier;
+        }
+
         public void ClassifyShare(string share)
         {
             // TODO add a special case to dedupe sysvol/netlogon scanning
@@ -18,10 +25,10 @@ namespace Classifiers
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
             // check if it matches
-            if (SimpleMatch(share))
+            if (classifier.SimpleMatch(share))
             {
                 // if it does, see what we're gonna do with it
-                switch (MatchAction)
+                switch (classifier.MatchAction)
                 {
                     case MatchAction.Discard:
                         return;
@@ -37,7 +44,7 @@ namespace Classifiers
                         }
                         return;
                     default:
-                        Mq.Error("You've got a misconfigured share classifier named " + this.ClassifierName + ".");
+                        Mq.Error("You've got a misconfigured share classifier named " + classifier.ClassifierName + ".");
                         return;
                 }
 

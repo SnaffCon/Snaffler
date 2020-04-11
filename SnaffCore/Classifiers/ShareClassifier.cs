@@ -49,8 +49,6 @@ namespace Classifiers
                         Mq.Error("You've got a misconfigured share classifier named " + classifier.ClassifierName + ".");
                         return;
                 }
-
-                
             }
             // by default all shares should go on to TreeWalker
             // send them to TreeWalker

@@ -7,6 +7,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.Text.RegularExpressions;
 using SnaffCore.Concurrency;
 using Config = SnaffCore.Config.Config;
@@ -15,11 +16,11 @@ namespace Classifiers
 {
     public class FileClassifier
     {
-        private Classifier classifier { get; set; }
+        private ClassifierRule ClassifierRule { get; set; }
 
-        public FileClassifier(Classifier inClassifier)
+        public FileClassifier(ClassifierRule inRule)
         {
-            this.classifier = inClassifier;
+            this.ClassifierRule = inRule;
         }
 
         public bool ClassifyFile(FileInfo fileInfo)
@@ -29,7 +30,7 @@ namespace Classifiers
             // figure out what part we gonna look at
             string stringToMatch = null;
 
-            switch (classifier.MatchLocation)
+            switch (ClassifierRule.MatchLocation)
             {
                 case MatchLoc.FileExtension:
                     stringToMatch = fileInfo.Extension;
@@ -47,13 +48,13 @@ namespace Classifiers
                     stringToMatch = fileInfo.FullName;
                     break;
                 default:
-                    Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
+                    Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                     return true;
             }
 
             if (!String.IsNullOrEmpty(stringToMatch))
             {
-                TextClassifier textClassifier = new TextClassifier(classifier);
+                TextClassifier textClassifier = new TextClassifier(ClassifierRule);
                 // check if it matches
                 if (!textClassifier.SimpleMatch(stringToMatch))
                 {
@@ -64,7 +65,7 @@ namespace Classifiers
 
             FileResult fileResult;
             // if it matches, see what we're gonna do with it
-            switch (classifier.MatchAction)
+            switch (ClassifierRule.MatchAction)
             {
                 case MatchAction.Discard:
                     // chuck it.
@@ -73,7 +74,7 @@ namespace Classifiers
                     // snaffle that bad boy
                     fileResult = new FileResult(fileInfo)
                     {
-                        MatchedClassifier = classifier
+                        MatchedRule = ClassifierRule
                     };
                     Mq.FileResult(fileResult);
                     return true;
@@ -84,32 +85,32 @@ namespace Classifiers
                     {
                         fileResult = new FileResult(fileInfo)
                         {
-                            MatchedClassifier = classifier
+                            MatchedRule = ClassifierRule
                         };
                         Mq.FileResult(fileResult);
                     }
                     return true;
                 case MatchAction.Relay:
-                    // bounce it on to the next classifier
+                    // bounce it on to the next ClassifierRule
                     // TODO concurrency uplift make this a new task on the poolq
                     try
                     {
-                        Classifier nextClassifier =
-                            myConfig.Options.Classifiers.First(thing => thing.ClassifierName == classifier.RelayTarget);
+                        ClassifierRule nextRule =
+                            myConfig.Options.Classifiers.First(thing => thing.RuleName == ClassifierRule.RelayTarget);
 
-                        if (nextClassifier.EnumerationScope == EnumerationScope.ContentsEnumeration)
+                        if (nextRule.EnumerationScope == EnumerationScope.ContentsEnumeration)
                         {
-                            ContentClassifier nextContentClassifier = new ContentClassifier(nextClassifier);
+                            ContentClassifier nextContentClassifier = new ContentClassifier(nextRule);
                             nextContentClassifier.ClassifyContent(fileInfo);
                         }
-                        else if (nextClassifier.EnumerationScope == EnumerationScope.FileEnumeration)
+                        else if (nextRule.EnumerationScope == EnumerationScope.FileEnumeration)
                         {
-                            FileClassifier nextFileClassifier = new FileClassifier(nextClassifier);
+                            FileClassifier nextFileClassifier = new FileClassifier(nextRule);
                             nextFileClassifier.ClassifyFile(fileInfo);
                         }
                         else
                         {
-                            Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
+                            Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                         }
                     }
                     catch (Exception e)
@@ -124,7 +125,7 @@ namespace Classifiers
                 throw new NotImplementedException("Haven't implemented walking dir structures inside archives. Prob needs pool queue.");
                     return false;
                 default:
-                    Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
+                    Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                     return false;
             }
         }
@@ -148,12 +149,110 @@ namespace Classifiers
         }
     }
 
+    public class RwStatus
+    {
+        public bool CanRead { get; set; }
+        public bool CanWrite { get; set; }
+    }
+
+    public class CurrentUserSecurity
+    {
+        private readonly WindowsPrincipal _currentPrincipal;
+        private readonly WindowsIdentity _currentUser;
+
+        public CurrentUserSecurity()
+        {
+            _currentUser = WindowsIdentity.GetCurrent();
+            _currentPrincipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+        }
+
+        public bool HasAccess(DirectoryInfo directory, FileSystemRights right)
+        {
+            try
+            {
+                // Get the collection of authorization rules that apply to the directory.
+                AuthorizationRuleCollection acl = directory.GetAccessControl()
+                    .GetAccessRules(true, true, typeof(SecurityIdentifier));
+                return HasFileOrDirectoryAccess(right, acl);
+            }
+
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
+        public bool HasAccess(FileInfo file, FileSystemRights right)
+        {
+            try
+            {
+                // Get the collection of authorization rules that apply to the file.
+                AuthorizationRuleCollection acl = file.GetAccessControl()
+                    .GetAccessRules(true, true, typeof(SecurityIdentifier));
+
+                return HasFileOrDirectoryAccess(right, acl);
+            }
+
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
+        public bool HasFileOrDirectoryAccess(FileSystemRights right,
+            AuthorizationRuleCollection acl)
+        {
+            bool allow = false;
+            bool inheritedAllow = false;
+            bool inheritedDeny = false;
+
+            for (int i = 0; i < acl.Count; i++)
+            {
+                FileSystemAccessRule currentRule = (FileSystemAccessRule)acl[i];
+                // If the current rule applies to the current user.
+                if (_currentUser.User.Equals(currentRule.IdentityReference) ||
+                    _currentPrincipal.IsInRole(
+                        (SecurityIdentifier)currentRule.IdentityReference))
+                {
+                    if (currentRule.AccessControlType.Equals(AccessControlType.Deny))
+                    {
+                        if ((currentRule.FileSystemRights & right) == right)
+                        {
+                            if (currentRule.IsInherited)
+                                inheritedDeny = true;
+                            else
+                                // Non inherited "deny" takes overall precedence.
+                                return false;
+                        }
+                    }
+                    else if (currentRule.AccessControlType
+                        .Equals(AccessControlType.Allow))
+                    {
+                        if ((currentRule.FileSystemRights & right) == right)
+                        {
+                            if (currentRule.IsInherited)
+                                inheritedAllow = true;
+                            else
+                                allow = true;
+                        }
+                    }
+                }
+            }
+
+            if (allow)
+                // Non inherited "allow" takes precedence over inherited rules.
+                return true;
+
+            return inheritedAllow && !inheritedDeny;
+        }
+    }
+
     public class FileResult
     {
         public FileInfo FileInfo { get; set; }
         public GrepFileResult GrepFileResult { get; set; }
         public RwStatus RwStatus { get; set; }
-        public Classifier MatchedClassifier { get; set; }
+        public ClassifierRule MatchedRule { get; set; }
 
         public FileResult(FileInfo fileInfo)
         {

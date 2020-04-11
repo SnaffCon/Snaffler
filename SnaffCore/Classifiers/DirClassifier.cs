@@ -6,11 +6,11 @@ namespace Classifiers
 {
     public class DirClassifier
     {
-        private Classifier classifier { get; set; }
+        private ClassifierRule ClassifierRule { get; set; }
 
-        public DirClassifier(Classifier inClassifier)
+        public DirClassifier(ClassifierRule inRule)
         {
-            this.classifier = inClassifier;
+            this.ClassifierRule = inRule;
         }
 
         public DirResult ClassifyDir(string dir)
@@ -21,15 +21,15 @@ namespace Classifiers
             DirResult dirResult = new DirResult()
             {
                 DirPath = dir,
-                Triage = classifier.Triage,
+                Triage = ClassifierRule.Triage,
                 ScanDir = true,
             };
             // check if it matches
-            TextClassifier textClassifier = new TextClassifier(classifier);
+            TextClassifier textClassifier = new TextClassifier(ClassifierRule);
             if (textClassifier.SimpleMatch(dir))
             {
                 // if it does, see what we're gonna do with it
-                switch (classifier.MatchAction)
+                switch (ClassifierRule.MatchAction)
                 {
                     case MatchAction.Discard:
                         dirResult.ScanDir = false;
@@ -39,7 +39,7 @@ namespace Classifiers
                         Mq.DirResult(dirResult);
                         return dirResult;
                     default:
-                        Mq.Error("You've got a misconfigured file classifier named " + classifier.ClassifierName + ".");
+                        Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                         return null;
                 }
             }

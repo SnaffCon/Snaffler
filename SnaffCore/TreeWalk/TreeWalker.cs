@@ -113,7 +113,7 @@ namespace SnaffCore.TreeWalk
                     // Push the subdirectories onto the stack for traversal if they aren't on any discard-lists etc.
                     foreach (var dirStr in subDirs)
                     {
-                        foreach (Classifier classifier in myConfig.Options.DirClassifiers)
+                        foreach (ClassifierRule classifier in myConfig.Options.DirClassifiers)
                         {
                             DirClassifier dirClassifier = new DirClassifier(classifier);
                             DirResult dirResult = dirClassifier.ClassifyDir(dirStr);

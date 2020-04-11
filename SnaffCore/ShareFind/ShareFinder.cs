@@ -33,7 +33,7 @@ namespace SnaffCore.ShareFind
                 if (!String.IsNullOrWhiteSpace(shareName))
                 {
                     // classify them
-                    foreach (Classifier classifier in myConfig.Options.ShareClassifiers)
+                    foreach (ClassifierRule classifier in myConfig.Options.ShareClassifiers)
                     {
                         ShareClassifier shareClassifier = new ShareClassifier(classifier);
                         shareClassifier.ClassifyShare(shareName);

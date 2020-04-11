@@ -25,7 +25,7 @@ namespace SnaffCore.FileScan
             {
                 FileInfo fileInfo = new FileInfo(file);
                 // send the file to all the classifiers.
-                foreach (Classifier classifier in myConfig.Options.FileClassifiers)
+                foreach (ClassifierRule classifier in myConfig.Options.FileClassifiers)
                 {
                     FileClassifier fileClassifier = new FileClassifier(classifier);
                     if (fileClassifier.ClassifyFile(fileInfo))

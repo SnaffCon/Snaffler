@@ -177,8 +177,8 @@ namespace Snaffler
 
         public string FileResultLogFromMessage(SnafflerMessage message)
         {
-            var matchedclassifier = message.FileResult.MatchedClassifier.ClassifierName; //message.FileResult.WhyMatched.ToString();
-            var triageString = message.FileResult.MatchedClassifier.Triage.ToString();
+            var matchedclassifier = message.FileResult.MatchedRule.RuleName; //message.FileResult.WhyMatched.ToString();
+            var triageString = message.FileResult.MatchedRule.Triage.ToString();
 
             var canread = "";
             if (message.FileResult.RwStatus.CanRead)

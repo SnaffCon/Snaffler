@@ -52,17 +52,23 @@ namespace Classifiers
                     return true;
             }
 
+            TextResult textResult = null;
+
             if (!String.IsNullOrEmpty(stringToMatch))
             {
                 TextClassifier textClassifier = new TextClassifier(ClassifierRule);
                 // check if it matches
-                if (!textClassifier.SimpleMatch(stringToMatch))
+                textResult = textClassifier.SimpleMatch(stringToMatch);
+                if (textResult != null)
                 {
                     // if it doesn't we just bail now.
                     return false;
                 }
             }
 
+            // whether we are going to steal a copy of the file
+
+            bool snaffleFile;
             FileResult fileResult;
             // if it matches, see what we're gonna do with it
             switch (ClassifierRule.MatchAction)
@@ -72,15 +78,17 @@ namespace Classifiers
                     return true;
                 case MatchAction.Snaffle:
                     // snaffle that bad boy
+                    snaffleFile = fileInfo.Length <= myConfig.Options.MaxSizeToSnaffle;
                     fileResult = new FileResult(fileInfo)
                     {
-                        MatchedRule = ClassifierRule
+                        MatchedRule = ClassifierRule,
+                        TextResult = textResult
                     };
                     Mq.FileResult(fileResult);
                     return true;
                 case MatchAction.CheckForKeys:
-                    // TODO this makes me sad cos it should be in the Content context but this way is much easier.
                     // do a special x509 dance
+                    snaffleFile = fileInfo.Length <= myConfig.Options.MaxSizeToSnaffle;
                     if (x509PrivKeyMatch(fileInfo))
                     {
                         fileResult = new FileResult(fileInfo)
@@ -119,10 +127,10 @@ namespace Classifiers
                     }
                     return true;
                 case MatchAction.EnterArchive:
-                // do a special looking inside archive files dance using
-                // https://github.com/adamhathcock/sharpcompress
+                    // do a special looking inside archive files dance using
+                    // https://github.com/adamhathcock/sharpcompress
                     // TODO FUUUUUCK
-                throw new NotImplementedException("Haven't implemented walking dir structures inside archives. Prob needs pool queue.");
+                    throw new NotImplementedException("Haven't implemented walking dir structures inside archives. Prob needs pool queue.");
                     return false;
                 default:
                     Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
@@ -250,7 +258,7 @@ namespace Classifiers
     public class FileResult
     {
         public FileInfo FileInfo { get; set; }
-        public GrepFileResult GrepFileResult { get; set; }
+        public TextResult TextResult { get; set; }
         public RwStatus RwStatus { get; set; }
         public ClassifierRule MatchedRule { get; set; }
 
@@ -258,6 +266,14 @@ namespace Classifiers
         {
             this.RwStatus = CanRw(fileInfo);
             this.FileInfo = fileInfo;
+            Config myConfig = Config.GetConfig();
+            if (myConfig.Options.Snaffle)
+            {
+                if (myConfig.Options.MaxSizeToSnaffle <= fileInfo.Length && RwStatus.CanRead)
+                {
+                    SnaffleFile(fileInfo, myConfig.Options.SnafflePath);
+                }
+            }
         }
 
         public static RwStatus CanRw(FileInfo fileInfo)
@@ -271,6 +287,16 @@ namespace Classifiers
             {
                 return null;
             }
+        }
+
+        public void SnaffleFile(FileInfo fileInfo, string snafflePath)
+        {
+            string sourcePath = fileInfo.FullName;
+            // clean it up and normalise it a bit
+            string cleanedPath = Path.GetFullPath(sourcePath.Replace(':', '.').Replace('$', '.'));
+            // make the dir exist
+            Directory.CreateDirectory(Path.GetDirectoryName(snafflePath + cleanedPath));
+            File.Copy(sourcePath, (Path.GetFullPath(snafflePath + cleanedPath)), true);
         }
 
         public static bool CanIRead(FileInfo fileInfo)
@@ -328,11 +354,5 @@ namespace Classifiers
 
             return writeRight;
         }
-    }
-
-    public class GrepFileResult
-    {
-        public List<string> GreppedStrings { get; set; }
-        public string GrepContext { get; set; }
     }
 }

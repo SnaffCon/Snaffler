@@ -60,17 +60,16 @@ namespace SnaffCore.Config
             var stdOutArg = new SwitchArgument('s', "stdout",
                 "Enables outputting results to stdout as soon as they're found. You probably want this if you're not using -o.",
                 false);
-            var mirrorArg = new ValueArgument<string>('m', "mirror",
-                "Enables and assigns an output dir for snaffler to automatically take a copy of any found files.");
-            var fileHuntArg = new SwitchArgument('f', "filehuntoff",
-                "Disables file discovery, will only perform computer and share discovery.", false);
+            var snaffleArg = new ValueArgument<string>('m', "snaffle",
+                "Enables and assigns an output dir for Snaffler to automatically snaffle a copy of any found files.");
+            var snaffleSizeArg = new ValueArgument<long>('l', "snafflesize", "Maximum size of file to snaffle, in bytes. Defaults to 10MB.");
+            //var fileHuntArg = new SwitchArgument('f', "filehuntoff",
+            //    "Disables file discovery, will only perform computer and share discovery.", false);
             var dirTargetArg = new ValueArgument<string>('i', "dirtarget",
                 "Disables computer and share discovery, requires a path to a directory in which to perform file discovery.");
             var maxThreadsArg = new ValueArgument<int>('t', "threads", "Maximum number of threads. Default 30.");
             var domainArg = new ValueArgument<string>('d', "domain",
                 "Domain to search for computers to search for shares on to search for files in. Easy.");
-            var adminshareArg = new SwitchArgument('a', "cdolla",
-                "Enables scanning of C$ shares if found. Can be prone to false positives but more thorough.", false);
             var domainControllerArg = new ValueArgument<string>('c', "domaincontroller",
                 "Domain controller to query for a list of domain computers.");
             var maxGrepSizeArg = new ValueArgument<long>('r', "maxgrepsize",
@@ -78,10 +77,9 @@ namespace SnaffCore.Config
             var grepContextArg = new ValueArgument<int>('j', "grepcontext",
                 "How many bytes of context either side of found strings in files to show, e.g. -j 200");
 
-            // list of letters i haven't used yet: bklquwyz
+            // list of letters i haven't used yet: abefgknpquwxy
 
             var parser = new CommandLineParser.CommandLineParser();
-
             parser.Arguments.Add(configFileArg);
             parser.Arguments.Add(outFileArg);
             parser.Arguments.Add(helpArg);
@@ -91,13 +89,13 @@ namespace SnaffCore.Config
             //parser.Arguments.Add(extSkipMatchArg);
             //parser.Arguments.Add(partialMatchArg);
             parser.Arguments.Add(stdOutArg);
-            parser.Arguments.Add(mirrorArg);
-            parser.Arguments.Add(fileHuntArg);
+            parser.Arguments.Add(snaffleArg);
+            parser.Arguments.Add(snaffleSizeArg);
+            //parser.Arguments.Add(fileHuntArg);
             parser.Arguments.Add(dirTargetArg);
             parser.Arguments.Add(maxThreadsArg);
             parser.Arguments.Add(domainArg);
             parser.Arguments.Add(verboseArg);
-            parser.Arguments.Add(adminshareArg);
             parser.Arguments.Add(domainControllerArg);
             parser.Arguments.Add(maxGrepSizeArg);
             parser.Arguments.Add(grepContextArg);
@@ -195,6 +193,16 @@ namespace SnaffCore.Config
                                  " bytes");
                     }
 
+                    if (snaffleArg.Parsed)
+                    {
+                        Options.SnafflePath = snaffleArg.Value;
+                    }
+
+                    if (snaffleSizeArg.Parsed)
+                    {
+                        Options.MaxSizeToSnaffle = snaffleSizeArg.Value;
+                    }
+
                     // how many bytes 
                     if (grepContextArg.Parsed)
                     {
@@ -205,17 +213,17 @@ namespace SnaffCore.Config
                     }
 
                     // if enabled, grab a copy of files that we like.
-                    if (mirrorArg.Parsed)
+                    if (snaffleArg.Parsed)
                     {
-                        if (mirrorArg.Value.Length <= 0)
+                        if (snaffleArg.Value.Length <= 0)
                         {
                             Mq.Error("-m or -mirror arg requires a path value.");
                             throw new ArgumentException("Invalid argument combination.");
                         }
 
-                        Options.EnableMirror = true;
-                        Options.MirrorPath = mirrorArg.Value.TrimEnd('\\');
-                        Mq.Degub("Mirroring matched files to path " + Options.MirrorPath);
+                        Options.Snaffle = true;
+                        Options.SnafflePath = snaffleArg.Value.TrimEnd('\\');
+                        Mq.Degub("Mirroring matched files to path " + Options.SnafflePath);
                     }
 
                     if (!Options.LogToConsole && !Options.LogToFile)

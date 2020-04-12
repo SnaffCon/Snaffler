@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Classifiers;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -13,17 +14,19 @@ namespace Snaffler
     public class SnaffleRunner
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private Config myConfig { get; set; }
+        private BlockingMq Mq { get; set; }
 
         public void Run(string[] args)
         {
             PrintBanner();
             BlockingMq.MakeMq();
-            BlockingMq myMq = BlockingMq.GetMq();
+            Mq = BlockingMq.GetMq();
             SnaffCon controller = null;
             try
             {
                 Config.Configure(args);
-                Config myConfig = Config.GetConfig();
+                myConfig = Config.GetConfig();
                 controller = new SnaffCon();
                 //------------------------------------------
                 // set up new fangled logging
@@ -42,6 +45,18 @@ namespace Snaffler
                         UseDefaultRowHighlightingRules = false,
                         WordHighlightingRules =
                         {
+                            new ConsoleWordHighlightingRule("{Green}", ConsoleOutputColor.DarkGreen,
+                                ConsoleOutputColor.White),
+                            new ConsoleWordHighlightingRule("{Yellow}", ConsoleOutputColor.DarkYellow,
+                                ConsoleOutputColor.White),
+                            new ConsoleWordHighlightingRule("{Red}", ConsoleOutputColor.DarkRed,
+                                ConsoleOutputColor.White),
+                            new ConsoleWordHighlightingRule("{Black}", ConsoleOutputColor.Black,
+                                ConsoleOutputColor.White),
+
+
+                            new ConsoleWordHighlightingRule("[Trace]", ConsoleOutputColor.DarkGray,
+                                ConsoleOutputColor.Black),
                             new ConsoleWordHighlightingRule("[Trace]", ConsoleOutputColor.DarkGray,
                                 ConsoleOutputColor.Black),
                             new ConsoleWordHighlightingRule("[Degub]", ConsoleOutputColor.Gray,
@@ -60,19 +75,22 @@ namespace Snaffler
                             {
                                 CompileRegex = true,
                                 Regex = @"<.*\|.*\|.*\|.*?>",
-                                ForegroundColor = ConsoleOutputColor.Cyan
+                                ForegroundColor = ConsoleOutputColor.Cyan,
+                                BackgroundColor = ConsoleOutputColor.Black
                             },
                             new ConsoleWordHighlightingRule
                             {
                                 CompileRegex = true,
                                 Regex = @"^\d\d\d\d-\d\d\-\d\d \d\d:\d\d:\d\d [\+-]\d\d:\d\d ",
-                                ForegroundColor = ConsoleOutputColor.DarkGray
+                                ForegroundColor = ConsoleOutputColor.DarkGray,
+                                BackgroundColor = ConsoleOutputColor.Black
                             },
                             new ConsoleWordHighlightingRule
                             {
                                 CompileRegex = true,
                                 Regex = @"\((?:[^\)]*\)){1}",
-                                ForegroundColor = ConsoleOutputColor.DarkMagenta
+                                ForegroundColor = ConsoleOutputColor.DarkMagenta,
+                                BackgroundColor = ConsoleOutputColor.Black
                             }
                         }
                     };
@@ -92,9 +110,9 @@ namespace Snaffler
 
                 //-------------------------------------------
 
-                if (myConfig.Options.EnableMirror && (myConfig.Options.MirrorPath.Length > 4))
+                if (myConfig.Options.Snaffle && (myConfig.Options.SnafflePath.Length > 4))
                 {
-                    Directory.CreateDirectory(myConfig.Options.MirrorPath);
+                    Directory.CreateDirectory(myConfig.Options.SnafflePath);
                 }
 
                 var thing = Task.Factory.StartNew(() => { controller.Execute(); });
@@ -165,14 +183,9 @@ namespace Snaffler
         public string ShareResultLogFromMessage(SnafflerMessage message)
         {
             var sharePath = message.ShareResult.SharePath;
-            var isadmin = "";
-            if (message.ShareResult.IsAdminShare)
-            {
-                isadmin = "AdminShare";
-            }
-
-            var shareResultTemplate = "<{0}>({1})";
-            return string.Format(shareResultTemplate, isadmin, sharePath);
+            var triage = message.ShareResult.Triage.ToString();
+            var shareResultTemplate = "{{0}}({1})";
+            return string.Format(shareResultTemplate, triage, sharePath);
         }
 
         public string FileResultLogFromMessage(SnafflerMessage message)
@@ -199,16 +212,16 @@ namespace Snaffler
 
             var filepath = message.FileResult.FileInfo.FullName;
 
-            var grepcontext = "";
-            if (message.FileResult.GrepFileResult != null)
+            var matchcontext = "";
+            if (message.FileResult.TextResult != null)
             {
-                matchedstring = message.FileResult.GrepFileResult.GreppedStrings[0];
-                grepcontext = message.FileResult.GrepFileResult.GrepContext;
+                matchedstring = message.FileResult.TextResult.MatchedStrings[0];
+                matchcontext = message.FileResult.TextResult.MatchContext;
             }
 
-            var fileResultTemplate = "<{0}|{1}{2}|{3}|{4}|{5}>({6}) {7}";
-            return string.Format(fileResultTemplate, matchedclassifier, canread, canwrite, matchedstring, fileSizeString, triageString,
-                filepath, grepcontext);
+            var fileResultTemplate = " {{{0}}}<{1}|{2}{3}|{4}|{5}>({6}) {7}";
+            return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString,
+                filepath, matchcontext);
         }
 
         private static String BytesToString(long byteCount)
@@ -239,34 +252,6 @@ namespace Snaffler
 
             Console.ResetColor();
         }
-
-        /*
-public void MirrorMessageFile(FileInfo fileInfo)
-{
-    // do the mirror dance
-    // TODO this should 100% be split off into its own task.
-    string mirrored = "";
-    if (message.Mirror && message.FileResult.RWStatus.canRead)
-    {
-
-        if (fileSize < 500000)
-        {
-            string sourcePath = message.FileResult.FileInfo.FullName;
-            // clean it up and normalise it a bit
-            string cleanedPath = Path.GetFullPath(sourcePath.Replace(':', '.').Replace('$', '.'));
-            // make the dir exist
-            Directory.CreateDirectory(Path.GetDirectoryName(Config.MirrorPath + cleanedPath));
-
-            File.Copy(sourcePath, (Path.GetFullPath(Config.MirrorPath + cleanedPath)), true);
-            mirrored = "Mirrored";
-        }
-        else
-        {
-            mirrored = "Skipped";
-        }
-    }
-}
-*/
 
         public void PrintBanner()
         {

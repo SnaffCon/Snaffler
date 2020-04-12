@@ -26,7 +26,7 @@ namespace Classifiers
             // first time we hit sysvol, toggle the flag and keep going. every other time, bail out.
             if (share.ToLower().EndsWith("sysvol"))
             {
-                if (myConfig.Options.ScanSysvol = false)
+                if (myConfig.Options.ScanSysvol == false)
                 {
                     return;
                 }
@@ -35,7 +35,7 @@ namespace Classifiers
             // same for netlogon
             if (share.ToLower().EndsWith("netlogon"))
             {
-                if (myConfig.Options.ScanNetlogon = false)
+                if (myConfig.Options.ScanNetlogon == false)
                 {
                     return;
                 }
@@ -43,7 +43,8 @@ namespace Classifiers
             }
             // check if it matches
             TextClassifier textClassifier = new TextClassifier(ClassifierRule);
-            if (textClassifier.SimpleMatch(share))
+            TextResult textResult = textClassifier.SimpleMatch(share);
+            if (textResult != null)
             {
                 // if it does, see what we're gonna do with it
                 switch (ClassifierRule.MatchAction)
@@ -114,6 +115,6 @@ namespace Classifiers
         public bool ScanShare { get; set; }
         public string SharePath { get; set; }
         public bool Listable { get; set; }
-        public bool IsAdminShare { get; set; }
+        public Triage Triage { get; set; }
     }
 }

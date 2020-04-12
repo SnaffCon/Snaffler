@@ -39,7 +39,8 @@ namespace Classifiers
                     case MatchLoc.FileContentAsString:
                         string fileString = File.ReadAllText(fileInfo.FullName);
                         TextClassifier textClassifier = new TextClassifier(ClassifierRule);
-                        if (textClassifier.SimpleMatch(fileString))
+                        TextResult textResult = textClassifier.SimpleMatch(fileString);
+                        if (textResult != null)
                         {
                             fileResult = new FileResult(fileInfo)
                             {

@@ -26,7 +26,8 @@ namespace Classifiers
             };
             // check if it matches
             TextClassifier textClassifier = new TextClassifier(ClassifierRule);
-            if (textClassifier.SimpleMatch(dir))
+            TextResult textResult = textClassifier.SimpleMatch(dir);
+            if (textResult != null)
             {
                 // if it does, see what we're gonna do with it
                 switch (ClassifierRule.MatchAction)

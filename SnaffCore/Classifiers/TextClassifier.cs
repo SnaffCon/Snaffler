@@ -18,7 +18,7 @@ namespace Classifiers
 
         // TODO fix case sensitivity
         // Methods for classification
-        internal bool SimpleMatch(string input)
+        internal TextResult SimpleMatch(string input)
         {
             // generic match checking
             switch (ClassifierRule.WordListType)
@@ -28,7 +28,10 @@ namespace Classifiers
                     {
                         if (input.ToLower().Contains(matchString.ToLower()))
                         {
-                            return true;
+                            return new TextResult()
+                            {
+                                MatchedStrings = new List<string>(){matchString}
+                            };
                         }
                     }
 
@@ -38,7 +41,10 @@ namespace Classifiers
                     {
                         if (input.ToLower().EndsWith(matchString.ToLower()))
                         {
-                            return true;
+                            return new TextResult()
+                            {
+                                MatchedStrings = new List<string>() {matchString}
+                            };
                         }
                     }
 
@@ -48,7 +54,10 @@ namespace Classifiers
                     {
                         if (input.ToLower() == matchString.ToLower())
                         {
-                            return true;
+                            return new TextResult()
+                            {
+                                MatchedStrings = new List<string>() { matchString }
+                            };
                         }
                     }
 
@@ -58,7 +67,10 @@ namespace Classifiers
                     {
                         if (input.ToLower().StartsWith(matchString.ToLower()))
                         {
-                            return true;
+                            return new TextResult()
+                            {
+                                MatchedStrings = new List<string>() { matchString }
+                            };
                         }
                     }
 
@@ -67,22 +79,31 @@ namespace Classifiers
                     foreach (string matchString in ClassifierRule.WordList)
                     {
                         Regex regex = new Regex(matchString);
+                        Match match = regex.Match(input);
+                        if (match != null)
+                        {
+                            int index = match.Index;
+                        }
+
                         if (regex.IsMatch(input))
                         {
-                            return true;
+                            return new TextResult()
+                            {
+                                MatchedStrings = new List<string>() { matchString }
+                            };
                         }
                     }
 
                     break;
                 default:
-                    return false;
+                    return null;
             }
 
-            return false;
+            return null;
         }
 
         // TODO fix up simplematch to do like this?
-        internal GrepFileResult GrepFile(FileInfo fileInfo, IEnumerable<string> grepStrings, int contextBytes)
+        internal TextResult GrepFile(FileInfo fileInfo, List<string> grepStrings, int contextBytes)
         {
             List<string> foundStrings = new List<string>();
 
@@ -98,10 +119,10 @@ namespace Classifiers
                     string grepContext = "";
                     if (contextBytes > 0) grepContext = fileContents.Substring(contextStart, contextBytes * 2);
 
-                    return new GrepFileResult
+                    return new TextResult
                     {
-                        GrepContext = Regex.Escape(grepContext),
-                        GreppedStrings = new List<string> { funString }
+                        MatchContext = Regex.Escape(grepContext),
+                        MatchedStrings = new List<string> { funString }
                     };
                 }
             }
@@ -114,5 +135,11 @@ namespace Classifiers
             if (result <= floor) return floor;
             return result;
         }
+    }
+
+    public class TextResult
+    {
+        public List<string> MatchedStrings { get; set; }
+        public string MatchContext { get; set; }
     }
 }

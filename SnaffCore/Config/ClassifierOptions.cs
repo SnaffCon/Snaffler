@@ -398,6 +398,7 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
+                        "=jdbc:",
                         // thanks to graudit
                         "[Aa][Ww][Ss][_\\-\\.]?[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?[Kk][Ee][Yy]",
                         "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]",

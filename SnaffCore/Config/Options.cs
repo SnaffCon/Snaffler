@@ -36,8 +36,11 @@ namespace SnaffCore.Config
         public long MaxSizeToGrep { get; set; } = 1000000;
 
         // these enable or disable automated downloading of files that match the criteria
-        public bool EnableMirror { get; set; } = false;
-        public string MirrorPath { get; set; }
+        public bool Snaffle { get; set; } = false;
+        public long MaxSizeToSnaffle { get; set; } = 10000000;
+        public string SnafflePath { get; set; }
+
+        // Content processing options
         public int GrepContextBytes { get; set; } = 0;
 
         public Options()

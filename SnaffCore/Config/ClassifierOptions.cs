@@ -257,7 +257,7 @@ namespace SnaffCore.Config
                         "unattend.xml",
                         ".netrc",
                         "_netrc",
-                        ".htaccess",
+                        ".htpasswd",
                         "otr.private_key",
                         ".secret_token.rb",
                         "carrierwave.rb",
@@ -572,6 +572,7 @@ namespace SnaffCore.Config
                         "PRIVATE KEY----",
                     },
                 },
+                /*
                 new ClassifierRule()
                 {
                     RuleOrder = 12,
@@ -591,7 +592,8 @@ namespace SnaffCore.Config
                         "thycotic",
                         "cyberark",
                     },
-                },
+                },*/
+                
                 new ClassifierRule()
                 {
                     RuleName = "KeepTokensRegexRed",

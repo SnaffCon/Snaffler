@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
+using NLog.Targets;
 using SnaffCore.Concurrency;
 using Config = SnaffCore.Config.Config;
 
@@ -77,7 +78,6 @@ namespace Classifiers
                     return true;
                 case MatchAction.Snaffle:
                     // snaffle that bad boy
-                    snaffleFile = fileInfo.Length <= myConfig.Options.MaxSizeToSnaffle;
                     fileResult = new FileResult(fileInfo)
                     {
                         MatchedRule = ClassifierRule,
@@ -87,7 +87,6 @@ namespace Classifiers
                     return true;
                 case MatchAction.CheckForKeys:
                     // do a special x509 dance
-                    snaffleFile = fileInfo.Length <= myConfig.Options.MaxSizeToSnaffle;
                     if (x509PrivKeyMatch(fileInfo))
                     {
                         fileResult = new FileResult(fileInfo)
@@ -139,9 +138,6 @@ namespace Classifiers
                     return false;
             }
         }
-
-        // TODO fix case sensitivity
-        // Methods for classification
 
         public bool x509PrivKeyMatch(FileInfo fileInfo)
         {
@@ -271,7 +267,7 @@ namespace Classifiers
             Config myConfig = Config.GetConfig();
             if (myConfig.Options.Snaffle)
             {
-                if (myConfig.Options.MaxSizeToSnaffle <= fileInfo.Length && RwStatus.CanRead)
+                if ((myConfig.Options.MaxSizeToSnaffle >= fileInfo.Length) && RwStatus.CanRead)
                 {
                     SnaffleFile(fileInfo, myConfig.Options.SnafflePath);
                 }
@@ -295,10 +291,13 @@ namespace Classifiers
         {
             string sourcePath = fileInfo.FullName;
             // clean it up and normalise it a bit
-            string cleanedPath = Path.GetFullPath(sourcePath.Replace(':', '.').Replace('$', '.'));
+            string cleanedPath = sourcePath.Replace(':', '.').Replace('$', '.').Replace("\\\\", "\\");
+            //string cleanedPath = Path.GetFullPath(sourcePath.Replace(':', '.').Replace('$', '.'));
             // make the dir exist
-            Directory.CreateDirectory(Path.GetDirectoryName(snafflePath + cleanedPath));
-            File.Copy(sourcePath, (Path.GetFullPath(snafflePath + cleanedPath)), true);
+            string snaffleFilePath = Path.Combine(snafflePath, cleanedPath);
+            string snaffleDirPath = Path.GetDirectoryName(snaffleFilePath);
+            Directory.CreateDirectory(snaffleDirPath);
+            File.Copy(sourcePath, (Path.Combine(snafflePath, cleanedPath)), true);
         }
 
         public static bool CanIRead(FileInfo fileInfo)

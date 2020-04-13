@@ -38,7 +38,7 @@ namespace Classifiers
                     // this bullshit
                     if (stringToMatch == "")
                     {
-                        return true;
+                        return false;
                     }
                     break;
                 case MatchLoc.FileName:
@@ -49,7 +49,7 @@ namespace Classifiers
                     break;
                 default:
                     Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
-                    return true;
+                    return false;
             }
 
             TextResult textResult = null;
@@ -59,7 +59,7 @@ namespace Classifiers
                 TextClassifier textClassifier = new TextClassifier(ClassifierRule);
                 // check if it matches
                 textResult = textClassifier.SimpleMatch(stringToMatch);
-                if (textResult != null)
+                if (textResult == null)
                 {
                     // if it doesn't we just bail now.
                     return false;
@@ -67,7 +67,6 @@ namespace Classifiers
             }
 
             // whether we are going to steal a copy of the file
-
             bool snaffleFile;
             FileResult fileResult;
             // if it matches, see what we're gonna do with it
@@ -110,22 +109,25 @@ namespace Classifiers
                         {
                             ContentClassifier nextContentClassifier = new ContentClassifier(nextRule);
                             nextContentClassifier.ClassifyContent(fileInfo);
+                            return true;
                         }
                         else if (nextRule.EnumerationScope == EnumerationScope.FileEnumeration)
                         {
                             FileClassifier nextFileClassifier = new FileClassifier(nextRule);
                             nextFileClassifier.ClassifyFile(fileInfo);
+                            return true;
                         }
                         else
                         {
                             Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
+                            return false;
                         }
                     }
                     catch (Exception e)
                     {
                         Mq.Trace(e.ToString());
                     }
-                    return true;
+                    return false;
                 case MatchAction.EnterArchive:
                     // do a special looking inside archive files dance using
                     // https://github.com/adamhathcock/sharpcompress

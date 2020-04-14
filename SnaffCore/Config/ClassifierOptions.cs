@@ -39,8 +39,8 @@ namespace SnaffCore.Config
                     WordList = new List<string>()
                     {
                         // these are share names that make us skip the share instantly.
-                        "print$",
-                        "ipc$"
+                        "\\print$",
+                        "\\ipc$"
                     },
                 },
                 new ClassifierRule()
@@ -53,7 +53,7 @@ namespace SnaffCore.Config
                     WordListType = MatchListType.EndsWith,
                     WordList = new List<string>()
                     {
-                        "C$"
+                        "\\C$"
                     },
                 },
                 new ClassifierRule()

@@ -99,8 +99,8 @@ namespace SnaffCore
 
         private void ShareDiscovery(string[] computerTargets)
         {
-            TaskFactory SharefinderTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
-            CancellationTokenSource SharefinderCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
+            TaskFactory SharefinderTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareTaskFactory();
+            CancellationTokenSource SharefinderCts = LimitedConcurrencyLevelTaskScheduler.GetShareCts();
 
             Mq.Info("Starting to find readable shares.");
             foreach (var computer in computerTargets)
@@ -125,8 +125,8 @@ namespace SnaffCore
 
         private void FileDiscovery(string[] pathTargets)
         {
-            TaskFactory SharescannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
-            CancellationTokenSource SharescannerCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
+            TaskFactory SharescannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareTaskFactory();
+            CancellationTokenSource SharescannerCts = LimitedConcurrencyLevelTaskScheduler.GetShareCts();
 
             foreach (string pathTarget in pathTargets)
             {

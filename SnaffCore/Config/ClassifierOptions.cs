@@ -31,7 +31,7 @@ namespace SnaffCore.Config
                 new ClassifierRule()
                 {
                     RuleOrder = 0,
-                    RuleName = "DiscardShareExact",
+                    RuleName = "DiscardShareEndsWtih",
                     EnumerationScope = EnumerationScope.ShareEnumeration,
                     MatchLocation = MatchLoc.ShareName,
                     MatchAction = MatchAction.Discard,

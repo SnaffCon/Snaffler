@@ -16,14 +16,13 @@ namespace SnaffCore.ShareFind
     {
         private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
-        private TaskFactory treeWalkerTaskFactory { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
-        private CancellationTokenSource treeWalkerCts { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
+        private TaskFactory treeWalkerTaskFactory { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetTreeTaskFactory();
+        private CancellationTokenSource treeWalkerCts { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetTreeCts();
 
         public ShareFinder()
         {
             myConfig = Config.Config.GetConfig();
             Mq = BlockingMq.GetMq();
-
         }
 
         internal void GetComputerShares(string computer)
@@ -43,34 +42,36 @@ namespace SnaffCore.ShareFind
                         ShareClassifier shareClassifier = new ShareClassifier(classifier);
                         if (shareClassifier.ClassifyShare(shareName))
                         {
-                            // we do this on a match to avoid doing any further classifiers after we've hit a match
                             matched = true;
                             break;
                         }
                     }
                     // by default all shares should go on to TreeWalker unless the classifier pulls them out.
                     // send them to TreeWalker
-                    if (IsShareReadable(shareName) && !matched)
+                    if (!matched)
                     {
-                        ShareResult shareResult = new ShareResult()
+                        if (IsShareReadable(shareName))
                         {
-                            Listable = true,
-                            SharePath = shareName
-                        };
-                        Mq.ShareResult(shareResult);
+                            ShareResult shareResult = new ShareResult()
+                            {
+                                Listable = true,
+                                SharePath = shareName
+                            };
+                            Mq.ShareResult(shareResult);
 
-                        Mq.Info("Creating a TreeWalker task for " + shareResult.SharePath);
-                        var t = treeWalkerTaskFactory.StartNew(() =>
-                        {
-                            try
+                            Mq.Info("Creating a TreeWalker task for " + shareResult.SharePath);
+                            var t = treeWalkerTaskFactory.StartNew(() =>
                             {
-                                new TreeWalker(shareResult.SharePath);
-                            }
-                            catch (Exception e)
-                            {
-                                Mq.Trace(e.ToString());
-                            }
-                        }, treeWalkerCts.Token);
+                                try
+                                {
+                                    new TreeWalker(shareResult.SharePath);
+                                }
+                                catch (Exception e)
+                                {
+                                    Mq.Trace(e.ToString());
+                                }
+                            }, treeWalkerCts.Token);
+                        }
                     }
                 }
             }

@@ -206,7 +206,7 @@ namespace SnaffCore.Config
                     // how many bytes 
                     if (grepContextArg.Parsed)
                     {
-                        Options.GrepContextBytes = grepContextArg.Value;
+                        Options.MatchContextBytes = grepContextArg.Value;
                         Mq.Degub(
                             "We'll show you " + grepContextArg.Value +
                             " bytes of context around matches inside files.");

@@ -115,10 +115,21 @@ namespace SnaffCore.TreeWalk
                     {
                         foreach (ClassifierRule classifier in myConfig.Options.DirClassifiers)
                         {
-                            DirClassifier dirClassifier = new DirClassifier(classifier);
-                            DirResult dirResult = dirClassifier.ClassifyDir(dirStr);
-                            // TODO: concurrency uplift: when there is a pooled concurrency queue, just add the dir as a job to the queue
-                            if (dirResult.ScanDir) { dirs.Push(dirStr);}
+                            try
+                            {
+                                DirClassifier dirClassifier = new DirClassifier(classifier);
+                                DirResult dirResult = dirClassifier.ClassifyDir(dirStr);
+                                // TODO: concurrency uplift: when there is a pooled concurrency queue, just add the dir as a job to the queue
+                                if (dirResult.ScanDir)
+                                {
+                                    dirs.Push(dirStr);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Mq.Trace(e.ToString());
+                                continue;
+                            }
                         }
                     }
                 }

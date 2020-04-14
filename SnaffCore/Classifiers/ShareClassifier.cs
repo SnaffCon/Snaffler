@@ -43,7 +43,7 @@ namespace Classifiers
             }
             // check if it matches
             TextClassifier textClassifier = new TextClassifier(ClassifierRule);
-            TextResult textResult = textClassifier.SimpleMatch(share);
+            TextResult textResult = textClassifier.TextMatch(share);
             if (textResult != null)
             {
                 // if it does, see what we're gonna do with it

@@ -363,7 +363,7 @@ namespace SnaffCore.Config
                     MatchLocation = MatchLoc.FileExtension,
                     WordListType = MatchListType.Exact,
                     MatchAction = MatchAction.Relay,
-                    RelayTarget = "KeepCodeGrepContainsYellow",
+                    RelayTarget = "KeepCodeGrepContainsRed",
                     WordList = new List<string>()
                     {
                         // python

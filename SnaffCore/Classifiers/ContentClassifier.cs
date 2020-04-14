@@ -39,12 +39,13 @@ namespace Classifiers
                     case MatchLoc.FileContentAsString:
                         string fileString = File.ReadAllText(fileInfo.FullName);
                         TextClassifier textClassifier = new TextClassifier(ClassifierRule);
-                        TextResult textResult = textClassifier.SimpleMatch(fileString);
+                        TextResult textResult = textClassifier.TextMatch(fileString);
                         if (textResult != null)
                         {
                             fileResult = new FileResult(fileInfo)
                             {
-                                MatchedRule = ClassifierRule
+                                MatchedRule = ClassifierRule,
+                                TextResult = textResult
                             };
                             Mq.FileResult(fileResult);
                         }

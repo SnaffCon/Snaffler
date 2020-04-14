@@ -59,7 +59,7 @@ namespace Classifiers
             {
                 TextClassifier textClassifier = new TextClassifier(ClassifierRule);
                 // check if it matches
-                textResult = textClassifier.SimpleMatch(stringToMatch);
+                textResult = textClassifier.TextMatch(stringToMatch);
                 if (textResult == null)
                 {
                     // if it doesn't we just bail now.
@@ -124,6 +124,7 @@ namespace Classifiers
                     }
                     catch (Exception e)
                     {
+                        Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                         Mq.Trace(e.ToString());
                     }
                     return false;

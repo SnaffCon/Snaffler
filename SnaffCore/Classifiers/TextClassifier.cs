@@ -4,7 +4,10 @@ using System.IO;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.ServiceModel.Dispatcher;
 using System.Text.RegularExpressions;
+using SnaffCore.Concurrency;
+using SnaffCore.Config;
 
 namespace Classifiers
 {
@@ -16,9 +19,12 @@ namespace Classifiers
             this.ClassifierRule = inRule;
         }
 
-        // TODO fix case sensitivity
+        private Config myConfig { get; set; } = Config.GetConfig();
+
+        private BlockingMq Mq { get; set; } = BlockingMq.GetMq();
+
         // Methods for classification
-        internal TextResult SimpleMatch(string input)
+        internal TextResult TextMatch(string input)
         {
             // generic match checking
             switch (ClassifierRule.WordListType)
@@ -30,7 +36,8 @@ namespace Classifiers
                         {
                             return new TextResult()
                             {
-                                MatchedStrings = new List<string>(){matchString}
+                                MatchedStrings = new List<string>(){matchString},
+                                MatchContext = GetContext(input, matchString)
                             };
                         }
                     }
@@ -43,7 +50,8 @@ namespace Classifiers
                         {
                             return new TextResult()
                             {
-                                MatchedStrings = new List<string>() {matchString}
+                                MatchedStrings = new List<string>() {matchString},
+                                MatchContext = GetContext(input, matchString)
                             };
                         }
                     }
@@ -56,7 +64,8 @@ namespace Classifiers
                         {
                             return new TextResult()
                             {
-                                MatchedStrings = new List<string>() { matchString }
+                                MatchedStrings = new List<string>() { matchString },
+                                MatchContext = GetContext(input, matchString)
                             };
                         }
                     }
@@ -69,7 +78,8 @@ namespace Classifiers
                         {
                             return new TextResult()
                             {
-                                MatchedStrings = new List<string>() { matchString }
+                                MatchedStrings = new List<string>() { matchString },
+                                MatchContext = GetContext(input, matchString)
                             };
                         }
                     }
@@ -79,54 +89,76 @@ namespace Classifiers
                     foreach (string matchString in ClassifierRule.WordList)
                     {
                         Regex regex = new Regex(matchString);
-                        Match match = regex.Match(input);
-                        if (match != null)
-                        {
-                            int index = match.Index;
-                        }
 
                         if (regex.IsMatch(input))
                         {
                             return new TextResult()
                             {
-                                MatchedStrings = new List<string>() { matchString }
+                                MatchedStrings = new List<string>() { matchString },
+                                MatchContext = GetContext(input, regex)
                             };
                         }
                     }
-
                     break;
                 default:
                     return null;
             }
-
             return null;
         }
 
-        // TODO fix up simplematch to do like this?
-        internal TextResult GrepFile(FileInfo fileInfo, List<string> grepStrings, int contextBytes)
+        internal string GetContext(string original, string matchString)
         {
-            List<string> foundStrings = new List<string>();
-
-            string fileContents = File.ReadAllText(fileInfo.FullName);
-
-            foreach (string funString in grepStrings)
+            try
             {
-                int foundIndex = fileContents.IndexOf(funString, StringComparison.OrdinalIgnoreCase);
-
-                if (foundIndex >= 0)
+                int contextBytes = myConfig.Options.MatchContextBytes;
+                if (contextBytes == 0)
                 {
-                    int contextStart = SubtractWithFloor(foundIndex, contextBytes, 0);
-                    string grepContext = "";
-                    if (contextBytes > 0) grepContext = fileContents.Substring(contextStart, contextBytes * 2);
-
-                    return new TextResult
-                    {
-                        MatchContext = Regex.Escape(grepContext),
-                        MatchedStrings = new List<string> { funString }
-                    };
+                    return "";
                 }
+
+                if (original.Length <= (contextBytes * 2))
+                {
+                    return original;
+                }
+
+                int foundIndex = original.IndexOf(matchString, StringComparison.OrdinalIgnoreCase);
+
+                int contextStart = SubtractWithFloor(foundIndex, contextBytes, 0);
+                string matchContext = "";
+                if (contextBytes > 0) matchContext = original.Substring(contextStart, contextBytes * 2);
+
+                return Regex.Escape(matchContext);
             }
-            return null;
+            catch (ArgumentOutOfRangeException e)
+            {
+                return original;
+            }
+            catch (Exception e)
+            {
+                Mq.Trace(e.ToString());
+                return "";
+            }
+        }
+
+        internal string GetContext(string original, Regex matchRegex)
+        {
+            int contextBytes = myConfig.Options.MatchContextBytes;
+            if (contextBytes == 0)
+            {
+                return "";
+            }
+
+            if (original.Length < 6)
+            {
+                return original;
+            }
+
+            int foundIndex = matchRegex.Match(original).Index;
+
+            int contextStart = SubtractWithFloor(foundIndex, contextBytes, 0);
+            string matchContext = "";
+            if (contextBytes > 0) matchContext = original.Substring(contextStart, contextBytes * 2);
+            return Regex.Escape(matchContext);
         }
 
         internal int SubtractWithFloor(int num1, int num2, int floor)

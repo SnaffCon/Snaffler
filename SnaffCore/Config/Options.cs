@@ -41,7 +41,7 @@ namespace SnaffCore.Config
         public string SnafflePath { get; set; }
 
         // Content processing options
-        public int GrepContextBytes { get; set; } = 0;
+        public int MatchContextBytes { get; set; } = 50;
 
         public Options()
         {

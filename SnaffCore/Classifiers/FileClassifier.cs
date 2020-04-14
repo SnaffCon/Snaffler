@@ -67,8 +67,6 @@ namespace Classifiers
                 }
             }
 
-            // whether we are going to steal a copy of the file
-            bool snaffleFile;
             FileResult fileResult;
             // if it matches, see what we're gonna do with it
             switch (ClassifierRule.MatchAction)

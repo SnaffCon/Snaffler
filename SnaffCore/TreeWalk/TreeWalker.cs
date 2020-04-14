@@ -59,12 +59,12 @@ namespace SnaffCore.TreeWalk
                     }
                     catch (UnauthorizedAccessException e)
                     {
-                        Mq.Trace(e.ToString());
+                        //Mq.Trace(e.ToString());
                         continue;
                     }
                     catch (DirectoryNotFoundException e)
                     {
-                        Mq.Trace(e.ToString());
+                        //Mq.Trace(e.ToString());
                         continue;
                     }
                     catch (Exception e)
@@ -80,12 +80,12 @@ namespace SnaffCore.TreeWalk
                     }
                     catch (UnauthorizedAccessException e)
                     {
-                        Mq.Trace(e.ToString());
+                        //Mq.Trace(e.ToString());
                         continue;
                     }
                     catch (DirectoryNotFoundException e)
                     { 
-                        Mq.Trace(e.ToString());
+                        //Mq.Trace(e.ToString());
                         continue;
                     }
                     catch (Exception e)

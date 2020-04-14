@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -15,11 +16,14 @@ namespace SnaffCore.ShareFind
     {
         private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
+        private TaskFactory treeWalkerTaskFactory { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
+        private CancellationTokenSource treeWalkerCts { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
 
         public ShareFinder()
         {
             myConfig = Config.Config.GetConfig();
             Mq = BlockingMq.GetMq();
+
         }
 
         internal void GetComputerShares(string computer)
@@ -32,6 +36,7 @@ namespace SnaffCore.ShareFind
                 var shareName = GetShareName(hostShareInfo, computer);
                 if (!String.IsNullOrWhiteSpace(shareName))
                 {
+                    bool matched = false;
                     // classify them
                     foreach (ClassifierRule classifier in myConfig.Options.ShareClassifiers)
                     {
@@ -39,11 +44,55 @@ namespace SnaffCore.ShareFind
                         if (shareClassifier.ClassifyShare(shareName))
                         {
                             // we do this on a match to avoid doing any further classifiers after we've hit a match
+                            matched = true;
                             break;
                         }
                     }
+                    // by default all shares should go on to TreeWalker unless the classifier pulls them out.
+                    // send them to TreeWalker
+                    if (IsShareReadable(shareName) && !matched)
+                    {
+                        ShareResult shareResult = new ShareResult()
+                        {
+                            Listable = true,
+                            SharePath = shareName
+                        };
+                        Mq.ShareResult(shareResult);
+
+                        Mq.Info("Creating a TreeWalker task for " + shareResult.SharePath);
+                        var t = treeWalkerTaskFactory.StartNew(() =>
+                        {
+                            try
+                            {
+                                new TreeWalker(shareResult.SharePath);
+                            }
+                            catch (Exception e)
+                            {
+                                Mq.Trace(e.ToString());
+                            }
+                        }, treeWalkerCts.Token);
+                    }
                 }
             }
+        }
+
+        internal bool IsShareReadable(string share)
+        {
+            BlockingMq Mq = BlockingMq.GetMq();
+            try
+            {
+                string[] files = Directory.GetFiles(share);
+                return true;
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                return false;
+            }
+            catch (Exception e)
+            {
+                Mq.Trace(e.ToString());
+            }
+            return false;
         }
 
         private string GetShareName(HostShareInfo hostShareInfo, string computer)
@@ -54,8 +103,8 @@ namespace SnaffCore.ShareFind
             string[] errors = {"ERROR=53", "ERROR=5"};
             if (errors.Contains(hostShareInfo.shi1_netname))
             {
-                Mq.Trace(hostShareInfo.shi1_netname + " on " + computer +
-                                ", but this is usually no cause for alarm.");
+                //Mq.Trace(hostShareInfo.shi1_netname + " on " + computer +
+                                //", but this is usually no cause for alarm.");
                 return null;
             }
             return $"\\\\{computer}\\{hostShareInfo.shi1_netname}";

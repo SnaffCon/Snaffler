@@ -37,17 +37,29 @@ namespace Classifiers
                         }
                         return;
                     case MatchLoc.FileContentAsString:
-                        string fileString = File.ReadAllText(fileInfo.FullName);
-                        TextClassifier textClassifier = new TextClassifier(ClassifierRule);
-                        TextResult textResult = textClassifier.TextMatch(fileString);
-                        if (textResult != null)
+                        try
                         {
-                            fileResult = new FileResult(fileInfo)
+                            string fileString = File.ReadAllText(fileInfo.FullName);
+
+                            TextClassifier textClassifier = new TextClassifier(ClassifierRule);
+                            TextResult textResult = textClassifier.TextMatch(fileString);
+                            if (textResult != null)
                             {
-                                MatchedRule = ClassifierRule,
-                                TextResult = textResult
-                            };
-                            Mq.FileResult(fileResult);
+                                fileResult = new FileResult(fileInfo)
+                                {
+                                    MatchedRule = ClassifierRule,
+                                    TextResult = textResult
+                                };
+                                Mq.FileResult(fileResult);
+                            }
+                        }
+                        catch (UnauthorizedAccessException e)
+                        {
+                            return;
+                        }
+                        catch (IOException e)
+                        {
+                            return;
                         }
                         return;
                     default:

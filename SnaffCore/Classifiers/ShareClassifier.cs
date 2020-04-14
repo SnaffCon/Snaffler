@@ -1,9 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using SnaffCore.Concurrency;
-using SnaffCore.TreeWalk;
 using Config = SnaffCore.Config.Config;
 
 namespace Classifiers
@@ -19,8 +16,6 @@ namespace Classifiers
 
         public bool ClassifyShare(string share)
         {
-            TaskFactory treeWalkerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
-            CancellationTokenSource treeWalkerCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
             // first time we hit sysvol, toggle the flag and keep going. every other time, bail out.
@@ -68,32 +63,6 @@ namespace Classifiers
                         return false;
                 }
             }
-            // by default all shares should go on to TreeWalker
-            // send them to TreeWalker
-            if (IsShareReadable(share))
-            {
-                ShareResult shareResult = new ShareResult()
-                {
-                    Listable = true,
-                    SharePath = share
-                };
-                Mq.ShareResult(shareResult);
-
-                Mq.Info("Creating a TreeWalker task for " + shareResult.SharePath);
-                var t = treeWalkerTaskFactory.StartNew(() =>
-                {
-                    try
-                    {
-                        new TreeWalker(shareResult.SharePath);
-                    }
-                    catch (Exception e)
-                    {
-                        Mq.Trace(e.ToString());
-                    }
-                }, treeWalkerCts.Token);
-                return true;
-            }
-
             return false;
         }
 
@@ -104,6 +73,10 @@ namespace Classifiers
             {
                 string[] files = Directory.GetFiles(share);
                 return true;
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                return false;
             }
             catch (Exception e)
             {

@@ -593,19 +593,6 @@ namespace SnaffCore.Config
                         "cyberark",
                     },
                 },*/
-                
-                new ClassifierRule()
-                {
-                    RuleName = "KeepTokensRegexRed",
-                    EnumerationScope = EnumerationScope.ContentsEnumeration,
-                    MatchLocation = MatchLoc.FileContentAsString,
-                    WordListType = MatchListType.Regex,
-                    MatchAction = MatchAction.Snaffle,
-                    Triage = Triage.Red,
-                    WordList = new List<string>()
-                    {
-                    }
-                },
             };
             /*
             [Nett.TomlIgnore]

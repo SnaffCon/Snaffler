@@ -10,41 +10,63 @@ namespace SnaffCore.Concurrency
 
     public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
     {
-        private static LimitedConcurrencyLevelTaskScheduler _snafflerLclts;
-        private static TaskFactory _snafflerTaskFactory;
-        private static CancellationTokenSource _snafflerCts;
+        private static LimitedConcurrencyLevelTaskScheduler _shareLclts;
+        private static TaskFactory _shareTaskFactory;
+        private static CancellationTokenSource _shareCts;
+        private static LimitedConcurrencyLevelTaskScheduler _treeLclts;
+        private static TaskFactory _treeTaskFactory;
+        private static CancellationTokenSource _treeCts;
+        private static LimitedConcurrencyLevelTaskScheduler _fileLclts;
+        private static TaskFactory _fileTaskFactory;
+        private static CancellationTokenSource _fileCts;
         private static List<Task> _snafflerTaskList { get; set; } = new List<Task>();
 
         public static void CreateLCLTSes(int maxDegreeOfParallelism)
         {
-            _snafflerLclts = new LimitedConcurrencyLevelTaskScheduler(maxDegreeOfParallelism);
-            _snafflerTaskFactory = new TaskFactory(_snafflerLclts);
-            _snafflerCts = new CancellationTokenSource();
+            int shareThreads = maxDegreeOfParallelism / 10;
+            int treeThreads = maxDegreeOfParallelism / 5;
+            int fileThreads = maxDegreeOfParallelism;
+
+            _shareLclts = new LimitedConcurrencyLevelTaskScheduler(shareThreads);
+            _shareTaskFactory = new TaskFactory(_shareLclts);
+            _shareCts = new CancellationTokenSource();
+
+            _treeLclts = new LimitedConcurrencyLevelTaskScheduler(treeThreads);
+            _treeTaskFactory = new TaskFactory(_treeLclts);
+            _treeCts = new CancellationTokenSource();
+
+            _fileLclts = new LimitedConcurrencyLevelTaskScheduler(fileThreads);
+            _fileTaskFactory = new TaskFactory(_fileLclts);
+            _fileCts = new CancellationTokenSource();
         }
 
-        public static LimitedConcurrencyLevelTaskScheduler GetSnafflerLclts()
+        public static TaskFactory GetShareTaskFactory()
         {
-            return _snafflerLclts;
+            return _shareTaskFactory;
         }
-
-        public static TaskFactory GetSnafflerTaskFactory()
+        public static CancellationTokenSource GetShareCts()
         {
-            return _snafflerTaskFactory;
+            return _shareCts;
         }
-
-        public static CancellationTokenSource GetSnafflerCts()
+        public static TaskFactory GetFileTaskFactory()
         {
-            return _snafflerCts;
+            return _fileTaskFactory;
         }
-
+        public static CancellationTokenSource GetFileCts()
+        {
+            return _fileCts;
+        }
+        public static TaskFactory GetTreeTaskFactory()
+        {
+            return _treeTaskFactory;
+        }
+        public static CancellationTokenSource GetTreeCts()
+        {
+            return _treeCts;
+        }
         public static List<Task> GetSnafflerTaskList()
         {
             return _snafflerTaskList;
-        }
-
-        public IEnumerable<Task> ReallyGetScheduledTasks()
-        {
-            return GetScheduledTasks();
         }
 
         // Indicates whether the current thread is processing work items.

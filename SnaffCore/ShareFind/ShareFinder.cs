@@ -36,7 +36,11 @@ namespace SnaffCore.ShareFind
                     foreach (ClassifierRule classifier in myConfig.Options.ShareClassifiers)
                     {
                         ShareClassifier shareClassifier = new ShareClassifier(classifier);
-                        shareClassifier.ClassifyShare(shareName);
+                        if (shareClassifier.ClassifyShare(shareName))
+                        {
+                            // we do this on a match to avoid doing any further classifiers after we've hit a match
+                            break;
+                        }
                     }
                 }
             }

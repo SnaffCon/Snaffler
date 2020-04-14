@@ -17,7 +17,7 @@ namespace Classifiers
             this.ClassifierRule = inRule;
         }
 
-        public void ClassifyShare(string share)
+        public bool ClassifyShare(string share)
         {
             TaskFactory treeWalkerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskFactory();
             CancellationTokenSource treeWalkerCts = LimitedConcurrencyLevelTaskScheduler.GetSnafflerCts();
@@ -28,7 +28,7 @@ namespace Classifiers
             {
                 if (myConfig.Options.ScanSysvol == false)
                 {
-                    return;
+                    return true;
                 }
                 myConfig.Options.ScanSysvol = false;
             };
@@ -37,7 +37,7 @@ namespace Classifiers
             {
                 if (myConfig.Options.ScanNetlogon == false)
                 {
-                    return;
+                    return true;
                 }
                 myConfig.Options.ScanNetlogon = false;
             }
@@ -50,8 +50,9 @@ namespace Classifiers
                 switch (ClassifierRule.MatchAction)
                 {
                     case MatchAction.Discard:
-                        return;
+                        return true;
                     case MatchAction.Snaffle:
+                        // in this context snaffle means 'send a report up the queue but don't scan the share'
                         if (IsShareReadable(share))
                         {
                             ShareResult shareResult = new ShareResult()
@@ -61,10 +62,10 @@ namespace Classifiers
                             };
                             Mq.ShareResult(shareResult);
                         }
-                        return;
+                        return true;
                     default:
                         Mq.Error("You've got a misconfigured share ClassifierRule named " + ClassifierRule.RuleName + ".");
-                        return;
+                        return false;
                 }
             }
             // by default all shares should go on to TreeWalker
@@ -90,7 +91,10 @@ namespace Classifiers
                         Mq.Trace(e.ToString());
                     }
                 }, treeWalkerCts.Token);
+                return true;
             }
+
+            return false;
         }
 
         internal bool IsShareReadable(string share)

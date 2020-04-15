@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Classifiers;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -190,38 +189,47 @@ namespace Snaffler
 
         public string FileResultLogFromMessage(SnafflerMessage message)
         {
-            var matchedclassifier = message.FileResult.MatchedRule.RuleName; //message.FileResult.WhyMatched.ToString();
-            var triageString = message.FileResult.MatchedRule.Triage.ToString();
-
-            var canread = "";
-            if (message.FileResult.RwStatus.CanRead)
+            try
             {
-                canread = "R";
-            }
+                var matchedclassifier = message.FileResult.MatchedRule.RuleName; //message.FileResult.WhyMatched.ToString();
+                var triageString = message.FileResult.MatchedRule.Triage.ToString();
 
-            var canwrite = "";
-            if (message.FileResult.RwStatus.CanWrite)
+                var canread = "";
+                if (message.FileResult.RwStatus.CanRead)
+                {
+                    canread = "R";
+                }
+
+                var canwrite = "";
+                if (message.FileResult.RwStatus.CanWrite)
+                {
+                    canwrite = "W";
+                }
+
+                var matchedstring = "";
+
+                var fileSize = message.FileResult.FileInfo.Length;
+                var fileSizeString = BytesToString(fileSize);
+
+                var filepath = message.FileResult.FileInfo.FullName;
+
+                var matchcontext = "";
+                if (message.FileResult.TextResult != null)
+                {
+                    matchedstring = message.FileResult.TextResult.MatchedStrings[0];
+                    matchcontext = message.FileResult.TextResult.MatchContext;
+                }
+
+                var fileResultTemplate = " {{{0}}}<{1}|{2}{3}|{4}|{5}>({6}) {7}";
+                return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString,
+                    filepath, matchcontext);
+            }
+            catch (Exception e)
             {
-                canwrite = "W";
+                Console.WriteLine(e.ToString());
+                Console.WriteLine(message.FileResult.FileInfo.FullName);
+                return "";
             }
-
-            var matchedstring = "";
-
-            var fileSize = message.FileResult.FileInfo.Length;
-            var fileSizeString = BytesToString(fileSize);
-
-            var filepath = message.FileResult.FileInfo.FullName;
-
-            var matchcontext = "";
-            if (message.FileResult.TextResult != null)
-            {
-                matchedstring = message.FileResult.TextResult.MatchedStrings[0];
-                matchcontext = message.FileResult.TextResult.MatchContext;
-            }
-
-            var fileResultTemplate = " {{{0}}}<{1}|{2}{3}|{4}|{5}>({6}) {7}";
-            return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString,
-                filepath, matchcontext);
         }
 
         private static String BytesToString(long byteCount)

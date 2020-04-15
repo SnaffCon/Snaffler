@@ -19,6 +19,7 @@ namespace SnaffCore
         private bool AllTasksComplete { get; set; } = false;
         private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
+        private int CompletedTaskCounter { get; set; } = 0;
 
         public SnaffCon()
         {
@@ -161,23 +162,37 @@ namespace SnaffCore
 
             List<Task> SnafflerTasks = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskList();
 
-            var totalTasksCount = SnafflerTasks.Count;
-            
-            var completedTasks = Array.FindAll(SnafflerTasks.ToArray(),
-                element => element.Status == TaskStatus.RanToCompletion);
-            var completedTasksCount = completedTasks.Length;
-            var tasksRemainingCount = totalTasksCount - completedTasksCount;
+            int completedTasksCount = 0;
+            int remainingTasksCount = 0;
+            lock (SnafflerTasks)
+            {
+                // get the completed stuff from the last minute
+                Task[] completedTasks = Array.FindAll(SnafflerTasks.ToArray(),
+                    element => element.Status == TaskStatus.RanToCompletion);
+                // count it
+                completedTasksCount = completedTasks.Length;
+                // remove them
+                foreach (Task task in completedTasks)
+                {
+                    SnafflerTasks.Remove(task);
+                }
+                Task[] remainingTasks = Array.FindAll(SnafflerTasks.ToArray(),
+                    element => element.Status != TaskStatus.RanToCompletion);
+                remainingTasksCount = remainingTasks.Length;
+            }
+            // add the count of tasks that were completed since we last checked.
+            CompletedTaskCounter = CompletedTaskCounter + completedTasksCount;
 
             var updateText = new StringBuilder("Status Update: \n");
 
             updateText.Append("Tasks Completed: " + completedTasksCount + "\n");
             updateText.Append("Tasks Remaining: " +
-                              (tasksRemainingCount) + "\n");
+                              (remainingTasksCount) + "\n");
             updateText.Append(memorynumber + " RAM in use.");
 
             Mq.Info(updateText.ToString());
 
-            if (tasksRemainingCount == 0)
+            if (remainingTasksCount == 0)
             {
                 AllTasksComplete = true;
             }

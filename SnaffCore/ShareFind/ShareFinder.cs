@@ -89,6 +89,10 @@ namespace SnaffCore.ShareFind
             {
                 return false;
             }
+            catch (DirectoryNotFoundException e) 
+            {
+                return false;
+            }
             catch (Exception e)
             {
                 Mq.Trace(e.ToString());

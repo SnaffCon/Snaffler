@@ -72,7 +72,6 @@
     <Compile Include="Concurrency\SnafflerMessageType.cs" />
     <Compile Include="Concurrency\TaskHandler.cs" />
     <Compile Include="Config\ClassifierOptions.cs" />
-    <Compile Include="Config\Config.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Classifiers\ClassifierRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

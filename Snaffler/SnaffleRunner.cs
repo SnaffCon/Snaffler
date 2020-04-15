@@ -14,7 +14,6 @@ namespace Snaffler
     public class SnaffleRunner
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
 
         public void Run(string[] args)
@@ -23,11 +22,13 @@ namespace Snaffler
             BlockingMq.MakeMq();
             Mq = BlockingMq.GetMq();
             SnaffCon controller = null;
+            Options myOptions;
+
             try
             {
-                Config.Configure(args);
-                myConfig = Config.GetConfig();
+                myOptions = Config.Parse(args);
                 controller = new SnaffCon();
+
                 //------------------------------------------
                 // set up new fangled logging
                 //------------------------------------------
@@ -37,7 +38,7 @@ namespace Snaffler
                 FileTarget logfile = null;
 
                 // Targets where to log to: File and Console
-                if (myConfig.Options.LogToConsole)
+                if (myOptions.LogToConsole)
                 {
                     logconsole = new ColoredConsoleTarget("logconsole")
                     {
@@ -94,14 +95,14 @@ namespace Snaffler
                             }
                         }
                     };
-                    nlogConfig.AddRule(myConfig.Options.LogLevel, LogLevel.Fatal, logconsole);
+                    nlogConfig.AddRule(myOptions.LogLevel, LogLevel.Fatal, logconsole);
                     logconsole.Layout = "${message}";
                 }
 
-                if (myConfig.Options.LogToFile)
+                if (myOptions.LogToFile)
                 {
-                    logfile = new FileTarget("logfile") {FileName = myConfig.Options.LogFilePath };
-                    nlogConfig.AddRule(myConfig.Options.LogLevel, LogLevel.Fatal, logfile);
+                    logfile = new FileTarget("logfile") {FileName = myOptions.LogFilePath };
+                    nlogConfig.AddRule(myOptions.LogLevel, LogLevel.Fatal, logfile);
                     logfile.Layout = "${message}";
                 }
 
@@ -110,9 +111,9 @@ namespace Snaffler
 
                 //-------------------------------------------
 
-                if (myConfig.Options.Snaffle && (myConfig.Options.SnafflePath.Length > 4))
+                if (myOptions.Snaffle && (myOptions.SnafflePath.Length > 4))
                 {
-                    Directory.CreateDirectory(myConfig.Options.SnafflePath);
+                    Directory.CreateDirectory(myOptions.SnafflePath);
                 }
 
                 var thing = Task.Factory.StartNew(() => { controller.Execute(); });

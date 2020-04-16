@@ -19,8 +19,7 @@ namespace SnaffCore.Concurrency
         private static LimitedConcurrencyLevelTaskScheduler _fileLclts;
         private static TaskFactory _fileTaskFactory;
         private static CancellationTokenSource _fileCts;
-        private static List<Task> _snafflerTaskList { get; set; } = new List<Task>();
-
+        private static List<Task> _snafflerTaskList { get; set; } = new List<Task>
         public static void CreateLCLTSes(int maxDegreeOfParallelism)
         {
             int shareThreads = maxDegreeOfParallelism / 10;

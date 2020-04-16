@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using SnaffCore.Concurrency;
 using Config = SnaffCore.Config.Config;
 
@@ -20,58 +19,66 @@ namespace Classifiers
             BlockingMq Mq = BlockingMq.GetMq();
             Config myConfig = Config.GetConfig();
             FileResult fileResult;
-            if (myConfig.Options.MaxSizeToGrep >= fileInfo.Length)
+            try
             {
-                // figure out if we need to look at the content as bytes or as string.
-                switch (ClassifierRule.MatchLocation)
+                if (myConfig.Options.MaxSizeToGrep >= fileInfo.Length)
                 {
-                    case MatchLoc.FileContentAsBytes:
-                        byte[] fileBytes = File.ReadAllBytes(fileInfo.FullName);
-                        if (ByteMatch(fileBytes))
-                        {
-                            fileResult = new FileResult(fileInfo)
-                            {
-                                MatchedRule = ClassifierRule
-                            };
-                            Mq.FileResult(fileResult);
-                        }
-                        return;
-                    case MatchLoc.FileContentAsString:
-                        try
-                        {
-                            string fileString = File.ReadAllText(fileInfo.FullName);
-
-                            TextClassifier textClassifier = new TextClassifier(ClassifierRule);
-                            TextResult textResult = textClassifier.TextMatch(fileString);
-                            if (textResult != null)
+                    // figure out if we need to look at the content as bytes or as string.
+                    switch (ClassifierRule.MatchLocation)
+                    {
+                        case MatchLoc.FileContentAsBytes:
+                            byte[] fileBytes = File.ReadAllBytes(fileInfo.FullName);
+                            if (ByteMatch(fileBytes))
                             {
                                 fileResult = new FileResult(fileInfo)
                                 {
-                                    MatchedRule = ClassifierRule,
-                                    TextResult = textResult
+                                    MatchedRule = ClassifierRule
                                 };
                                 Mq.FileResult(fileResult);
                             }
-                        }
-                        catch (UnauthorizedAccessException e)
-                        {
                             return;
-                        }
-                        catch (IOException e)
-                        {
+                        case MatchLoc.FileContentAsString:
+                            try
+                            {
+                                string fileString = File.ReadAllText(fileInfo.FullName);
+
+                                TextClassifier textClassifier = new TextClassifier(ClassifierRule);
+                                TextResult textResult = textClassifier.TextMatch(fileString);
+                                if (textResult != null)
+                                {
+                                    fileResult = new FileResult(fileInfo)
+                                    {
+                                        MatchedRule = ClassifierRule,
+                                        TextResult = textResult
+                                    };
+                                    Mq.FileResult(fileResult);
+                                }
+                            }
+                            catch (UnauthorizedAccessException e)
+                            {
+                                return;
+                            }
+                            catch (IOException e)
+                            {
+                                return;
+                            }
                             return;
-                        }
-                        return;
-                    default:
-                        Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
-                        return;
+                        default:
+                            Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
+                            return;
+                    }
+                }
+                else
+                {
+                    Mq.Trace("The following file was bigger than the MaxSizeToGrep config parameter:" + fileInfo.FullName);
                 }
             }
-            else
+            catch (Exception e)
             {
-                Mq.Trace("The following file was bigger than the MaxSizeToGrep config parameter:" + fileInfo.FullName);
+                Mq.Error(e.ToString());
+                return;
             }
-        }
+        }   
 
         public bool ByteMatch(byte[] fileBytes)
         {

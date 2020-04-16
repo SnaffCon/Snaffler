@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
-using System.Runtime.Remoting.Messaging;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
-using System.Text.RegularExpressions;
-using NLog.Targets;
 using SnaffCore.Concurrency;
 using Config = SnaffCore.Config.Config;
 
@@ -119,6 +114,10 @@ namespace Classifiers
                             Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                             return false;
                         }
+                    }
+                    catch (IOException e)
+                    {
+                        Mq.Trace(e.ToString());
                     }
                     catch (Exception e)
                     {

@@ -16,8 +16,8 @@ namespace SnaffCore.ShareFind
     {
         private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
-        private TaskFactory treeWalkerTaskFactory { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetTreeTaskFactory();
-        private CancellationTokenSource treeWalkerCts { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetTreeCts();
+        private TaskFactory treeWalkerTaskFactory { get; set; } = SnaffCon.GetTreeTaskFactory();
+        private CancellationTokenSource treeWalkerCts { get; set; } = SnaffCon.GetTreeCts();
 
         public ShareFinder()
         {

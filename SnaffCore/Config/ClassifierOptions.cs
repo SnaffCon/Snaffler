@@ -43,19 +43,19 @@ namespace SnaffCore.Config
                         "\\ipc$"
                     },
                 },
-                //new ClassifierRule()
-                //{
-                //    RuleOrder = 1,
-                //    RuleName = "KeepCDollaShare",
-                //    EnumerationScope = EnumerationScope.ShareEnumeration,
-                //    MatchLocation = MatchLoc.ShareName,
-                //    MatchAction = MatchAction.Snaffle,
-                //    WordListType = MatchListType.EndsWith,
-                //    WordList = new List<string>()
-                //    {
-                //        "\\C$"
-                //    },
-                //},
+                new ClassifierRule()
+                {
+                    RuleOrder = 1,
+                    RuleName = "KeepCDollaShare",
+                    EnumerationScope = EnumerationScope.ShareEnumeration,
+                    MatchLocation = MatchLoc.ShareName,
+                    MatchAction = MatchAction.Snaffle,
+                    WordListType = MatchListType.EndsWith,
+                    WordList = new List<string>()
+                    {
+                        "\\C$"
+                    },
+                },
                 new ClassifierRule()
                 {
                     RuleOrder = 0,

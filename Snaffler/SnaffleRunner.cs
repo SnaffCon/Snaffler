@@ -26,7 +26,6 @@ namespace Snaffler
             try
             {
                 myOptions = Config.Parse(args);
-                controller = new SnaffCon();
 
                 //------------------------------------------
                 // set up new fangled logging
@@ -115,6 +114,7 @@ namespace Snaffler
                     Directory.CreateDirectory(myOptions.SnafflePath);
                 }
 
+                controller = new SnaffCon(myOptions);
                 var thing = Task.Factory.StartNew(() => { controller.Execute(); });
 
                 while (true)

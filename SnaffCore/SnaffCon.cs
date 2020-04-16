@@ -12,6 +12,7 @@ using SnaffCore.ShareFind;
 using SnaffCore.TreeWalk;
 using Timer = System.Timers.Timer;
 using static SnaffCore.Config.Options;
+using SnaffCore.Config;
 
 namespace SnaffCore
 {
@@ -21,8 +22,9 @@ namespace SnaffCore
         private BlockingMq Mq { get; set; }
         private int CompletedTaskCounter { get; set; } = 0;
 
-        public SnaffCon()
+        public SnaffCon(Options options)
         {
+            MyOptions = options;
             Mq = BlockingMq.GetMq();
             LimitedConcurrencyLevelTaskScheduler.CreateLCLTSes(MyOptions.MaxThreads);
         }

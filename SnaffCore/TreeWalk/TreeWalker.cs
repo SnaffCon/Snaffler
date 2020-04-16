@@ -6,19 +6,18 @@ using System.Threading.Tasks;
 using Classifiers;
 using SnaffCore.Concurrency;
 using SnaffCore.FileScan;
+using static SnaffCore.Config.Options;
 
 namespace SnaffCore.TreeWalk
 {
     public class TreeWalker
     {
-        private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
         private CancellationTokenSource fileScannerCts { get; set; }
         private TaskFactory fileScannerTaskFactory { get; set; }
 
         public TreeWalker(string shareRoot)
         {
-            myConfig = Config.Config.GetConfig();
             Mq = BlockingMq.GetMq();
 
             fileScannerCts = LimitedConcurrencyLevelTaskScheduler.GetFileCts();
@@ -113,7 +112,7 @@ namespace SnaffCore.TreeWalk
                     // Push the subdirectories onto the stack for traversal if they aren't on any discard-lists etc.
                     foreach (var dirStr in subDirs)
                     {
-                        foreach (ClassifierRule classifier in myConfig.Options.DirClassifiers)
+                        foreach (ClassifierRule classifier in MyOptions.DirClassifiers)
                         {
                             try
                             {

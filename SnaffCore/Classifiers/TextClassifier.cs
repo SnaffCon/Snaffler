@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel.Dispatcher;
 using System.Text.RegularExpressions;
 using SnaffCore.Concurrency;
-using SnaffCore.Config;
+using static SnaffCore.Config.Options;
 
 namespace Classifiers
 {
@@ -18,8 +18,6 @@ namespace Classifiers
         {
             this.ClassifierRule = inRule;
         }
-
-        private Config myConfig { get; set; } = Config.GetConfig();
 
         private BlockingMq Mq { get; set; } = BlockingMq.GetMq();
 
@@ -110,7 +108,7 @@ namespace Classifiers
         {
             try
             {
-                int contextBytes = myConfig.Options.MatchContextBytes;
+                int contextBytes = MyOptions.MatchContextBytes;
                 if (contextBytes == 0)
                 {
                     return "";
@@ -142,7 +140,7 @@ namespace Classifiers
 
         internal string GetContext(string original, Regex matchRegex)
         {
-            int contextBytes = myConfig.Options.MatchContextBytes;
+            int contextBytes = MyOptions.MatchContextBytes;
             if (contextBytes == 0)
             {
                 return "";

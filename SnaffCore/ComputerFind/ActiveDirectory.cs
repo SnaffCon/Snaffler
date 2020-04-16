@@ -4,13 +4,13 @@ using System.DirectoryServices;
 using System.DirectoryServices.ActiveDirectory;
 using System.ServiceModel.Channels;
 using SnaffCore.Concurrency;
+using static SnaffCore.Config.Options;
 
 namespace SnaffCore.ComputerFind
 {
     public class ActiveDirectory
     {
         private List<string> _domainComputers;
-        private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
 
         public List<string> DomainComputers =>
@@ -24,10 +24,9 @@ namespace SnaffCore.ComputerFind
         public ActiveDirectory()
         {
             Mq = BlockingMq.GetMq();
-            myConfig = Config.Config.GetConfig();
 
             // setup the necessary vars
-            if (myConfig.Options.TargetDomain == null && myConfig.Options.TargetDc == null)
+            if (MyOptions.TargetDomain == null && MyOptions.TargetDc == null)
             {
                 try
                 {
@@ -42,13 +41,13 @@ namespace SnaffCore.ComputerFind
                     Mq.Terminate();
                 }
             }
-            else if (!String.IsNullOrEmpty(myConfig.Options.TargetDc))
+            else if (!String.IsNullOrEmpty(MyOptions.TargetDc))
             {
-                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, myConfig.Options.TargetDc);
+                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, MyOptions.TargetDc);
             }
-            else if (!String.IsNullOrEmpty(myConfig.Options.TargetDomain))
+            else if (!String.IsNullOrEmpty(MyOptions.TargetDomain))
             {
-                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, myConfig.Options.TargetDomain);
+                DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, MyOptions.TargetDomain);
             }
         }
 
@@ -74,9 +73,9 @@ namespace SnaffCore.ComputerFind
 
         private List<string> GetDomainComputers()
         {
-            if (!String.IsNullOrEmpty(myConfig.Options.TargetDc))
+            if (!String.IsNullOrEmpty(MyOptions.TargetDc))
             {
-                DomainControllers.Add(myConfig.Options.TargetDc);
+                DomainControllers.Add(MyOptions.TargetDc);
             }
             else
             {

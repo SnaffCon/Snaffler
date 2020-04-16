@@ -1,6 +1,5 @@
 ﻿using SnaffCore.Concurrency;
 using SnaffCore.TreeWalk;
-using Config = SnaffCore.Config.Config;
 
 namespace Classifiers
 {
@@ -16,8 +15,6 @@ namespace Classifiers
         public DirResult ClassifyDir(string dir)
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            Config myConfig = Config.GetConfig();
-
             DirResult dirResult = new DirResult()
             {
                 DirPath = dir,

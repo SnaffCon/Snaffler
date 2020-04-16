@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using SnaffCore.Concurrency;
-using Config = SnaffCore.Config.Config;
+using static SnaffCore.Config.Options;
 
 namespace Classifiers
 {
@@ -22,7 +22,6 @@ namespace Classifiers
         public bool ClassifyFile(FileInfo fileInfo)
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            Config myConfig = Config.GetConfig();
             // figure out what part we gonna look at
             string stringToMatch = null;
 
@@ -95,7 +94,7 @@ namespace Classifiers
                     try
                     {
                         ClassifierRule nextRule =
-                            myConfig.Options.Classifiers.First(thing => thing.RuleName == ClassifierRule.RelayTarget);
+                            MyOptions.Classifiers.First(thing => thing.RuleName == ClassifierRule.RelayTarget);
 
                         if (nextRule.EnumerationScope == EnumerationScope.ContentsEnumeration)
                         {
@@ -262,12 +261,11 @@ namespace Classifiers
         {
             this.RwStatus = CanRw(fileInfo);
             this.FileInfo = fileInfo;
-            Config myConfig = Config.GetConfig();
-            if (myConfig.Options.Snaffle)
+            if (MyOptions.Snaffle)
             {
-                if ((myConfig.Options.MaxSizeToSnaffle >= fileInfo.Length) && RwStatus.CanRead)
+                if ((MyOptions.MaxSizeToSnaffle >= fileInfo.Length) && RwStatus.CanRead)
                 {
-                    SnaffleFile(fileInfo, myConfig.Options.SnafflePath);
+                    SnaffleFile(fileInfo, MyOptions.SnafflePath);
                 }
             }
         }

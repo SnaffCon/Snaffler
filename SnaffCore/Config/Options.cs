@@ -7,6 +7,13 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
+        public static Options MyOptions { get; private set; }
+
+        public static void MakeOptions()
+        {
+            MyOptions = new Options();
+        }
+
         // Manual Targeting Options
         public string[] PathTargets { get; set; }
         public string[] ComputerTargets { get; set; }

@@ -9,19 +9,18 @@ using System.Threading.Tasks;
 using Classifiers;
 using SnaffCore.Concurrency;
 using SnaffCore.TreeWalk;
+using static SnaffCore.Config.Options;
 
 namespace SnaffCore.ShareFind
 {
     public class ShareFinder
     {
-        private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
         private TaskFactory treeWalkerTaskFactory { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetTreeTaskFactory();
         private CancellationTokenSource treeWalkerCts { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetTreeCts();
 
         public ShareFinder()
         {
-            myConfig = Config.Config.GetConfig();
             Mq = BlockingMq.GetMq();
         }
 
@@ -37,7 +36,7 @@ namespace SnaffCore.ShareFind
                 {
                     bool matched = false;
                     // classify them
-                    foreach (ClassifierRule classifier in myConfig.Options.ShareClassifiers)
+                    foreach (ClassifierRule classifier in MyOptions.ShareClassifiers)
                     {
                         ShareClassifier shareClassifier = new ShareClassifier(classifier);
                         if (shareClassifier.ClassifyShare(shareName))

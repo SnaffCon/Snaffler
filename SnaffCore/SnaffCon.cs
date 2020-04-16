@@ -19,23 +19,58 @@ namespace SnaffCore
         private bool AllTasksComplete { get; set; } = false;
         private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
-        private int CompletedTaskCounter { get; set; } = 0;
-        private int RemainingTaskCounter { get; set; } = 0;
-        private List<Task> SnafflerTasks { get; set; }
+
+        private object StatusObjectLocker = new object();
+
+        private static LimitedConcurrencyLevelTaskScheduler _shareLclts;
+        private static TaskFactory _shareTaskFactory;
+        private static CancellationTokenSource _shareCts;
+        private static LimitedConcurrencyLevelTaskScheduler _treeLclts;
+        private static TaskFactory _treeTaskFactory;
+        private static CancellationTokenSource _treeCts;
+        private static LimitedConcurrencyLevelTaskScheduler _fileLclts;
+        private static TaskFactory _fileTaskFactory;
+        private static CancellationTokenSource _fileCts;
+        private int CompletedFileTaskCounter;
+        private int RemainingFileTaskCounter;
+        private int CompletedShareTaskCounter;
+        private int RemainingShareTaskCounter;
+        private int CompletedTreeTaskCounter;
+        private int RemainingTreeTaskCounter;
 
         public SnaffCon()
         {
             myConfig = Config.Config.GetConfig();
             Mq = BlockingMq.GetMq();
-            LimitedConcurrencyLevelTaskScheduler.CreateLCLTSes(myConfig.Options.MaxThreads);
-            SnafflerTasks = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskList();
+
+            int threads = myConfig.Options.MaxThreads;
+            int shareThreads = threads / 4;
+            int treeThreads = threads / 10;
+            int fileThreads = threads;
+
+            _shareLclts = new LimitedConcurrencyLevelTaskScheduler(shareThreads);
+            _shareTaskFactory = new TaskFactory(_shareLclts);
+            _shareCts = new CancellationTokenSource();
+
+            _treeLclts = new LimitedConcurrencyLevelTaskScheduler(treeThreads);
+            _treeTaskFactory = new TaskFactory(_treeLclts);
+            _treeCts = new CancellationTokenSource();
+
+            _fileLclts = new LimitedConcurrencyLevelTaskScheduler(fileThreads);
+            _fileTaskFactory = new TaskFactory(_fileLclts);
+            _fileCts = new CancellationTokenSource();
+
+            CompletedFileTaskCounter = 0;
+            RemainingFileTaskCounter = 0;
+            CompletedShareTaskCounter = 0;
+            RemainingShareTaskCounter = 0;
+            CompletedTreeTaskCounter = 0;
+            RemainingTreeTaskCounter = 0;
         }
 
         public void Execute()
         {
-            
             // This is the main execution thread.
-
             Timer statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(0.5)
                     .TotalMilliseconds) {AutoReset = true}; // Set the time (1 min in this case)
@@ -105,8 +140,8 @@ namespace SnaffCore
 
         private void ShareDiscovery(string[] computerTargets)
         {
-            TaskFactory SharefinderTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareTaskFactory();
-            CancellationTokenSource SharefinderCts = LimitedConcurrencyLevelTaskScheduler.GetShareCts();
+            TaskFactory SharefinderTaskFactory = GetShareTaskFactory();
+            CancellationTokenSource SharefinderCts = GetShareCts();
 
             Mq.Info("Starting to find readable shares.");
             foreach (var computer in computerTargets)
@@ -131,8 +166,8 @@ namespace SnaffCore
 
         private void FileDiscovery(string[] pathTargets)
         {
-            TaskFactory SharescannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetShareTaskFactory();
-            CancellationTokenSource SharescannerCts = LimitedConcurrencyLevelTaskScheduler.GetShareCts();
+            TaskFactory SharescannerTaskFactory = GetShareTaskFactory();
+            CancellationTokenSource SharescannerCts = GetShareCts();
 
             foreach (string pathTarget in pathTargets)
             {
@@ -156,52 +191,49 @@ namespace SnaffCore
 
         private void TaskCleanup()
         {
-            int completedTasksCount;
-            lock (SnafflerTasks)
-            {
                 // get the completed stuff from the last minute
-                Task[] completedTasks = Array.FindAll(SnafflerTasks.ToArray(),
-                    element => element.Status == TaskStatus.RanToCompletion);
-                // count it
-                completedTasksCount = completedTasks.Length;
-                // remove them
-                foreach (Task task in completedTasks)
-                {
-                    SnafflerTasks.Remove(task);
-                }
-                Task[] remainingTasks = Array.FindAll(SnafflerTasks.ToArray(),
-                    element => element.Status != TaskStatus.RanToCompletion);
-                RemainingTaskCounter = remainingTasks.Length;
-            }
-            // add the count of tasks that were completed since we last checked.
-            CompletedTaskCounter = CompletedTaskCounter + completedTasksCount;
-
+                //Task[] completedTasks = Array.FindAll(SnafflerTasks.ToArray(),
+                 //   element => element.Status == TaskStatus.RanToCompletion);
         }
 
         // This method is called every minute
         private void StatusUpdate(object sender, ElapsedEventArgs e)
         {
-            TaskCleanup();
-            string memorynumber;
-
-            using (Process proc = Process.GetCurrentProcess())
+            lock (StatusObjectLocker)
             {
-                long memorySize64 = proc.PrivateMemorySize64;
-                memorynumber = BytesToString(memorySize64);
-            }
+                // get memory usage for status update
+                string memorynumber;
+                using (Process proc = Process.GetCurrentProcess())
+                {
+                    long memorySize64 = proc.PrivateMemorySize64;
+                    memorynumber = BytesToString(memorySize64);
+                }
 
-            var updateText = new StringBuilder("Status Update: \n");
+                RemainingFileTaskCounter = _fileLclts._delegatesQueuedOrRunning + _fileLclts.CurrentTasksQueued();
+                CompletedFileTaskCounter = _fileLclts._totalTasksQueued - RemainingFileTaskCounter;
 
-            updateText.Append("Tasks Completed: " + CompletedTaskCounter + "\n");
-            updateText.Append("Tasks Remaining: " +
-                              (RemainingTaskCounter) + "\n");
-            updateText.Append(memorynumber + " RAM in use.");
+                RemainingShareTaskCounter = _shareLclts._delegatesQueuedOrRunning + _shareLclts.CurrentTasksQueued();
+                CompletedShareTaskCounter = _shareLclts._totalTasksQueued - RemainingShareTaskCounter;
 
-            Mq.Info(updateText.ToString());
+                RemainingTreeTaskCounter = _treeLclts._delegatesQueuedOrRunning + _treeLclts.CurrentTasksQueued();
+                CompletedTreeTaskCounter = _treeLclts._totalTasksQueued - RemainingTreeTaskCounter;
 
-            if (RemainingTaskCounter == 0)
-            {
-                AllTasksComplete = true;
+                var updateText = new StringBuilder("Status Update: \n");
+
+                updateText.Append("ShareFinder Tasks Completed: " + CompletedShareTaskCounter + "\n");
+                updateText.Append("ShareFinder Tasks Remaining: " + RemainingShareTaskCounter + "\n");
+                updateText.Append("TreeWalker Tasks Completed: " + CompletedTreeTaskCounter + "\n");
+                updateText.Append("TreeWalker Tasks Remaining: " + RemainingTreeTaskCounter + "\n");
+                updateText.Append("FileScanner Tasks Completed: " + CompletedFileTaskCounter + "\n");
+                updateText.Append("FileScanner Tasks Remaining: " + RemainingFileTaskCounter + "\n");
+                updateText.Append(memorynumber + " RAM in use.");
+
+                Mq.Info(updateText.ToString());
+
+                if ((RemainingFileTaskCounter + RemainingShareTaskCounter + RemainingTreeTaskCounter) == 0)
+                {
+                    AllTasksComplete = true;
+                }
             }
         }
 
@@ -214,6 +246,43 @@ namespace SnaffCore
             var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
             var num = Math.Round(bytes / Math.Pow(1024, place), 1);
             return (Math.Sign(byteCount) * num) + suf[place];
+        }
+
+        public static LimitedConcurrencyLevelTaskScheduler GetTreeLclts()
+        {
+            return _treeLclts;
+        }
+        public static LimitedConcurrencyLevelTaskScheduler GetShareLclts()
+        {
+            return _shareLclts;
+        }
+        public static LimitedConcurrencyLevelTaskScheduler GetFileLclts()
+        {
+            return _fileLclts;
+        }
+        public static TaskFactory GetShareTaskFactory()
+        {
+            return _shareTaskFactory;
+        }
+        public static CancellationTokenSource GetShareCts()
+        {
+            return _shareCts;
+        }
+        public static TaskFactory GetFileTaskFactory()
+        {
+            return _fileTaskFactory;
+        }
+        public static CancellationTokenSource GetFileCts()
+        {
+            return _fileCts;
+        }
+        public static TaskFactory GetTreeTaskFactory()
+        {
+            return _treeTaskFactory;
+        }
+        public static CancellationTokenSource GetTreeCts()
+        {
+            return _treeCts;
         }
     }
 }

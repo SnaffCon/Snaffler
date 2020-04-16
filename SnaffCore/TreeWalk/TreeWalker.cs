@@ -21,8 +21,8 @@ namespace SnaffCore.TreeWalk
             myConfig = Config.Config.GetConfig();
             Mq = BlockingMq.GetMq();
 
-            fileScannerCts = LimitedConcurrencyLevelTaskScheduler.GetFileCts();
-            fileScannerTaskFactory = LimitedConcurrencyLevelTaskScheduler.GetFileTaskFactory();
+            fileScannerCts = SnaffCon.GetFileCts();
+            fileScannerTaskFactory = SnaffCon.GetFileTaskFactory();
 
             if (shareRoot == null)
             {

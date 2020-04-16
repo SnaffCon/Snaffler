@@ -10,81 +10,47 @@ namespace SnaffCore.Concurrency
 
     public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
     {
-        private static LimitedConcurrencyLevelTaskScheduler _shareLclts;
-        private static TaskFactory _shareTaskFactory;
-        private static CancellationTokenSource _shareCts;
-        private static LimitedConcurrencyLevelTaskScheduler _treeLclts;
-        private static TaskFactory _treeTaskFactory;
-        private static CancellationTokenSource _treeCts;
-        private static LimitedConcurrencyLevelTaskScheduler _fileLclts;
-        private static TaskFactory _fileTaskFactory;
-        private static CancellationTokenSource _fileCts;
-        private static List<Task> _snafflerTaskList { get; set; } = new List<Task>
-        public static void CreateLCLTSes(int maxDegreeOfParallelism)
-        {
-            int shareThreads = maxDegreeOfParallelism / 10;
-            int treeThreads = maxDegreeOfParallelism / 5;
-            int fileThreads = maxDegreeOfParallelism;
-
-            _shareLclts = new LimitedConcurrencyLevelTaskScheduler(shareThreads);
-            _shareTaskFactory = new TaskFactory(_shareLclts);
-            _shareCts = new CancellationTokenSource();
-
-            _treeLclts = new LimitedConcurrencyLevelTaskScheduler(treeThreads);
-            _treeTaskFactory = new TaskFactory(_treeLclts);
-            _treeCts = new CancellationTokenSource();
-
-            _fileLclts = new LimitedConcurrencyLevelTaskScheduler(fileThreads);
-            _fileTaskFactory = new TaskFactory(_fileLclts);
-            _fileCts = new CancellationTokenSource();
-        }
-
-        public static TaskFactory GetShareTaskFactory()
-        {
-            return _shareTaskFactory;
-        }
-        public static CancellationTokenSource GetShareCts()
-        {
-            return _shareCts;
-        }
-        public static TaskFactory GetFileTaskFactory()
-        {
-            return _fileTaskFactory;
-        }
-        public static CancellationTokenSource GetFileCts()
-        {
-            return _fileCts;
-        }
-        public static TaskFactory GetTreeTaskFactory()
-        {
-            return _treeTaskFactory;
-        }
-        public static CancellationTokenSource GetTreeCts()
-        {
-            return _treeCts;
-        }
-        public static List<Task> GetSnafflerTaskList()
-        {
-            return _snafflerTaskList;
-        }
-
         // Indicates whether the current thread is processing work items.
         [ThreadStatic] private static bool _currentThreadIsProcessingItems;
 
         // The list of tasks to be executed 
-        private readonly LinkedList<Task> _tasks = new LinkedList<Task>(); // protected by lock(_tasks)
+        public readonly LinkedList<Task> _tasks = new LinkedList<Task>(); // protected by lock(_tasks)
 
         // The maximum concurrency level allowed by this scheduler. 
         private readonly int _maxDegreeOfParallelism;
 
         // Indicates whether the scheduler is currently processing work items. 
-        private int _delegatesQueuedOrRunning;
+        public int _delegatesQueuedOrRunning;
+
+        public int _totalTasksQueued = 0;
 
         // Creates a new instance with the specified degree of parallelism. 
-        private LimitedConcurrencyLevelTaskScheduler(int maxDegreeOfParallelism)
+        public LimitedConcurrencyLevelTaskScheduler(int maxDegreeOfParallelism)
         {
             if (maxDegreeOfParallelism < 1) throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
             _maxDegreeOfParallelism = maxDegreeOfParallelism;
+        }
+
+        /*public int ScrubQueue()
+        {
+            int disposedTasks = 0;
+            lock (_tasks)
+            {
+                foreach(Task task in _tasks)
+                {
+                    if (task.IsCompleted)
+                    {
+                        disposedTasks++;
+                        task.Dispose();
+                    }
+                }
+            }
+            return disposedTasks;
+        }*/
+
+        public int CurrentTasksQueued()
+        {
+            return _tasks.Count;
         }
 
         // Queues a task to the scheduler. 
@@ -94,8 +60,8 @@ namespace SnaffCore.Concurrency
             // delegates currently queued or running to process tasks, schedule another. 
             lock (_tasks)
             {
-                _snafflerTaskList.Add(task);
                 _tasks.AddLast(task);
+                _totalTasksQueued++;
                 if (_delegatesQueuedOrRunning < _maxDegreeOfParallelism)
                 {
                     ++_delegatesQueuedOrRunning;

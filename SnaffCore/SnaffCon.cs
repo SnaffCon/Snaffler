@@ -20,19 +20,24 @@ namespace SnaffCore
         private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
         private int CompletedTaskCounter { get; set; } = 0;
+        private int RemainingTaskCounter { get; set; } = 0;
+        private List<Task> SnafflerTasks { get; set; }
 
         public SnaffCon()
         {
             myConfig = Config.Config.GetConfig();
             Mq = BlockingMq.GetMq();
             LimitedConcurrencyLevelTaskScheduler.CreateLCLTSes(myConfig.Options.MaxThreads);
+            SnafflerTasks = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskList();
         }
 
         public void Execute()
         {
+            
             // This is the main execution thread.
+
             Timer statusUpdateTimer =
-                new Timer(TimeSpan.FromMinutes(1)
+                new Timer(TimeSpan.FromMinutes(0.5)
                     .TotalMilliseconds) {AutoReset = true}; // Set the time (1 min in this case)
             statusUpdateTimer.Elapsed += StatusUpdate;
             statusUpdateTimer.Start();
@@ -149,21 +154,9 @@ namespace SnaffCore
             Mq.Info("Created all TreeWalker tasks.");
         }
 
-        // This method is called every minute
-        private void StatusUpdate(object sender, ElapsedEventArgs e)
+        private void TaskCleanup()
         {
-            string memorynumber;
-
-            using (Process proc = Process.GetCurrentProcess())
-            {
-                long memorySize64 = proc.PrivateMemorySize64;
-                memorynumber = BytesToString(memorySize64);
-            }
-
-            List<Task> SnafflerTasks = LimitedConcurrencyLevelTaskScheduler.GetSnafflerTaskList();
-
-            int completedTasksCount = 0;
-            int remainingTasksCount = 0;
+            int completedTasksCount;
             lock (SnafflerTasks)
             {
                 // get the completed stuff from the last minute
@@ -178,21 +171,35 @@ namespace SnaffCore
                 }
                 Task[] remainingTasks = Array.FindAll(SnafflerTasks.ToArray(),
                     element => element.Status != TaskStatus.RanToCompletion);
-                remainingTasksCount = remainingTasks.Length;
+                RemainingTaskCounter = remainingTasks.Length;
             }
             // add the count of tasks that were completed since we last checked.
             CompletedTaskCounter = CompletedTaskCounter + completedTasksCount;
 
+        }
+
+        // This method is called every minute
+        private void StatusUpdate(object sender, ElapsedEventArgs e)
+        {
+            TaskCleanup();
+            string memorynumber;
+
+            using (Process proc = Process.GetCurrentProcess())
+            {
+                long memorySize64 = proc.PrivateMemorySize64;
+                memorynumber = BytesToString(memorySize64);
+            }
+
             var updateText = new StringBuilder("Status Update: \n");
 
-            updateText.Append("Tasks Completed: " + completedTasksCount + "\n");
+            updateText.Append("Tasks Completed: " + CompletedTaskCounter + "\n");
             updateText.Append("Tasks Remaining: " +
-                              (remainingTasksCount) + "\n");
+                              (RemainingTaskCounter) + "\n");
             updateText.Append(memorynumber + " RAM in use.");
 
             Mq.Info(updateText.ToString());
 
-            if (remainingTasksCount == 0)
+            if (RemainingTaskCounter == 0)
             {
                 AllTasksComplete = true;
             }

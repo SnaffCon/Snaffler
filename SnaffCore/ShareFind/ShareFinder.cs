@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Classifiers;
+using SnaffCore;
 using SnaffCore.Concurrency;
 using SnaffCore.TreeWalk;
 using static SnaffCore.Config.Options;
@@ -17,9 +18,6 @@ namespace SnaffCore.ShareFind
     {
         private BlockingMq Mq { get; set; }
 
-        private TaskFactory treeWalkerTaskFactory { get; set; } = SnaffCon.GetTreeTaskFactory();
-        private CancellationTokenSource treeWalkerCts { get; set; } = SnaffCon.GetTreeCts();
-
         public ShareFinder()
         {
             Mq = BlockingMq.GetMq();
@@ -29,6 +27,7 @@ namespace SnaffCore.ShareFind
         {
             // find the shares
             var hostShareInfos = GetHostShareInfo(computer);
+            var treeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
 
             foreach (var hostShareInfo in hostShareInfos)
             {
@@ -61,7 +60,7 @@ namespace SnaffCore.ShareFind
                             Mq.ShareResult(shareResult);
 
                             Mq.Info("Creating a TreeWalker task for " + shareResult.SharePath);
-                            var t = treeWalkerTaskFactory.StartNew(() =>
+                            treeTaskScheduler.New(() =>
                             {
                                 try
                                 {
@@ -71,7 +70,7 @@ namespace SnaffCore.ShareFind
                                 {
                                     Mq.Trace(e.ToString());
                                 }
-                            }, treeWalkerCts.Token);
+                            });
                         }
                     }
                 }

@@ -13,15 +13,13 @@ namespace SnaffCore.TreeWalk
     public class TreeWalker
     {
         private BlockingMq Mq { get; set; }
-        private CancellationTokenSource fileScannerCts { get; set; }
-        private TaskFactory fileScannerTaskFactory { get; set; }
+        private BlockingStaticTaskScheduler FileTaskScheduler {get; set;}
 
         public TreeWalker(string shareRoot)
         {
             Mq = BlockingMq.GetMq();
 
-            fileScannerCts = SnaffCon.GetFileCts();
-            fileScannerTaskFactory = SnaffCon.GetFileTaskFactory();
+            FileTaskScheduler = SnaffCon.GetFileTaskScheduler();
 
             if (shareRoot == null)
             {
@@ -96,8 +94,8 @@ namespace SnaffCore.TreeWalk
                     // check if we actually like the files
                     foreach (string file in files)
                     {
-                        var t = fileScannerTaskFactory.StartNew(() =>
-                        {
+                        FileTaskScheduler.New(() =>
+                        { 
                             try
                             {
                                 FileScanner fileScanner = new FileScanner(file);
@@ -106,7 +104,7 @@ namespace SnaffCore.TreeWalk
                             {
                                 Mq.Trace(e.ToString());
                             }
-                        }, fileScannerCts.Token);
+                        });
                     }
 
                     // Push the subdirectories onto the stack for traversal if they aren't on any discard-lists etc.

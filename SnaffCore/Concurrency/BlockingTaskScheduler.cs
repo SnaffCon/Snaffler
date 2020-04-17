@@ -3,38 +3,119 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SnaffCore.Concurrency2
+namespace SnaffCore.Concurrency
 {
-    // Provides a task scheduler that ensures a maximum concurrency level while 
-    // running on top of the thread pool.
+    public class BlockingStaticTaskScheduler
+    {
+        // singleton cruft
+        //private static BlockingStaticTaskScheduler _instance;
+        private static readonly object syncLock = new object();
 
-    public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
+        // constructor
+        public BlockingStaticTaskScheduler(int threads, int maxBacklog)
+        {
+            _scheduler = new LimitedConcurrencyLevelTaskScheduler(threads);
+            _taskFactory = new TaskFactory(_scheduler);
+            _cancellationSource = new CancellationTokenSource();
+            _maxBacklog = maxBacklog;
+        }
+
+        // task factory things!!!
+        private LimitedConcurrencyLevelTaskScheduler _scheduler { get; }
+        private TaskFactory _taskFactory { get; }
+        private CancellationTokenSource _cancellationSource { get; }
+        private int _maxBacklog { get; set; }
+
+        public int CurrentTasksRunning { get; set; } = 0;
+        public int CurrentTasksQueued { get; set; } = 0;
+        public int TotalTasksQueued { get; set; } = 0;
+
+        public void New(Action action)
+        {
+            // set up to not add the task as default
+            bool proceed = false;
+
+            while (proceed == false) // loop the calling thread until we are allowd to do the thing
+            {
+                lock (syncLock) // take out the lock
+                {
+                    // update numbers
+                    CurrentTasksQueued = _scheduler._tasks.Count;
+                    CurrentTasksRunning = _scheduler._delegatesQueuedOrRunning;
+                    TotalTasksQueued = _scheduler._totalTasksQueued;
+                    
+                    // check to see how many tasks we have waiting and keep looping if it's too many
+                    if (CurrentTasksQueued >= _maxBacklog)
+                        continue;
+
+                    // okay, let's add the thing
+                    proceed = true;
+                    _taskFactory.StartNew(action, _cancellationSource.Token);
+                }
+            }
+        }
+
+        /*
+        public static BlockingStaticTaskScheduler Use()
+        {
+            if (_instance == null)
+            {
+                lock (syncLock)
+                {
+                    if (_instance == null)
+                    {
+                        throw new InvalidOperationException("This singleton must be instantiated with .Use(int threads, int maxBacklog) overload before use");
+                    }
+                }
+            }
+            return _instance;
+        }
+
+        public static BlockingStaticTaskScheduler Use(int threads, int maxBacklog)
+        {
+            if (_instance == null)
+            {
+                lock (syncLock)
+                {
+                    if (_instance == null)
+                    {
+                        _instance = new BlockingStaticTaskScheduler(threads, maxBacklog);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("This singleton should only be instantiated once");
+                    }
+                }
+            }
+
+            return _instance;
+        }
+        */
+    }
+
+    internal class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
     {
         // Indicates whether the current thread is processing work items.
         [ThreadStatic] private static bool _currentThreadIsProcessingItems;
 
+        // The maximum concurrency level allowed by this scheduler. 
+
         // The list of tasks to be executed 
         public readonly LinkedList<Task> _tasks = new LinkedList<Task>(); // protected by lock(_tasks)
 
-        // The maximum concurrency level allowed by this scheduler. 
-        private readonly int _maxDegreeOfParallelism;
-
         // Indicates whether the scheduler is currently processing work items. 
         public int _delegatesQueuedOrRunning;
-
-        public int _totalTasksQueued = 0;
+        public int _totalTasksQueued;
 
         // Creates a new instance with the specified degree of parallelism. 
         public LimitedConcurrencyLevelTaskScheduler(int maxDegreeOfParallelism)
         {
             if (maxDegreeOfParallelism < 1) throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
-            _maxDegreeOfParallelism = maxDegreeOfParallelism;
+            MaximumConcurrencyLevel = maxDegreeOfParallelism;
         }
 
-        public int CurrentTasksQueued()
-        {
-            return _tasks.Count;
-        }
+        // Gets the maximum concurrency level supported by this scheduler. 
+        public sealed override int MaximumConcurrencyLevel { get; }
 
         // Queues a task to the scheduler. 
         protected sealed override void QueueTask(Task task)
@@ -45,7 +126,7 @@ namespace SnaffCore.Concurrency2
             {
                 _tasks.AddLast(task);
                 _totalTasksQueued++;
-                if (_delegatesQueuedOrRunning < _maxDegreeOfParallelism)
+                if (_delegatesQueuedOrRunning < MaximumConcurrencyLevel)
                 {
                     ++_delegatesQueuedOrRunning;
                     NotifyThreadPoolOfPendingWork();
@@ -113,11 +194,11 @@ namespace SnaffCore.Concurrency2
         // Attempt to remove a previously scheduled task from the scheduler. 
         protected sealed override bool TryDequeue(Task task)
         {
-            lock (_tasks) return _tasks.Remove(task);
+            lock (_tasks)
+            {
+                return _tasks.Remove(task);
+            }
         }
-
-        // Gets the maximum concurrency level supported by this scheduler. 
-        public sealed override int MaximumConcurrencyLevel => _maxDegreeOfParallelism;
 
         // Gets an enumerable of the tasks currently scheduled on this scheduler. 
         protected sealed override IEnumerable<Task> GetScheduledTasks()

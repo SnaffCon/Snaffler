@@ -47,6 +47,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Transactions" />
@@ -65,6 +66,7 @@
     <Compile Include="Classifiers\ShareClassifier.cs" />
     <Compile Include="ComputerFind\ActiveDirectory.cs" />
     <Compile Include="Concurrency\BlockingMq.cs" />
+    <Compile Include="Concurrency\BlockingTaskScheduler.cs" />
     <Compile Include="Concurrency\SnafflerMessage.cs" />
     <Compile Include="Concurrency\SnafflerMessageType.cs" />
     <Compile Include="Concurrency\TaskHandler.cs" />

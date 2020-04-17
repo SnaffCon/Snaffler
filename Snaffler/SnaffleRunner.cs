@@ -14,6 +14,7 @@ namespace Snaffler
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private BlockingMq Mq { get; set; }
+        private LogLevel LogLevel { get; set; }
 
         public void Run(string[] args)
         {
@@ -34,6 +35,8 @@ namespace Snaffler
 
                 ColoredConsoleTarget logconsole = null;
                 FileTarget logfile = null;
+
+                ParseLogLevelString(myOptions.LogLevelString);
 
                 // Targets where to log to: File and Console
                 if (myOptions.LogToConsole)
@@ -93,14 +96,14 @@ namespace Snaffler
                             }
                         }
                     };
-                    nlogConfig.AddRule(myOptions.LogLevel, LogLevel.Fatal, logconsole);
+                    nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logconsole);
                     logconsole.Layout = "${message}";
                 }
 
                 if (myOptions.LogToFile)
                 {
-                    logfile = new FileTarget("logfile") {FileName = myOptions.LogFilePath };
-                    nlogConfig.AddRule(myOptions.LogLevel, LogLevel.Fatal, logfile);
+                    logfile = new FileTarget("logfile") { FileName = myOptions.LogFilePath };
+                    nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logfile);
                     logfile.Layout = "${message}";
                 }
 
@@ -232,8 +235,39 @@ namespace Snaffler
                 return "";
             }
         }
+        private void ParseLogLevelString(string logLevelString)
+        {
+            switch (logLevelString.ToLower())
+            {
+                case "debug":
+                    LogLevel = LogLevel.Debug;
+                    Mq.Degub("Set verbosity level to degub.");
+                    break;
+                case "degub":
+                    LogLevel = LogLevel.Debug;
+                    Mq.Degub("Set verbosity level to degub.");
+                    break;
+                case "trace":
+                    LogLevel = LogLevel.Trace;
+                    Mq.Degub("Set verbosity level to trace.");
+                    break;
+                case "data":
+                    LogLevel = LogLevel.Warn;
+                    Mq.Degub("Set verbosity level to data.");
+                    break;
+                case "info":
+                    LogLevel = LogLevel.Info;
+                    Mq.Degub("Set verbosity level to info.");
+                    break;
+                default:
+                    LogLevel = LogLevel.Info;
+                    Mq.Error("Invalid verbosity level " + logLevelString +
+                             " falling back to default level (info).");
+                    break;
+            }
+        }
 
-        private static String BytesToString(long byteCount)
+    private static String BytesToString(long byteCount)
         {
             string[] suf = {"B", "kB", "MB", "GB", "TB", "PB", "EB"}; //Longs run out around EB
             if (byteCount == 0)

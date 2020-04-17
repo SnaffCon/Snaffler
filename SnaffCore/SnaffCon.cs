@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Numerics;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,21 +23,15 @@ namespace SnaffCore
 
         private object StatusObjectLocker = new object();
 
-        private static LimitedConcurrencyLevelTaskScheduler _shareLclts;
-        private static TaskFactory _shareTaskFactory;
-        private static CancellationTokenSource _shareCts;
-        private static LimitedConcurrencyLevelTaskScheduler _treeLclts;
-        private static TaskFactory _treeTaskFactory;
-        private static CancellationTokenSource _treeCts;
-        private static LimitedConcurrencyLevelTaskScheduler _fileLclts;
-        private static TaskFactory _fileTaskFactory;
-        private static CancellationTokenSource _fileCts;
-        private int CompletedFileTaskCounter;
-        private int RemainingFileTaskCounter;
-        private int CompletedShareTaskCounter;
-        private int RemainingShareTaskCounter;
-        private int CompletedTreeTaskCounter;
-        private int RemainingTreeTaskCounter;
+        private BigInteger CompletedFileTaskCounter;
+        private BigInteger RemainingFileTaskCounter;
+        private BigInteger CompletedShareTaskCounter;
+        private BigInteger RemainingShareTaskCounter;
+        private BigInteger CompletedTreeTaskCounter;
+        private BigInteger RemainingTreeTaskCounter;
+        private static BlockingStaticTaskScheduler ShareTaskScheduler;
+        private static BlockingStaticTaskScheduler TreeTaskScheduler;
+        private static BlockingStaticTaskScheduler FileTaskScheduler;
 
         public SnaffCon(Options options)
         {
@@ -49,17 +43,9 @@ namespace SnaffCore
             int treeThreads = threads / 10;
             int fileThreads = threads;
 
-            _shareLclts = new LimitedConcurrencyLevelTaskScheduler(shareThreads);
-            _shareTaskFactory = new TaskFactory(_shareLclts);
-            _shareCts = new CancellationTokenSource();
-
-            _treeLclts = new LimitedConcurrencyLevelTaskScheduler(treeThreads);
-            _treeTaskFactory = new TaskFactory(_treeLclts);
-            _treeCts = new CancellationTokenSource();
-
-            _fileLclts = new LimitedConcurrencyLevelTaskScheduler(fileThreads);
-            _fileTaskFactory = new TaskFactory(_fileLclts);
-            _fileCts = new CancellationTokenSource();
+            ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, 10);
+            TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, 10);
+            FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, 10);
 
             CompletedFileTaskCounter = 0;
             RemainingFileTaskCounter = 0;
@@ -69,11 +55,24 @@ namespace SnaffCore
             RemainingTreeTaskCounter = 0;
         }
 
+        public static BlockingStaticTaskScheduler GetShareTaskScheduler()
+        {
+            return ShareTaskScheduler;
+        }
+        public static BlockingStaticTaskScheduler GetTreeTaskScheduler()
+        {
+            return TreeTaskScheduler;
+        }
+        public static BlockingStaticTaskScheduler GetFileTaskScheduler()
+        {
+            return FileTaskScheduler;
+        }
+
         public void Execute()
         {
             // This is the main execution thread.
             Timer statusUpdateTimer =
-                new Timer(TimeSpan.FromMinutes(0.5)
+                new Timer(TimeSpan.FromMinutes(1)
                     .TotalMilliseconds) {AutoReset = true}; // Set the time (1 min in this case)
             statusUpdateTimer.Elapsed += StatusUpdate;
             statusUpdateTimer.Start();
@@ -141,15 +140,12 @@ namespace SnaffCore
 
         private void ShareDiscovery(string[] computerTargets)
         {
-            TaskFactory SharefinderTaskFactory = GetShareTaskFactory();
-            CancellationTokenSource SharefinderCts = GetShareCts();
-
             Mq.Info("Starting to find readable shares.");
             foreach (var computer in computerTargets)
             {
                 // ShareFinder Task Creation - this kicks off the rest of the flow
                 Mq.Info("Creating a sharefinder task for " + computer);
-                var t = SharefinderTaskFactory.StartNew(() =>
+                ShareTaskScheduler.New(() =>
                 {
                     try
                     {
@@ -160,21 +156,18 @@ namespace SnaffCore
                     {
                         Mq.Trace(e.ToString());
                     }
-                }, SharefinderCts.Token);
+                });
             }
             Mq.Info("Created all sharefinder tasks.");
         }
 
         private void FileDiscovery(string[] pathTargets)
         {
-            TaskFactory SharescannerTaskFactory = GetShareTaskFactory();
-            CancellationTokenSource SharescannerCts = GetShareCts();
-
             foreach (string pathTarget in pathTargets)
             {
                 // ShareScanner Task Creation - this kicks off the rest of the flow
                 Mq.Info("Creating a TreeWalker task for " + pathTarget);
-                var t = SharescannerTaskFactory.StartNew(() =>
+                TreeTaskScheduler.New(() =>
                 {
                     try
                     {
@@ -184,17 +177,10 @@ namespace SnaffCore
                     {
                         Mq.Trace(e.ToString());
                     }
-                }, SharescannerCts.Token);
+                });
             }
 
             Mq.Info("Created all TreeWalker tasks.");
-        }
-
-        private void TaskCleanup()
-        {
-                // get the completed stuff from the last minute
-                //Task[] completedTasks = Array.FindAll(SnafflerTasks.ToArray(),
-                 //   element => element.Status == TaskStatus.RanToCompletion);
         }
 
         // This method is called every minute
@@ -210,17 +196,16 @@ namespace SnaffCore
                     memorynumber = BytesToString(memorySize64);
                 }
 
-                RemainingFileTaskCounter = _fileLclts._delegatesQueuedOrRunning + _fileLclts.CurrentTasksQueued();
-                CompletedFileTaskCounter = _fileLclts._totalTasksQueued - RemainingFileTaskCounter;
+                RemainingFileTaskCounter = FileTaskScheduler.CurrentTasksRunning + FileTaskScheduler.CurrentTasksQueued;
+                CompletedFileTaskCounter = FileTaskScheduler.TotalTasksQueued - RemainingFileTaskCounter;
 
-                RemainingShareTaskCounter = _shareLclts._delegatesQueuedOrRunning + _shareLclts.CurrentTasksQueued();
-                CompletedShareTaskCounter = _shareLclts._totalTasksQueued - RemainingShareTaskCounter;
+                RemainingShareTaskCounter = ShareTaskScheduler.CurrentTasksRunning + ShareTaskScheduler.CurrentTasksQueued;
+                CompletedShareTaskCounter = ShareTaskScheduler.TotalTasksQueued - RemainingShareTaskCounter;
 
-                RemainingTreeTaskCounter = _treeLclts._delegatesQueuedOrRunning + _treeLclts.CurrentTasksQueued();
-                CompletedTreeTaskCounter = _treeLclts._totalTasksQueued - RemainingTreeTaskCounter;
+                RemainingTreeTaskCounter = TreeTaskScheduler.CurrentTasksRunning + TreeTaskScheduler.CurrentTasksQueued;
+                CompletedTreeTaskCounter = TreeTaskScheduler.TotalTasksQueued - RemainingTreeTaskCounter;
 
                 var updateText = new StringBuilder("Status Update: \n");
-
                 updateText.Append("ShareFinder Tasks Completed: " + CompletedShareTaskCounter + "\n");
                 updateText.Append("ShareFinder Tasks Remaining: " + RemainingShareTaskCounter + "\n");
                 updateText.Append("TreeWalker Tasks Completed: " + CompletedTreeTaskCounter + "\n");
@@ -247,43 +232,6 @@ namespace SnaffCore
             var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
             var num = Math.Round(bytes / Math.Pow(1024, place), 1);
             return (Math.Sign(byteCount) * num) + suf[place];
-        }
-
-        public static LimitedConcurrencyLevelTaskScheduler GetTreeLclts()
-        {
-            return _treeLclts;
-        }
-        public static LimitedConcurrencyLevelTaskScheduler GetShareLclts()
-        {
-            return _shareLclts;
-        }
-        public static LimitedConcurrencyLevelTaskScheduler GetFileLclts()
-        {
-            return _fileLclts;
-        }
-        public static TaskFactory GetShareTaskFactory()
-        {
-            return _shareTaskFactory;
-        }
-        public static CancellationTokenSource GetShareCts()
-        {
-            return _shareCts;
-        }
-        public static TaskFactory GetFileTaskFactory()
-        {
-            return _fileTaskFactory;
-        }
-        public static CancellationTokenSource GetFileCts()
-        {
-            return _fileCts;
-        }
-        public static TaskFactory GetTreeTaskFactory()
-        {
-            return _treeTaskFactory;
-        }
-        public static CancellationTokenSource GetTreeCts()
-        {
-            return _treeCts;
         }
     }
 }

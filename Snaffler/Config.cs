@@ -111,7 +111,6 @@ namespace Snaffler
                                 .ToToml(e => e.ToString()))));
                     if (configFileArg.Value.Equals("generate"))
                     {
-                        retVal.ParseLogLevelString(retVal.LogLevelString);
                         Toml.WriteFile(retVal, ".\\default.toml", settings);
                         Mq.Info("Wrote default config values to .\\default.toml");
                         Mq.Terminate();
@@ -121,7 +120,6 @@ namespace Snaffler
                         string configFile = configFileArg.Value;
                         retVal = Toml.ReadFile<Options>(configFile, settings);
                         retVal.PrepareClassifiers();
-                        retVal.ParseLogLevelString(retVal.LogLevelString);
                         Mq.Info("Read config file from " + configFile);
                     }
                 }
@@ -140,8 +138,8 @@ namespace Snaffler
                     // Set loglevel.
                     if (verboseArg.Parsed)
                     {
-                        var logLevelString = verboseArg.Value;
-                        retVal.ParseLogLevelString(logLevelString);
+                        retVal.LogLevelString = verboseArg.Value;
+                        Mq.Degub("Set verbosity level to:" + retVal.LogLevelString);
                     }
 
                     // if enabled, display findings to the console
@@ -231,5 +229,8 @@ namespace Snaffler
 
             return retVal;
         }
+
+
+
     }
 }

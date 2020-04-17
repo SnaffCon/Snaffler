@@ -1,7 +1,5 @@
 ﻿using System.Linq;
-using NLog;
 using Classifiers;
-using SnaffCore.Concurrency;
 
 namespace SnaffCore.Config
 {
@@ -22,9 +20,6 @@ namespace SnaffCore.Config
         public bool LogToFile { get; set; } = false;
         public string LogFilePath { get; set; }
         public bool LogToConsole { get; set; } = true;
-
-        [Nett.TomlIgnore]
-        public LogLevel LogLevel { get; set; } = LogLevel.Info;
         public string LogLevelString { get; set; } = "info";
 
         // ShareFinder Options
@@ -62,37 +57,5 @@ namespace SnaffCore.Config
                     select classifier).ToList();
         }
 
-        public void ParseLogLevelString(string logLevelString)
-        {
-            BlockingMq Mq = BlockingMq.GetMq();
-            switch (logLevelString.ToLower())
-            {
-                case "debug":
-                    LogLevel = LogLevel.Debug;
-                    Mq.Degub("Set verbosity level to degub.");
-                    break;
-                case "degub":
-                    LogLevel = LogLevel.Debug;
-                    Mq.Degub("Set verbosity level to degub.");
-                    break;
-                case "trace":
-                    LogLevel = LogLevel.Trace;
-                    Mq.Degub("Set verbosity level to trace.");
-                    break;
-                case "data":
-                    LogLevel = LogLevel.Warn;
-                    Mq.Degub("Set verbosity level to data.");
-                    break;
-                case "info":
-                    LogLevel = LogLevel.Info;
-                    Mq.Degub("Set verbosity level to info.");
-                    break;
-                default:
-                    LogLevel = LogLevel.Info;
-                    Mq.Error("Invalid verbosity level " + logLevelString +
-                             " falling back to default level (info).");
-                    break;
-            }
-        }
     }
 }

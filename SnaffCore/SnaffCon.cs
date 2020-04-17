@@ -10,6 +10,8 @@ using SnaffCore.ComputerFind;
 using SnaffCore.Concurrency;
 using SnaffCore.ShareFind;
 using SnaffCore.TreeWalk;
+using SnaffCore.Config;
+using static SnaffCore.Config.Options;
 using Timer = System.Timers.Timer;
 
 namespace SnaffCore
@@ -17,7 +19,6 @@ namespace SnaffCore
     public class SnaffCon
     {
         private bool AllTasksComplete { get; set; } = false;
-        private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
 
         private object StatusObjectLocker = new object();
@@ -38,12 +39,12 @@ namespace SnaffCore
         private int CompletedTreeTaskCounter;
         private int RemainingTreeTaskCounter;
 
-        public SnaffCon()
+        public SnaffCon(Options options)
         {
-            myConfig = Config.Config.GetConfig();
+            MyOptions = options;
             Mq = BlockingMq.GetMq();
 
-            int threads = myConfig.Options.MaxThreads;
+            int threads = MyOptions.MaxThreads;
             int shareThreads = threads / 4;
             int treeThreads = threads / 10;
             int fileThreads = threads;
@@ -78,19 +79,19 @@ namespace SnaffCore
             statusUpdateTimer.Start();
 
             // if we haven't been told what dir or computer to target, we're going to need to do share discovery. that means finding computers from the domain.
-            if (myConfig.Options.PathTargets == null && myConfig.Options.ComputerTargets == null)
+            if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
             {
                 ComputerDiscovery();
             }
             // if we've been told what computers to hit...
-            else if (myConfig.Options.ComputerTargets != null)
+            else if (MyOptions.ComputerTargets != null)
             {
-                ShareDiscovery(myConfig.Options.ComputerTargets);
+                ShareDiscovery(MyOptions.ComputerTargets);
             }
             // otherwise we should have a set of path targets...
-            else if (myConfig.Options.PathTargets != null)
+            else if (MyOptions.PathTargets != null)
             {
-                FileDiscovery(myConfig.Options.PathTargets);
+                FileDiscovery(MyOptions.PathTargets);
             }
             // but if that hasn't been done, something has gone wrong.
             else

@@ -16,8 +16,9 @@ namespace SnaffCore.ShareFind
     public class ShareFinder
     {
         private BlockingMq Mq { get; set; }
-        private TaskFactory treeWalkerTaskFactory { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetTreeTaskFactory();
-        private CancellationTokenSource treeWalkerCts { get; set; } = LimitedConcurrencyLevelTaskScheduler.GetTreeCts();
+
+        private TaskFactory treeWalkerTaskFactory { get; set; } = SnaffCon.GetTreeTaskFactory();
+        private CancellationTokenSource treeWalkerCts { get; set; } = SnaffCon.GetTreeCts();
 
         public ShareFinder()
         {
@@ -35,6 +36,7 @@ namespace SnaffCore.ShareFind
                 if (!String.IsNullOrWhiteSpace(shareName))
                 {
                     bool matched = false;
+
                     // classify them
                     foreach (ClassifierRule classifier in MyOptions.ShareClassifiers)
                     {

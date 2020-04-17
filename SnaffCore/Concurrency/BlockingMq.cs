@@ -26,7 +26,7 @@ namespace SnaffCore.Concurrency
             Q = new BlockingCollection<SnafflerMessage>();
         }
 
-        internal void Terminate()
+        public void Terminate()
         {
             // say we did a thing
             Q.Add(new SnafflerMessage
@@ -38,7 +38,7 @@ namespace SnaffCore.Concurrency
             //this.Q.CompleteAdding();
         }
 
-        internal void Trace(string message)
+        public void Trace(string message)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage
@@ -49,7 +49,7 @@ namespace SnaffCore.Concurrency
             });
         }
 
-        internal void Degub(string message)
+        public void Degub(string message)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage
@@ -60,7 +60,7 @@ namespace SnaffCore.Concurrency
             });
         }
 
-        internal void Info(string message)
+        public void Info(string message)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage
@@ -71,7 +71,7 @@ namespace SnaffCore.Concurrency
             });
         }
 
-        internal void Error(string message)
+        public void Error(string message)
         {
             Q.Add(new SnafflerMessage
             {
@@ -81,7 +81,7 @@ namespace SnaffCore.Concurrency
             });
         }
 
-        internal void FileResult(FileResult fileResult)
+        public void FileResult(FileResult fileResult)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage
@@ -91,7 +91,7 @@ namespace SnaffCore.Concurrency
                 FileResult = fileResult
             });
         }
-        internal void DirResult(DirResult dirResult)
+        public void DirResult(DirResult dirResult)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage
@@ -101,7 +101,7 @@ namespace SnaffCore.Concurrency
                 Type = SnafflerMessageType.ShareResult
             });
         }
-        internal void ShareResult(ShareResult shareResult)
+        public void ShareResult(ShareResult shareResult)
         {
             // say we did a thing
             Q.Add(new SnafflerMessage

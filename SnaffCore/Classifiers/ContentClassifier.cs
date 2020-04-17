@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using SnaffCore.Concurrency;
-using Config = SnaffCore.Config.Config;
+using static SnaffCore.Config.Options;
 
 namespace Classifiers
 {
@@ -17,11 +17,10 @@ namespace Classifiers
         public void ClassifyContent(FileInfo fileInfo)
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            Config myConfig = Config.GetConfig();
             FileResult fileResult;
             try
             {
-                if (myConfig.Options.MaxSizeToGrep >= fileInfo.Length)
+                if (MyOptions.MaxSizeToGrep >= fileInfo.Length)
                 {
                     // figure out if we need to look at the content as bytes or as string.
                     switch (ClassifierRule.MatchLocation)

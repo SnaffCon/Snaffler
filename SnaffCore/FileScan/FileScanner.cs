@@ -4,18 +4,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Classifiers;
 using SnaffCore.Concurrency;
-
+using static SnaffCore.Config.Options;
 
 namespace SnaffCore.FileScan
 {
     public class FileScanner
     {
-        private Config.Config myConfig { get; set; }
         private BlockingMq Mq { get; set; }
 
         public FileScanner(string file)
         {
-            myConfig = Config.Config.GetConfig();
             Mq = BlockingMq.GetMq();
             ScanFile(file);
         }
@@ -25,7 +23,7 @@ namespace SnaffCore.FileScan
             {
                 FileInfo fileInfo = new FileInfo(file);
                 // send the file to all the classifiers.
-                foreach (ClassifierRule classifier in myConfig.Options.FileClassifiers)
+                foreach (ClassifierRule classifier in MyOptions.FileClassifiers)
                 {
                     FileClassifier fileClassifier = new FileClassifier(classifier);
                     if (fileClassifier.ClassifyFile(fileInfo))

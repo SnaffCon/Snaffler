@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using SnaffCore.Concurrency;
-using Config = SnaffCore.Config.Config;
+using static SnaffCore.Config.Options;
 
 namespace Classifiers
 {
@@ -17,24 +17,24 @@ namespace Classifiers
         public bool ClassifyShare(string share)
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            Config myConfig = Config.GetConfig();
+
             // first time we hit sysvol, toggle the flag and keep going. every other time, bail out.
             if (share.ToLower().EndsWith("sysvol"))
             {
-                if (myConfig.Options.ScanSysvol == false)
+                if (MyOptions.ScanSysvol == false)
                 {
                     return true;
                 }
-                myConfig.Options.ScanSysvol = false;
+                MyOptions.ScanSysvol = false;
             };
             // same for netlogon
             if (share.ToLower().EndsWith("netlogon"))
             {
-                if (myConfig.Options.ScanNetlogon == false)
+                if (MyOptions.ScanNetlogon == false)
                 {
                     return true;
                 }
-                myConfig.Options.ScanNetlogon = false;
+                MyOptions.ScanNetlogon = false;
             }
             // check if it matches
             TextClassifier textClassifier = new TextClassifier(ClassifierRule);

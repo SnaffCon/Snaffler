@@ -42,7 +42,6 @@ namespace SnaffCore.Concurrency
                     // update numbers
                     CurrentTasksQueued = _scheduler._tasks.Count;
                     CurrentTasksRunning = _scheduler._delegatesQueuedOrRunning;
-                    TotalTasksQueued = _scheduler._totalTasksQueued;
                     
                     // check to see how many tasks we have waiting and keep looping if it's too many
                     if (CurrentTasksQueued >= _maxBacklog)
@@ -50,47 +49,12 @@ namespace SnaffCore.Concurrency
 
                     // okay, let's add the thing
                     proceed = true;
+
+                    TotalTasksQueued++;
                     _taskFactory.StartNew(action, _cancellationSource.Token);
                 }
             }
         }
-
-        /*
-        public static BlockingStaticTaskScheduler Use()
-        {
-            if (_instance == null)
-            {
-                lock (syncLock)
-                {
-                    if (_instance == null)
-                    {
-                        throw new InvalidOperationException("This singleton must be instantiated with .Use(int threads, int maxBacklog) overload before use");
-                    }
-                }
-            }
-            return _instance;
-        }
-
-        public static BlockingStaticTaskScheduler Use(int threads, int maxBacklog)
-        {
-            if (_instance == null)
-            {
-                lock (syncLock)
-                {
-                    if (_instance == null)
-                    {
-                        _instance = new BlockingStaticTaskScheduler(threads, maxBacklog);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("This singleton should only be instantiated once");
-                    }
-                }
-            }
-
-            return _instance;
-        }
-        */
     }
 
     internal class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
@@ -105,7 +69,6 @@ namespace SnaffCore.Concurrency
 
         // Indicates whether the scheduler is currently processing work items. 
         public int _delegatesQueuedOrRunning;
-        public int _totalTasksQueued;
 
         // Creates a new instance with the specified degree of parallelism. 
         public LimitedConcurrencyLevelTaskScheduler(int maxDegreeOfParallelism)
@@ -125,7 +88,6 @@ namespace SnaffCore.Concurrency
             lock (_tasks)
             {
                 _tasks.AddLast(task);
-                _totalTasksQueued++;
                 if (_delegatesQueuedOrRunning < MaximumConcurrencyLevel)
                 {
                     ++_delegatesQueuedOrRunning;

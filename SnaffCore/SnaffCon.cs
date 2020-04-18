@@ -23,12 +23,12 @@ namespace SnaffCore
 
         private object StatusObjectLocker = new object();
 
-        private BigInteger CompletedFileTaskCounter;
-        private BigInteger RemainingFileTaskCounter;
-        private BigInteger CompletedShareTaskCounter;
-        private BigInteger RemainingShareTaskCounter;
-        private BigInteger CompletedTreeTaskCounter;
-        private BigInteger RemainingTreeTaskCounter;
+        private BigInteger CompletedFileTaskCounter { get; set; } = 0;
+        private BigInteger RemainingFileTaskCounter { get; set; } = 0;
+        private BigInteger CompletedShareTaskCounter { get; set; } = 0;
+        private BigInteger RemainingShareTaskCounter { get; set; } = 0;
+        private BigInteger CompletedTreeTaskCounter { get; set; } = 0;
+        private BigInteger RemainingTreeTaskCounter { get; set; } = 0;
         private static BlockingStaticTaskScheduler ShareTaskScheduler;
         private static BlockingStaticTaskScheduler TreeTaskScheduler;
         private static BlockingStaticTaskScheduler FileTaskScheduler;
@@ -38,21 +38,15 @@ namespace SnaffCore
             MyOptions = options;
             Mq = BlockingMq.GetMq();
 
-            int threads = MyOptions.MaxThreads;
-            int shareThreads = threads / 4;
+            //int threads = MyOptions.MaxThreads;
+            int threads = 40;
+            int shareThreads = threads / 5;
             int treeThreads = threads / 10;
             int fileThreads = threads;
 
-            ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, 10);
-            TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, 10);
-            FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, 10);
-
-            CompletedFileTaskCounter = 0;
-            RemainingFileTaskCounter = 0;
-            CompletedShareTaskCounter = 0;
-            RemainingShareTaskCounter = 0;
-            CompletedTreeTaskCounter = 0;
-            RemainingTreeTaskCounter = 0;
+            ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, 300);
+            TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, 300);
+            FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, 300);
         }
 
         public static BlockingStaticTaskScheduler GetShareTaskScheduler()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,14 +12,7 @@ namespace SnaffCore.Concurrency
         //private static BlockingStaticTaskScheduler _instance;
         private static readonly object syncLock = new object();
 
-        // constructor
-        public BlockingStaticTaskScheduler(int threads, int maxBacklog)
-        {
-            _scheduler = new LimitedConcurrencyLevelTaskScheduler(threads);
-            _taskFactory = new TaskFactory(_scheduler);
-            _cancellationSource = new CancellationTokenSource();
-            _maxBacklog = maxBacklog;
-        }
+        public TaskCounters TaskCounters { get; set; }
 
         // task factory things!!!
         private LimitedConcurrencyLevelTaskScheduler _scheduler { get; }
@@ -26,55 +20,84 @@ namespace SnaffCore.Concurrency
         private CancellationTokenSource _cancellationSource { get; }
         private int _maxBacklog { get; set; }
 
-        public int CurrentTasksRunning { get; set; } = 0;
-        public int CurrentTasksQueued { get; set; } = 0;
-        public int TotalTasksQueued { get; set; } = 0;
+        // constructor
+        public BlockingStaticTaskScheduler(int threads, int maxBacklog)
+        {
+            _scheduler = new LimitedConcurrencyLevelTaskScheduler(threads);
+            _taskFactory = new TaskFactory(_scheduler);
+            _cancellationSource = new CancellationTokenSource();
+            _maxBacklog = maxBacklog;
+            TaskCounters = new TaskCounters
+            {
+                CurrentTasksQueued = 0,
+                TotalTasksQueued = 0,
+                CurrentTasksRunning = 0
+            };
+        }
 
         public void New(Action action)
         {
             // set up to not add the task as default
             bool proceed = false;
 
-            while (proceed == false) // loop the calling thread until we are allowd to do the thing
+            while (proceed == false) // loop the calling thread until we are allowed to do the thing
             {
                 lock (syncLock) // take out the lock
                 {
-                    // update numbers
-                    CurrentTasksQueued = _scheduler._tasks.Count;
-                    CurrentTasksRunning = _scheduler._delegatesQueuedOrRunning;
-                    
+                    this.TaskCounters = _scheduler.GetTaskCounters();
                     // check to see how many tasks we have waiting and keep looping if it's too many
-                    if (CurrentTasksQueued >= _maxBacklog)
+                    if (TaskCounters.CurrentTasksQueued >= _maxBacklog)
                         continue;
 
                     // okay, let's add the thing
                     proceed = true;
 
-                    TotalTasksQueued++;
                     _taskFactory.StartNew(action, _cancellationSource.Token);
+                    ++TaskCounters.CurrentTasksQueued;
+                    ++TaskCounters.TotalTasksQueued;
                 }
             }
         }
     }
 
+    public class TaskCounters
+    {
+        public BigInteger TotalTasksQueued { get; set; }
+        public BigInteger CurrentTasksQueued { get; set; }
+        public BigInteger CurrentTasksRunning { get; set; }
+    }
+
     internal class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
     {
+        private BigInteger _totalTasksQueued;
+
         // Indicates whether the current thread is processing work items.
         [ThreadStatic] private static bool _currentThreadIsProcessingItems;
-
-        // The maximum concurrency level allowed by this scheduler. 
-
+        
         // The list of tasks to be executed 
-        public readonly LinkedList<Task> _tasks = new LinkedList<Task>(); // protected by lock(_tasks)
+        private readonly LinkedList<Task> _tasks = new LinkedList<Task>(); // protected by lock(_tasks)
 
         // Indicates whether the scheduler is currently processing work items. 
-        public int _delegatesQueuedOrRunning;
+        private int _delegatesQueuedOrRunning;
 
         // Creates a new instance with the specified degree of parallelism. 
         public LimitedConcurrencyLevelTaskScheduler(int maxDegreeOfParallelism)
         {
             if (maxDegreeOfParallelism < 1) throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
             MaximumConcurrencyLevel = maxDegreeOfParallelism;
+        }
+        
+        public TaskCounters GetTaskCounters()
+        {
+
+            TaskCounters taskCounters = new TaskCounters();
+            lock (_tasks)
+            {
+                taskCounters.TotalTasksQueued = this._totalTasksQueued;
+                taskCounters.CurrentTasksQueued = GetQueueLength();
+                taskCounters.CurrentTasksRunning = this._delegatesQueuedOrRunning;
+            }
+            return taskCounters;
         }
 
         // Gets the maximum concurrency level supported by this scheduler. 
@@ -87,9 +110,13 @@ namespace SnaffCore.Concurrency
             // delegates currently queued or running to process tasks, schedule another. 
             lock (_tasks)
             {
+                // enqueue a task
+                ++_totalTasksQueued;
                 _tasks.AddLast(task);
+                // check if a new task can run
                 if (_delegatesQueuedOrRunning < MaximumConcurrencyLevel)
                 {
+                    // set it going
                     ++_delegatesQueuedOrRunning;
                     NotifyThreadPoolOfPendingWork();
                 }
@@ -170,6 +197,20 @@ namespace SnaffCore.Concurrency
             {
                 Monitor.TryEnter(_tasks, ref lockTaken);
                 if (lockTaken) return _tasks;
+                else throw new NotSupportedException();
+            }
+            finally
+            {
+                if (lockTaken) Monitor.Exit(_tasks);
+            }
+        }
+        private BigInteger GetQueueLength()
+        {
+            var lockTaken = false;
+            try
+            {
+                Monitor.TryEnter(_tasks, ref lockTaken);
+                if (lockTaken) return _tasks.Count;
                 else throw new NotSupportedException();
             }
             finally

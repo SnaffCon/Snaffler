@@ -39,14 +39,14 @@ namespace SnaffCore
             Mq = BlockingMq.GetMq();
 
             //int threads = MyOptions.MaxThreads;
-            int threads = 40;
-            int shareThreads = threads / 5;
-            int treeThreads = threads / 10;
+            int threads = 30;
+            int shareThreads = threads;
+            int treeThreads = threads / 5;
             int fileThreads = threads;
 
-            ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, 300);
-            TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, 300);
-            FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, 300);
+            ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, threads * 100);
+            TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, threads * 1000);
+            FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, threads * 10000);
         }
 
         public static BlockingStaticTaskScheduler GetShareTaskScheduler()
@@ -66,7 +66,7 @@ namespace SnaffCore
         {
             // This is the main execution thread.
             Timer statusUpdateTimer =
-                new Timer(TimeSpan.FromMinutes(1)
+                new Timer(TimeSpan.FromMinutes(0.2)
                     .TotalMilliseconds) {AutoReset = true}; // Set the time (1 min in this case)
             statusUpdateTimer.Elapsed += StatusUpdate;
             statusUpdateTimer.Start();
@@ -190,22 +190,29 @@ namespace SnaffCore
                     memorynumber = BytesToString(memorySize64);
                 }
 
-                RemainingFileTaskCounter = FileTaskScheduler.CurrentTasksRunning + FileTaskScheduler.CurrentTasksQueued;
-                CompletedFileTaskCounter = FileTaskScheduler.TotalTasksQueued - RemainingFileTaskCounter;
+                TaskCounters shareTaskCounters = ShareTaskScheduler.TaskCounters;
+                TaskCounters treeTaskCounters = TreeTaskScheduler.TaskCounters;
+                TaskCounters fileTaskCounters = FileTaskScheduler.TaskCounters;
 
-                RemainingShareTaskCounter = ShareTaskScheduler.CurrentTasksRunning + ShareTaskScheduler.CurrentTasksQueued;
-                CompletedShareTaskCounter = ShareTaskScheduler.TotalTasksQueued - RemainingShareTaskCounter;
+                RemainingShareTaskCounter = shareTaskCounters.CurrentTasksQueued + shareTaskCounters.CurrentTasksRunning;
+                CompletedShareTaskCounter = shareTaskCounters.TotalTasksQueued - RemainingShareTaskCounter;
 
-                RemainingTreeTaskCounter = TreeTaskScheduler.CurrentTasksRunning + TreeTaskScheduler.CurrentTasksQueued;
-                CompletedTreeTaskCounter = TreeTaskScheduler.TotalTasksQueued - RemainingTreeTaskCounter;
+                RemainingTreeTaskCounter = treeTaskCounters.CurrentTasksQueued + treeTaskCounters.CurrentTasksRunning;
+                CompletedTreeTaskCounter = treeTaskCounters.TotalTasksQueued - RemainingTreeTaskCounter;
+
+                RemainingFileTaskCounter = fileTaskCounters.CurrentTasksQueued + fileTaskCounters.CurrentTasksRunning;
+                CompletedFileTaskCounter = fileTaskCounters.TotalTasksQueued - RemainingFileTaskCounter;
 
                 var updateText = new StringBuilder("Status Update: \n");
                 updateText.Append("ShareFinder Tasks Completed: " + CompletedShareTaskCounter + "\n");
                 updateText.Append("ShareFinder Tasks Remaining: " + RemainingShareTaskCounter + "\n");
+                updateText.Append("ShareFinder Tasks Running: " + shareTaskCounters.CurrentTasksRunning + "\n");
                 updateText.Append("TreeWalker Tasks Completed: " + CompletedTreeTaskCounter + "\n");
                 updateText.Append("TreeWalker Tasks Remaining: " + RemainingTreeTaskCounter + "\n");
+                updateText.Append("TreeWalker Tasks Running: " + treeTaskCounters.CurrentTasksRunning + "\n");
                 updateText.Append("FileScanner Tasks Completed: " + CompletedFileTaskCounter + "\n");
                 updateText.Append("FileScanner Tasks Remaining: " + RemainingFileTaskCounter + "\n");
+                updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\n");
                 updateText.Append(memorynumber + " RAM in use.");
 
                 Mq.Info(updateText.ToString());

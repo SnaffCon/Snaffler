@@ -12,10 +12,10 @@ namespace SnaffCore.Concurrency
         //private static BlockingStaticTaskScheduler _instance;
         private static readonly object syncLock = new object();
 
-        public TaskCounters TaskCounters { get; set; }
+        //public TaskCounters TaskCounters { get; set; }
 
         // task factory things!!!
-        private LimitedConcurrencyLevelTaskScheduler _scheduler { get; }
+        public LimitedConcurrencyLevelTaskScheduler Scheduler { get; }
         private TaskFactory _taskFactory { get; }
         private CancellationTokenSource _cancellationSource { get; }
         private int _maxBacklog { get; set; }
@@ -23,18 +23,25 @@ namespace SnaffCore.Concurrency
         // constructor
         public BlockingStaticTaskScheduler(int threads, int maxBacklog)
         {
-            _scheduler = new LimitedConcurrencyLevelTaskScheduler(threads);
-            _taskFactory = new TaskFactory(_scheduler);
+            Scheduler = new LimitedConcurrencyLevelTaskScheduler(threads);
+            _taskFactory = new TaskFactory(Scheduler);
             _cancellationSource = new CancellationTokenSource();
             _maxBacklog = maxBacklog;
-            TaskCounters = new TaskCounters
-            {
-                CurrentTasksQueued = 0,
-                TotalTasksQueued = 0,
-                CurrentTasksRunning = 0
-            };
         }
 
+        public bool Done()
+        {
+            // single get, it's locked inside the method
+            Scheduler.RecalculateCounters();
+            TaskCounters taskCounters = Scheduler.GetTaskCounters();
+
+            if ((taskCounters.CurrentTasksQueued + taskCounters.CurrentTasksRunning == 0))
+            {
+                return true;
+            }
+            
+            return false;
+        }
         public void New(Action action)
         {
             // set up to not add the task as default
@@ -44,17 +51,15 @@ namespace SnaffCore.Concurrency
             {
                 lock (syncLock) // take out the lock
                 {
-                    this.TaskCounters = _scheduler.GetTaskCounters();
                     // check to see how many tasks we have waiting and keep looping if it's too many
-                    if (TaskCounters.CurrentTasksQueued >= _maxBacklog)
+                    // single get, it's locked inside the method.
+                    if (Scheduler.GetTaskCounters().CurrentTasksQueued >= _maxBacklog)
                         continue;
 
                     // okay, let's add the thing
                     proceed = true;
 
                     _taskFactory.StartNew(action, _cancellationSource.Token);
-                    ++TaskCounters.CurrentTasksQueued;
-                    ++TaskCounters.TotalTasksQueued;
                 }
             }
         }
@@ -65,17 +70,40 @@ namespace SnaffCore.Concurrency
         public BigInteger TotalTasksQueued { get; set; }
         public BigInteger CurrentTasksQueued { get; set; }
         public BigInteger CurrentTasksRunning { get; set; }
+        public BigInteger CurrentTasksRemaining { get; set; }
+        public BigInteger CompletedTasks { get; set; }
     }
 
-    internal class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
+    public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
     {
-        private BigInteger _totalTasksQueued;
+        public TaskCounters _taskCounters { get; private set; }
+
+        public TaskCounters GetTaskCounters()
+        {
+            lock (_taskCounters)
+            {
+                return _taskCounters;
+            }
+        }
+        public void RecalculateCounters()
+        {
+            lock (_taskCounters)
+            {
+                this._taskCounters.CurrentTasksQueued = _tasks.Count;
+                this._taskCounters.CurrentTasksRunning = _delegatesQueuedOrRunning;
+                this._taskCounters.CurrentTasksRemaining = this._taskCounters.CurrentTasksQueued + this._taskCounters.CurrentTasksRunning;
+                this._taskCounters.CompletedTasks = this._taskCounters.TotalTasksQueued - this._taskCounters.CompletedTasks;
+            }
+        }
 
         // Indicates whether the current thread is processing work items.
         [ThreadStatic] private static bool _currentThreadIsProcessingItems;
-        
+
         // The list of tasks to be executed 
-        private readonly LinkedList<Task> _tasks = new LinkedList<Task>(); // protected by lock(_tasks)
+        public readonly LinkedList<Task> _tasks = new LinkedList<Task>();
+
+        // The maximum concurrency level allowed by this scheduler. 
+        private readonly int _maxDegreeOfParallelism;
 
         // Indicates whether the scheduler is currently processing work items. 
         private int _delegatesQueuedOrRunning;
@@ -84,24 +112,9 @@ namespace SnaffCore.Concurrency
         public LimitedConcurrencyLevelTaskScheduler(int maxDegreeOfParallelism)
         {
             if (maxDegreeOfParallelism < 1) throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
-            MaximumConcurrencyLevel = maxDegreeOfParallelism;
+            _maxDegreeOfParallelism = maxDegreeOfParallelism;
+            this._taskCounters = new TaskCounters();
         }
-        
-        public TaskCounters GetTaskCounters()
-        {
-
-            TaskCounters taskCounters = new TaskCounters();
-            lock (_tasks)
-            {
-                taskCounters.TotalTasksQueued = this._totalTasksQueued;
-                taskCounters.CurrentTasksQueued = GetQueueLength();
-                taskCounters.CurrentTasksRunning = this._delegatesQueuedOrRunning;
-            }
-            return taskCounters;
-        }
-
-        // Gets the maximum concurrency level supported by this scheduler. 
-        public sealed override int MaximumConcurrencyLevel { get; }
 
         // Queues a task to the scheduler. 
         protected sealed override void QueueTask(Task task)
@@ -110,16 +123,14 @@ namespace SnaffCore.Concurrency
             // delegates currently queued or running to process tasks, schedule another. 
             lock (_tasks)
             {
-                // enqueue a task
-                ++_totalTasksQueued;
                 _tasks.AddLast(task);
-                // check if a new task can run
-                if (_delegatesQueuedOrRunning < MaximumConcurrencyLevel)
+                ++_taskCounters.TotalTasksQueued;
+                if (_delegatesQueuedOrRunning < _maxDegreeOfParallelism)
                 {
-                    // set it going
                     ++_delegatesQueuedOrRunning;
                     NotifyThreadPoolOfPendingWork();
                 }
+                RecalculateCounters();
             }
         }
 
@@ -150,6 +161,7 @@ namespace SnaffCore.Concurrency
                             // Get the next item from the queue
                             item = _tasks.First.Value;
                             _tasks.RemoveFirst();
+                            RecalculateCounters();
                         }
 
                         // Execute the task we pulled out of the queue
@@ -180,14 +192,8 @@ namespace SnaffCore.Concurrency
             return TryExecuteTask(task);
         }
 
-        // Attempt to remove a previously scheduled task from the scheduler. 
-        protected sealed override bool TryDequeue(Task task)
-        {
-            lock (_tasks)
-            {
-                return _tasks.Remove(task);
-            }
-        }
+        // Gets the maximum concurrency level supported by this scheduler. 
+        public sealed override int MaximumConcurrencyLevel => _maxDegreeOfParallelism;
 
         // Gets an enumerable of the tasks currently scheduled on this scheduler. 
         protected sealed override IEnumerable<Task> GetScheduledTasks()
@@ -197,20 +203,6 @@ namespace SnaffCore.Concurrency
             {
                 Monitor.TryEnter(_tasks, ref lockTaken);
                 if (lockTaken) return _tasks;
-                else throw new NotSupportedException();
-            }
-            finally
-            {
-                if (lockTaken) Monitor.Exit(_tasks);
-            }
-        }
-        private BigInteger GetQueueLength()
-        {
-            var lockTaken = false;
-            try
-            {
-                Monitor.TryEnter(_tasks, ref lockTaken);
-                if (lockTaken) return _tasks.Count;
                 else throw new NotSupportedException();
             }
             finally

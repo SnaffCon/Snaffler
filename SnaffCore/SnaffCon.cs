@@ -21,14 +21,14 @@ namespace SnaffCore
         private bool AllTasksComplete { get; set; } = false;
         private BlockingMq Mq { get; set; }
 
-        private object StatusObjectLocker = new object();
-
-        private BigInteger CompletedFileTaskCounter { get; set; } = 0;
-        private BigInteger RemainingFileTaskCounter { get; set; } = 0;
-        private BigInteger CompletedShareTaskCounter { get; set; } = 0;
-        private BigInteger RemainingShareTaskCounter { get; set; } = 0;
-        private BigInteger CompletedTreeTaskCounter { get; set; } = 0;
-        private BigInteger RemainingTreeTaskCounter { get; set; } = 0;
+        //private object StatusObjectLocker = new object();
+        //
+        //private BigInteger CompletedFileTaskCounter { get; set; } = 0;
+        //private BigInteger RemainingFileTaskCounter { get; set; } = 0;
+        //private BigInteger CompletedShareTaskCounter { get; set; } = 0;
+        //private BigInteger RemainingShareTaskCounter { get; set; } = 0;
+        //private BigInteger CompletedTreeTaskCounter { get; set; } = 0;
+        //private BigInteger RemainingTreeTaskCounter { get; set; } = 0;
         private static BlockingStaticTaskScheduler ShareTaskScheduler;
         private static BlockingStaticTaskScheduler TreeTaskScheduler;
         private static BlockingStaticTaskScheduler FileTaskScheduler;
@@ -39,14 +39,14 @@ namespace SnaffCore
             Mq = BlockingMq.GetMq();
 
             //int threads = MyOptions.MaxThreads;
-            int threads = 30;
-            int shareThreads = threads;
-            int treeThreads = threads / 5;
-            int fileThreads = threads;
+            //int threads = 30;
+            int shareThreads = MyOptions.ShareThreads;
+            int treeThreads = MyOptions.TreeThreads;
+            int fileThreads = MyOptions.FileThreads;
 
-            ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, threads * 100);
-            TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, threads * 1000);
-            FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, threads * 10000);
+            ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, MyOptions.MaxShareQueue);
+            TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, MyOptions.MaxTreeQueue);
+            FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, MyOptions.MaxFileQueue);
         }
 
         public static BlockingStaticTaskScheduler GetShareTaskScheduler()
@@ -66,7 +66,7 @@ namespace SnaffCore
         {
             // This is the main execution thread.
             Timer statusUpdateTimer =
-                new Timer(TimeSpan.FromMinutes(0.2)
+                new Timer(TimeSpan.FromMinutes(1)
                     .TotalMilliseconds) {AutoReset = true}; // Set the time (1 min in this case)
             statusUpdateTimer.Elapsed += StatusUpdate;
             statusUpdateTimer.Start();
@@ -180,8 +180,8 @@ namespace SnaffCore
         // This method is called every minute
         private void StatusUpdate(object sender, ElapsedEventArgs e)
         {
-            lock (StatusObjectLocker)
-            {
+            //lock (StatusObjectLocker)
+            //{
                 // get memory usage for status update
                 string memorynumber;
                 using (Process proc = Process.GetCurrentProcess())
@@ -190,38 +190,29 @@ namespace SnaffCore
                     memorynumber = BytesToString(memorySize64);
                 }
 
-                TaskCounters shareTaskCounters = ShareTaskScheduler.TaskCounters;
-                TaskCounters treeTaskCounters = TreeTaskScheduler.TaskCounters;
-                TaskCounters fileTaskCounters = FileTaskScheduler.TaskCounters;
-
-                RemainingShareTaskCounter = shareTaskCounters.CurrentTasksQueued + shareTaskCounters.CurrentTasksRunning;
-                CompletedShareTaskCounter = shareTaskCounters.TotalTasksQueued - RemainingShareTaskCounter;
-
-                RemainingTreeTaskCounter = treeTaskCounters.CurrentTasksQueued + treeTaskCounters.CurrentTasksRunning;
-                CompletedTreeTaskCounter = treeTaskCounters.TotalTasksQueued - RemainingTreeTaskCounter;
-
-                RemainingFileTaskCounter = fileTaskCounters.CurrentTasksQueued + fileTaskCounters.CurrentTasksRunning;
-                CompletedFileTaskCounter = fileTaskCounters.TotalTasksQueued - RemainingFileTaskCounter;
+                TaskCounters shareTaskCounters = ShareTaskScheduler.Scheduler.GetTaskCounters();
+                TaskCounters treeTaskCounters = TreeTaskScheduler.Scheduler.GetTaskCounters();
+                TaskCounters fileTaskCounters = FileTaskScheduler.Scheduler.GetTaskCounters();
 
                 var updateText = new StringBuilder("Status Update: \n");
-                updateText.Append("ShareFinder Tasks Completed: " + CompletedShareTaskCounter + "\n");
-                updateText.Append("ShareFinder Tasks Remaining: " + RemainingShareTaskCounter + "\n");
+                updateText.Append("ShareFinder Tasks Completed: " + shareTaskCounters.CompletedTasks + "\n");
+                updateText.Append("ShareFinder Tasks Remaining: " + shareTaskCounters.CurrentTasksRemaining + "\n");
                 updateText.Append("ShareFinder Tasks Running: " + shareTaskCounters.CurrentTasksRunning + "\n");
-                updateText.Append("TreeWalker Tasks Completed: " + CompletedTreeTaskCounter + "\n");
-                updateText.Append("TreeWalker Tasks Remaining: " + RemainingTreeTaskCounter + "\n");
+                updateText.Append("TreeWalker Tasks Completed: " + treeTaskCounters.CompletedTasks + "\n");
+                updateText.Append("TreeWalker Tasks Remaining: " + treeTaskCounters.CurrentTasksRemaining + "\n");
                 updateText.Append("TreeWalker Tasks Running: " + treeTaskCounters.CurrentTasksRunning + "\n");
-                updateText.Append("FileScanner Tasks Completed: " + CompletedFileTaskCounter + "\n");
-                updateText.Append("FileScanner Tasks Remaining: " + RemainingFileTaskCounter + "\n");
+                updateText.Append("FileScanner Tasks Completed: " + fileTaskCounters.CompletedTasks + "\n");
+                updateText.Append("FileScanner Tasks Remaining: " + fileTaskCounters.CurrentTasksRemaining + "\n");
                 updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\n");
                 updateText.Append(memorynumber + " RAM in use.");
 
                 Mq.Info(updateText.ToString());
 
-                if ((RemainingFileTaskCounter + RemainingShareTaskCounter + RemainingTreeTaskCounter) == 0)
+                if (FileTaskScheduler.Done() && ShareTaskScheduler.Done() && TreeTaskScheduler.Done())
                 {
                     AllTasksComplete = true;
                 }
-            }
+            //}
         }
 
         private static String BytesToString(long byteCount)

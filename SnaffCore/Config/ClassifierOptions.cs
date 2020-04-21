@@ -406,7 +406,7 @@ namespace SnaffCore.Config
                     RuleName = "KeepCodeGrepContainsRed",
                     EnumerationScope = EnumerationScope.ContentsEnumeration,
                     MatchLocation = MatchLoc.FileContentAsString,
-                    WordListType = MatchListType.Contains,
+                    WordListType = MatchListType.Regex,
                     MatchAction = MatchAction.Snaffle,
                     Triage = Triage.Red,
                     WordList = new List<string>()

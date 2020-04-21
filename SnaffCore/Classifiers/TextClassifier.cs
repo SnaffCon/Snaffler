@@ -4,7 +4,6 @@ using System.IO;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.ServiceModel.Dispatcher;
 using System.Text.RegularExpressions;
 using SnaffCore.Concurrency;
 using static SnaffCore.Config.Options;
@@ -146,7 +145,7 @@ namespace Classifiers
                 return "";
             }
 
-            if (original.Length < 6)
+            if ((original.Length < 6) ||  (original.Length < contextBytes * 2))
             {
                 return original;
             }

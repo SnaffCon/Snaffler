@@ -48,20 +48,7 @@ namespace SnaffCore.Config
 
         public Options()
         {
-                BuildDefaultClassifiers();
-                ShareClassifiers = (from classifier in Classifiers
-                    where classifier.EnumerationScope == EnumerationScope.ShareEnumeration
-                    select classifier).ToList();
-                DirClassifiers = (from classifier in Classifiers
-                    where classifier.EnumerationScope == EnumerationScope.DirectoryEnumeration
-                    select classifier).ToList();
-                FileClassifiers = (from classifier in Classifiers
-                    where classifier.EnumerationScope == EnumerationScope.FileEnumeration
-                    select classifier).ToList();
-                ContentsClassifiers = (from classifier in Classifiers
-                    where classifier.EnumerationScope == EnumerationScope.ContentsEnumeration
-                    select classifier).ToList();
+                //BuildDefaultClassifiers();
         }
-
     }
 }

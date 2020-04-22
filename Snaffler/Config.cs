@@ -125,6 +125,7 @@ namespace Snaffler
                 }
                 else
                 {
+                    retVal.PrepareClassifiers();
                     // get the args into our config
 
                     // output args

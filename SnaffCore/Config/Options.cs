@@ -5,7 +5,7 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
-        public static Options MyOptions { get; internal set; }
+        public static Options MyOptions { get; set; }
 
         // Manual Targeting Options
         public string[] PathTargets { get; set; }

@@ -420,7 +420,7 @@ namespace SnaffCore.Config
                         "(client_secret|CLIENT_SECRET)",
                         "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                         "[_\\-\\.][Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\'\"\\][^\'\"].....*",
-                        "new OleDbConnection(", // asp.net
+                        "new OleDbConnection\\(", // asp.net
                         "\\.createConnection\\(.*",
                         "mysql_connect[[:space:]]*\\(.*\\$.*\\)",  // php
                         "mysql_pconnect[[:space:]]*\\(.*\\$.*\\)",  // php

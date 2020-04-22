@@ -85,15 +85,22 @@ namespace Classifiers
                 case MatchListType.Regex:
                     foreach (string matchString in ClassifierRule.WordList)
                     {
-                        Regex regex = new Regex(matchString);
-
-                        if (regex.IsMatch(input))
+                        try
                         {
-                            return new TextResult()
+                            Regex regex = new Regex(matchString);
+
+                            if (regex.IsMatch(input))
                             {
-                                MatchedStrings = new List<string>() { matchString },
-                                MatchContext = GetContext(input, regex)
-                            };
+                                return new TextResult()
+                                {
+                                    MatchedStrings = new List<string>() { matchString },
+                                    MatchContext = GetContext(input, regex)
+                                };
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Mq.Error(e.ToString());
                         }
                     }
                     break;

@@ -430,8 +430,6 @@ namespace SnaffCore.Config
                         
                         // thanks to sshgit
                         "-----BEGIN [EC|RSA|DSA|OPENSSH] PRIVATE KEY----", // ssh priv key
-
-
                         "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
                         "((\\\"|'|`)?((?i)aws)?_?((?i)account)_?((?i)id)?(\\\"|'|`)?\\\\s{0,50}(:|=>|=)\\\\s{0,50}(\\\"|'|`)[0-9]{4}-?[0-9]{4}-?[0-9]{4}(\\\"|'|`)?)", // aws account id
                         "((\\\"|'|`)?((?i)aws)?_?((?i)secret)_?((?i)access)?_?((?i)key)?_?((?i)id)?(\\\"|'|`)?\\\\s{0,50}(:|=>|=)\\\\s{0,50}(\\\"|'|`)?[A-Za-z0-9/+=]{40}(\\\"|'|`)?)", // aws secret id

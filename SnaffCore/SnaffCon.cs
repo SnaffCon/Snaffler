@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using SnaffCore.ComputerFind;
+using SnaffCore.ActiveDirectory;
 using SnaffCore.Concurrency;
 using SnaffCore.ShareFind;
 using SnaffCore.TreeWalk;
@@ -107,8 +107,8 @@ namespace SnaffCore
         {
             Mq.Info("Getting computers from AD.");
             // We do this single threaded cos it's fast and not easily divisible.
-            var activeDirectory = new ActiveDirectory();
-            List<string> targetComputers = activeDirectory.DomainComputers;
+            var activeDirectory = new ActiveDirectory.ActiveDirectory();
+            List<string> targetComputers = activeDirectory.GetDomainComputers();
             if (targetComputers == null)
             {
                 Mq.Error(

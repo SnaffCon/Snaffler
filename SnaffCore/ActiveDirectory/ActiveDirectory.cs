@@ -5,17 +5,23 @@ using System.DirectoryServices.ActiveDirectory;
 using SnaffCore.Concurrency;
 using static SnaffCore.Config.Options;
 
-namespace SnaffCore.ComputerFind
+namespace SnaffCore.ActiveDirectory
 {
     public class ActiveDirectory
     {
         private List<string> _domainComputers;
+        private List<string> _domainUsers;
         private BlockingMq Mq { get; set; }
 
-        public List<string> DomainComputers =>
-            // only compute this once
-            _domainComputers
-            ?? (_domainComputers = GetDomainComputers());
+        public List<string> GetDomainComputers()
+        {
+            return _domainComputers;
+        }
+
+        public List<string> GetDomainUsers()
+        {
+            return _domainUsers;
+        }
 
         private DirectoryContext DirectoryContext { get; set; }
         private List<string> DomainControllers { get; set; } = new List<string>();
@@ -48,6 +54,7 @@ namespace SnaffCore.ComputerFind
             {
                 DirectoryContext = new DirectoryContext(DirectoryContextType.Domain, MyOptions.TargetDomain);
             }
+            SetDomainUsersAndComputers();
         }
 
         private void GetDomainControllers()
@@ -69,8 +76,7 @@ namespace SnaffCore.ComputerFind
             }
         }
 
-
-        private List<string> GetDomainComputers()
+        private void SetDomainUsersAndComputers()
         {
             if (!String.IsNullOrEmpty(MyOptions.TargetDc))
             {
@@ -82,6 +88,7 @@ namespace SnaffCore.ComputerFind
             }
 
             var domainComputers = new List<string>();
+            var domainUsers = new List<string>();
             // we do this so if the first one fails we keep trying til we find a DC we can talk to.
             foreach (var domainController in DomainControllers)
             {
@@ -121,9 +128,41 @@ namespace SnaffCore.ComputerFind
                                 }
                             }
                         }
-                    }
+                        // now users
+                        using (var mySearcher = new DirectorySearcher(entry))
+                        {
+                            mySearcher.Filter = ("(objectClass=user)");
 
-                    return domainComputers;
+                            // No size limit, reads all objects
+                            mySearcher.SizeLimit = 0;
+
+                            // Read data in pages of 250 objects. Make sure this value is below the limit configured in your AD domain (if there is a limit)
+                            mySearcher.PageSize = 250;
+
+                            // Let searcher know which properties are going to be used, and only load those
+                            mySearcher.PropertiesToLoad.Add("name");
+                            mySearcher.PropertiesToLoad.Add("adminCount");
+                            mySearcher.PropertiesToLoad.Add("sAMAccountName");
+                            mySearcher.PropertiesToLoad.Add("lastLogonTimeStamp");
+
+                            foreach (SearchResult resEnt in mySearcher.FindAll())
+                            {
+                                // TODO figure out how to compare timestamp
+                                //if (resEnt.Properties["lastLogonTimeStamp"])
+                                //{
+                                //    continue;
+                                //}
+                                // Note: Properties can contain multiple values.
+                                if (resEnt.Properties["sAMAccountName"].Count > 0)
+                                {
+                                    var userName = (string)resEnt.Properties["sAMAccountName"][0];
+                                    domainComputers.Add(userName);
+                                }
+                            }
+                        }
+                    }
+                    this._domainComputers = domainComputers;
+                    this._domainUsers = domainUsers;
                 }
                 catch (Exception e)
                 {
@@ -131,8 +170,6 @@ namespace SnaffCore.ComputerFind
                     throw;
                 }
             }
-
-            return null;
         }
     }
 }

@@ -52,7 +52,7 @@
     <Compile Include="Classifiers\DirClassifier.cs" />
     <Compile Include="Classifiers\FileClassifier.cs" />
     <Compile Include="Classifiers\ShareClassifier.cs" />
-    <Compile Include="ComputerFind\ActiveDirectory.cs" />
+    <Compile Include="ActiveDirectory\ActiveDirectory.cs" />
     <Compile Include="Concurrency\BlockingMq.cs" />
     <Compile Include="Concurrency\BlockingTaskScheduler.cs" />
     <Compile Include="Concurrency\SnafflerMessage.cs" />

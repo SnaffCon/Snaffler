@@ -156,7 +156,7 @@ namespace SnaffCore.ActiveDirectory
                                 if (resEnt.Properties["sAMAccountName"].Count > 0)
                                 {
                                     var userName = (string)resEnt.Properties["sAMAccountName"][0];
-                                    domainComputers.Add(userName);
+                                    domainUsers.Add(userName);
                                 }
                             }
                         }

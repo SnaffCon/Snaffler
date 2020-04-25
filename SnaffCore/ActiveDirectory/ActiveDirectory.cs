@@ -115,11 +115,6 @@ namespace SnaffCore.ActiveDirectory
 
                             foreach (SearchResult resEnt in mySearcher.FindAll())
                             {
-                                // TODO figure out how to compare timestamp
-                                //if (resEnt.Properties["lastLogonTimeStamp"])
-                                //{
-                                //    continue;
-                                //}
                                 // Note: Properties can contain multiple values.
                                 if (resEnt.Properties["dNSHostName"].Count > 0)
                                 {
@@ -145,85 +140,89 @@ namespace SnaffCore.ActiveDirectory
                             mySearcher.PropertiesToLoad.Add("sAMAccountName");
                             mySearcher.PropertiesToLoad.Add("userAccountControl");
 
-                            // 512=Enabled
-                            // 514 = Disabled
-                            // 66048 = Enabled, password never expires
-                            // 66050 = Disabled, password never expires
 
                             foreach (SearchResult resEnt in mySearcher.FindAll())
                             {
-                                //busted account name
-                                if (resEnt.Properties["sAMAccountName"].Count == 0)
+                                try
                                 {
-                                    continue;
-                                }
-
-                                int uacFlags;
-                                bool succes = int.TryParse(resEnt.Properties["userAccountControl"][0].ToString(), out uacFlags);
-
-                                UserAccountControlFlags userAccFlags = (UserAccountControlFlags)uacFlags;
-
-   
-                                if (userAccFlags.HasFlag(UserAccountControlFlags.AccountDisabled))
-                                {
-                                    continue;
-                                }
-
-                                var userName = (string)resEnt.Properties["sAMAccountName"][0];
-                                bool match = false;
-
-                                // skip computer accounts
-                                if (userName.EndsWith("$"))
-                                {
-                                    continue;
-                                }
-
-                                // if it's got adminCount, keep it
-                                if (resEnt.Properties["adminCount"][0].ToString() == "1")
-                                {
-                                    Mq.Trace("Adding " + userName + " to target list because it had adminCount = 1.");
-                                    domainUsers.Add(userName);
-                                    break;
-                                }
-
-                                // if the password doesn't expire it's probably a service account
-                                if (userAccFlags.HasFlag(UserAccountControlFlags.PasswordDoesNotExpire))
-                                {
-                                    Mq.Trace("Adding " + userName + " to target list because I think it's a service account.");
-                                    domainUsers.Add(userName);
-                                    break;
-                                }
-
-                                if (userAccFlags.HasFlag(UserAccountControlFlags.DontRequirePreauth))
-                                {
-                                    Mq.Trace("Adding " + userName + " to target list because I think it's a service account.");
-                                    domainUsers.Add(userName);
-                                    break;
-                                }
-
-                                if (userAccFlags.HasFlag(UserAccountControlFlags.TrustedForDelegation))
-                                {
-                                    Mq.Trace("Adding " + userName + " to target list because I think it's a service account.");
-                                    domainUsers.Add(userName);
-                                    break;
-                                }
-
-                                if (userAccFlags.HasFlag(UserAccountControlFlags.TrustedToAuthenticateForDelegation))
-                                {
-                                    Mq.Trace("Adding " + userName + " to target list because I think it's a service account.");
-                                    domainUsers.Add(userName);
-                                    break;
-                                }
-
-                                // if it matches a string we like, keep it
-                                foreach (string str in MyOptions.DomainUserMatchStrings)
-                                {
-                                    if (userName.ToLower().Contains(str.ToLower()))
+                                    //busted account name
+                                    if (resEnt.Properties["sAMAccountName"].Count == 0)
                                     {
-                                        Mq.Trace("Adding " + userName + " to target list because it contained " + str + ".");
-                                        domainUsers.Add(userName);
-                                        break;
+                                        continue;
                                     }
+
+                                    int uacFlags;
+                                    bool succes = int.TryParse(resEnt.Properties["userAccountControl"][0].ToString(), out uacFlags);
+                                    UserAccountControlFlags userAccFlags = (UserAccountControlFlags)uacFlags;
+
+                                    if (userAccFlags.HasFlag(UserAccountControlFlags.AccountDisabled))
+                                    {
+                                        continue;
+                                    }
+
+                                    var userName = (string)resEnt.Properties["sAMAccountName"][0];
+
+                                    // skip computer accounts
+                                    if (userName.EndsWith("$"))
+                                    {
+                                        continue;
+                                    }
+
+                                    // if it's got adminCount, keep it
+                                    if (resEnt.Properties["adminCount"].Count != 0)
+                                    {
+                                        if (resEnt.Properties["adminCount"][0].ToString() == "1")
+                                        {
+                                            Mq.Trace("Adding " + userName + " to target list because it had adminCount=1.");
+                                            domainUsers.Add(userName);
+                                            continue;
+                                        }
+                                    }
+
+                                    // if the password doesn't expire it's probably a service account
+                                    if (userAccFlags.HasFlag(UserAccountControlFlags.PasswordDoesNotExpire))
+                                    {
+                                        Mq.Trace("Adding " + userName + " to target list because I think it's a service account.");
+                                        domainUsers.Add(userName);
+                                        continue;
+                                    }
+
+                                    if (userAccFlags.HasFlag(UserAccountControlFlags.DontRequirePreauth))
+                                    {
+                                        Mq.Trace("Adding " + userName + " to target list because I think it's a service account.");
+                                        domainUsers.Add(userName);
+                                        continue;
+                                    }
+
+                                    if (userAccFlags.HasFlag(UserAccountControlFlags.TrustedForDelegation))
+                                    {
+                                        Mq.Trace("Adding " + userName + " to target list because I think it's a service account.");
+                                        domainUsers.Add(userName);
+                                        continue;
+                                    }
+
+                                    if (userAccFlags.HasFlag(UserAccountControlFlags.TrustedToAuthenticateForDelegation))
+                                    {
+                                        Mq.Trace("Adding " + userName + " to target list because I think it's a service account.");
+                                        domainUsers.Add(userName);
+                                        continue;
+                                    }
+
+                                    // if it matches a string we like, keep it
+                                    foreach (string str in MyOptions.DomainUserMatchStrings)
+                                    {
+                                        if (userName.ToLower().Contains(str.ToLower()))
+                                        {
+                                            Mq.Trace("Adding " + userName + " to target list because it contained " + str + ".");
+                                            domainUsers.Add(userName);
+                                            break;
+                                        }
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Mq.Trace(e.ToString());
+                                    continue;
                                 }
                             }
                         }

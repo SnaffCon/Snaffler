@@ -36,6 +36,7 @@ namespace SnaffCore.Config
 
         // FileScanner Options
         public bool DomainUsersRule { get; set; } = true;
+        public bool QueryDomainForUsers { get; set; } = true;
         public List<string> DomainUserMatchStrings = new List<string>()
         {
             "sql",
@@ -50,6 +51,7 @@ namespace SnaffCore.Config
             "opsmgr",
             "adm"
         };
+        public List<string> DomainUsersToMatch = new List<string>();
 
         // this sets the maximum size of file to look inside.
         public long MaxSizeToGrep { get; set; } = 1000000;

@@ -21,14 +21,6 @@ namespace SnaffCore
         private bool AllTasksComplete { get; set; } = false;
         private BlockingMq Mq { get; set; }
 
-        //private object StatusObjectLocker = new object();
-        //
-        //private BigInteger CompletedFileTaskCounter { get; set; } = 0;
-        //private BigInteger RemainingFileTaskCounter { get; set; } = 0;
-        //private BigInteger CompletedShareTaskCounter { get; set; } = 0;
-        //private BigInteger RemainingShareTaskCounter { get; set; } = 0;
-        //private BigInteger CompletedTreeTaskCounter { get; set; } = 0;
-        //private BigInteger RemainingTreeTaskCounter { get; set; } = 0;
         private static BlockingStaticTaskScheduler ShareTaskScheduler;
         private static BlockingStaticTaskScheduler TreeTaskScheduler;
         private static BlockingStaticTaskScheduler FileTaskScheduler;
@@ -38,8 +30,6 @@ namespace SnaffCore
             MyOptions = options;
             Mq = BlockingMq.GetMq();
 
-            //int threads = MyOptions.MaxThreads;
-            //int threads = 30;
             int shareThreads = MyOptions.ShareThreads;
             int treeThreads = MyOptions.TreeThreads;
             int fileThreads = MyOptions.FileThreads;
@@ -105,14 +95,15 @@ namespace SnaffCore
 
         private void ComputerDiscovery()
         {
-            Mq.Info("Getting computers from AD.");
+            Mq.Info("Getting users and computers from AD.");
             // We do this single threaded cos it's fast and not easily divisible.
-            var activeDirectory = new ActiveDirectory.AdData();
-            List<string> targetComputers = activeDirectory.GetDomainComputers();
-            if (targetComputers == null)
+            var adData = new ActiveDirectory.AdData();
+            List<string> targetComputers = adData.GetDomainComputers();
+            List<string> targetUsers = adData.GetDomainUsers();
+            if ((targetComputers == null) || (targetUsers == null))
             {
                 Mq.Error(
-                    "Something fucked out finding the computers in the domain. You must be holding it wrong.");
+                    "Something fucked out finding the users or computers in the domain. You must be holding it wrong.");
                 while (true)
                 {
                     Mq.Terminate();
@@ -128,7 +119,15 @@ namespace SnaffCore
                     Mq.Terminate();
                 }
             }
-            // immediately call ShareDisco which should find the rest.
+            // Push list of fun users to Options
+            if (MyOptions.QueryDomainForUsers)
+            {
+                foreach (string user in adData.GetDomainUsers())
+                {
+                    MyOptions.DomainUsersToMatch.Add(user);
+                }
+            }
+            // immediately call ShareDisco which should handle the rest.
             ShareDiscovery(targetComputers.ToArray());
         }
 

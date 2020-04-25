@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Classifiers;
 
 namespace SnaffCore.Config
@@ -34,6 +35,21 @@ namespace SnaffCore.Config
         public string TargetDc { get; set; }
 
         // FileScanner Options
+        public bool DomainUsersRule { get; set; } = true;
+        public List<string> DomainUserMatchStrings = new List<string>()
+        {
+            "sql",
+            "svc",
+            "service",
+            "backup",
+            "svr",
+            "test",
+            "dev",
+            "ccm",
+            "scom",
+            "opsmgr",
+            "adm"
+        };
 
         // this sets the maximum size of file to look inside.
         public long MaxSizeToGrep { get; set; } = 1000000;

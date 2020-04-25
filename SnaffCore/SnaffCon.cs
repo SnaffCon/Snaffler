@@ -107,7 +107,7 @@ namespace SnaffCore
         {
             Mq.Info("Getting computers from AD.");
             // We do this single threaded cos it's fast and not easily divisible.
-            var activeDirectory = new ActiveDirectory.ActiveDirectory();
+            var activeDirectory = new ActiveDirectory.AdData();
             List<string> targetComputers = activeDirectory.GetDomainComputers();
             if (targetComputers == null)
             {

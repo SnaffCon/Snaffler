@@ -127,6 +127,12 @@ namespace SnaffCore
                     MyOptions.DomainUsersToMatch.Add(user);
                 }
             }
+            if (MyOptions.DomainUsersRule)
+            {
+                throw NotImplementedException;
+                //MyOptions.FileClassifiers.Add
+                // create the actual rule
+            }
             // immediately call ShareDisco which should handle the rest.
             ShareDiscovery(targetComputers.ToArray());
         }

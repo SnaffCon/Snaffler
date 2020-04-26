@@ -94,7 +94,7 @@ namespace Classifiers
                     try
                     {
                         ClassifierRule nextRule =
-                            MyOptions.Classifiers.First(thing => thing.RuleName == ClassifierRule.RelayTarget);
+                            MyOptions.ClassifierRules.First(thing => thing.RuleName == ClassifierRule.RelayTarget);
 
                         if (nextRule.EnumerationScope == EnumerationScope.ContentsEnumeration)
                         {

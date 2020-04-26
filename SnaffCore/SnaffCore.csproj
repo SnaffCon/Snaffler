@@ -59,8 +59,14 @@
     <Compile Include="Concurrency\SnafflerMessageType.cs" />
     <Compile Include="Concurrency\TaskHandler.cs" />
     <Compile Include="Config\ClassifierOptions.cs" />
+    <Compile Include="Config\Rules\FileDiscardRules.cs" />
+    <Compile Include="Config\Rules\FileKeepRules.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Classifiers\ClassifierRule.cs" />
+    <Compile Include="Config\Rules\FileRegexRules.cs" />
+    <Compile Include="Config\Rules\FileSimpleGrepRules.cs" />
+    <Compile Include="Config\Rules\PathRules.cs" />
+    <Compile Include="Config\Rules\ShareRules.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShareFind\ShareFinder.cs" />
     <Compile Include="FileScan\FileScanner.cs" />

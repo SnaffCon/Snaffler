@@ -10,7 +10,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
-                    RuleOrder = 1,
+                    Description = "Files with these extensions are very very interesting.",
                     RuleName = "KeepExtExactBlack",
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileExtension,
@@ -39,17 +39,13 @@ namespace SnaffCore.Config
                         // vpn profiles
                         ".tblk",
                         ".ovpn",
-                        // db backups
-                        ".mdf",
-                        ".sdf",
-                        ".sqldump"
                     },
                 });
 
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
-                    RuleOrder = 2,
+                    Description = "Files with these exact names are very very interesting.",
                     RuleName = "KeepFilenameExactBlack",
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileName,
@@ -71,7 +67,7 @@ namespace SnaffCore.Config
                 this.ClassifierRules.Add(
                     new ClassifierRule()
                     {
-                        RuleOrder = 3,
+                        Description = "Files with a path containing these strings are very very interesting.",
                         RuleName = "KeepPathContainsBlack",
                         EnumerationScope = EnumerationScope.FileEnumeration,
                         MatchLocation = MatchLoc.FilePath,
@@ -94,7 +90,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
-                    RuleOrder = 4,
+                    Description = "Files with these extensions are QUITE interesting.",
                     RuleName = "KeepExtExactRed",
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileExtension,
@@ -104,7 +100,7 @@ namespace SnaffCore.Config
                     WordList = new List<string>()
                     {
                         // backups
-                        ".bak",
+                        //".bak",
                         // priv keys and certs
                         ".key",
                         ".pk12",
@@ -131,6 +127,10 @@ namespace SnaffCore.Config
                         ".keychain",
                         // disk image
                         ".wim",
+                        // db backups
+                        ".mdf",
+                        ".sdf",
+                        ".sqldump"
                     },
                 }
                 );
@@ -139,7 +139,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
-                    RuleOrder = 5,
+                    Description = "Files with these exact names are very interesting.",
                     RuleName = "KeepFilenameExactRed",
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileName,
@@ -205,7 +205,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
-                    RuleOrder = 6,
+                    Description = "Files with these extensions will be parsed as x509 certificates to see if they have private keys.",
                     RuleName = "KeepCertContainsPrivKeyRed",
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileExtension,

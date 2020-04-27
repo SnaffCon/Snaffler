@@ -129,7 +129,7 @@ namespace SnaffCore
             }
             if (MyOptions.DomainUsersRule)
             {
-                throw NotImplementedException;
+                throw new NotImplementedException();
                 //MyOptions.FileClassifiers.Add
                 // create the actual rule
             }

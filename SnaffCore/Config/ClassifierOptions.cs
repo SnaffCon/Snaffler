@@ -41,7 +41,6 @@ namespace SnaffCore.Config
         {
             this.ClassifierRules = new List<ClassifierRule>();
             
-            
             BuildShareClassifiers();
             BuildPathClassifiers();
             BuildFileDiscardClassifiers();

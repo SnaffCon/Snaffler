@@ -9,7 +9,7 @@ namespace SnaffCore.Config
         {
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 7,
+                Description = "Files with these extensions will be subjected to a generic search for keys and such.",
                 RuleName = "GeneralGrepExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
@@ -23,6 +23,7 @@ namespace SnaffCore.Config
                         ".log",
                         ".sqlite",
                         ".sqlite3",
+                        ".fdb"
                     },
             });
 
@@ -45,7 +46,7 @@ namespace SnaffCore.Config
 
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 10,
+                Description = "Files with these extensions will be subjected to a generic search for keys and such.",
                 RuleName = "ConfigGrepExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
@@ -86,7 +87,7 @@ namespace SnaffCore.Config
 
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 11,
+                Description = "Files with these extensions will be grepped for private keys.",
                 RuleName = "PrivKeyGrepNameEndsWith",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileName,

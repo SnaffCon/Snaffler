@@ -35,7 +35,11 @@ namespace Classifiers
                         // strip off .bak
                         string subName = fileInfo.Name.Replace(".bak", "");
                         stringToMatch = Path.GetExtension(subName);
-
+                        // if this results in no file extension, put it back.
+                        if (stringToMatch == "")
+                        {
+                            stringToMatch = ".bak";
+                        }
                     }
                     // this is insane that i have to do this but apparently files with no extension return
                     // this bullshit

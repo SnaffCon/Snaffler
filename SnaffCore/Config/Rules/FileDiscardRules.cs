@@ -10,7 +10,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
-                    RuleOrder = 0,
+                    Description = "Skip any further scanning for files with these extensions.",
                     RuleName = "DiscardExtExact",
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileExtension,
@@ -20,6 +20,7 @@ namespace SnaffCore.Config
                     {
                         // always skip these file extensions
                         // image formats
+                        
                         ".bmp",
                         ".eps",
                         ".gif",

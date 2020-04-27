@@ -9,23 +9,22 @@ namespace SnaffCore.Config
         {
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 0,
-                RuleName = "DiscardShareEndsWtih",
+                RuleName = "DiscardShareEndsWith",
+                Description = "Skips scanning inside shares ending with these words.",
                 EnumerationScope = EnumerationScope.ShareEnumeration,
                 MatchLocation = MatchLoc.ShareName,
                 MatchAction = MatchAction.Discard,
                 WordListType = MatchListType.EndsWith,
                 WordList = new List<string>()
                     {
-                        // these are share names that make us skip the share instantly.
                         "\\print$",
                         "\\ipc$"
                     },
             });
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 1,
                 RuleName = "KeepCDollaShare",
+                Description = "Notifies the user that they can read C$ but doesn't actually scan inside it.",
                 EnumerationScope = EnumerationScope.ShareEnumeration,
                 MatchLocation = MatchLoc.ShareName,
                 MatchAction = MatchAction.Snaffle,

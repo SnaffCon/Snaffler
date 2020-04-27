@@ -12,7 +12,8 @@ namespace Classifiers
         public string RuleName { get; set; } = "Default";
         public MatchAction MatchAction { get; set; } = MatchAction.Snaffle;
         public string RelayTarget { get; set; } = null;
-        public int RuleOrder { get; set; } = 0;
+
+        public string Description { get; set; } = "A description of what a rule does.";
 
         // define the behaviour of this rule
         public MatchLoc MatchLocation { get; set; } = MatchLoc.FileName;

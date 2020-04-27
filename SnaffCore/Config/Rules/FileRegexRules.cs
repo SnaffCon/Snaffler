@@ -9,7 +9,7 @@ namespace SnaffCore.Config
         {
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 8,
+                Description = "Files with these extensions will be subjected to a generic search for keys and such.",
                 RuleName = "CodeGrepExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
@@ -42,6 +42,7 @@ namespace SnaffCore.Config
 
             this.ClassifierRules.Add(new ClassifierRule()
             {
+                Description = "Files with contents matching these regexen are very interesting.",
                 RuleName = "KeepCodeGrepContainsRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
@@ -125,7 +126,7 @@ namespace SnaffCore.Config
             
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 9,
+                Description = "Files with these extensions will be subjected to a generic search for keys and such.",
                 RuleName = "ScriptGrepExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
@@ -152,6 +153,7 @@ namespace SnaffCore.Config
             
             this.ClassifierRules.Add(new ClassifierRule()
             {
+                Description = "Script files with contents matching these regexen are very interesting.",
                 RuleName = "KeepScriptGrepContainsRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,

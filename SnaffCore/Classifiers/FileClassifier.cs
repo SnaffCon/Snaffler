@@ -29,6 +29,14 @@ namespace Classifiers
             {
                 case MatchLoc.FileExtension:
                     stringToMatch = fileInfo.Extension;
+                    // special handling to treat files named like 'thing.kdbx.bak'
+                    if (stringToMatch == ".bak")
+                    {
+                        // strip off .bak
+                        string subName = fileInfo.Name.Replace(".bak", "");
+                        stringToMatch = Path.GetExtension(subName);
+
+                    }
                     // this is insane that i have to do this but apparently files with no extension return
                     // this bullshit
                     if (stringToMatch == "")

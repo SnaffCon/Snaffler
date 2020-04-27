@@ -9,7 +9,7 @@ namespace SnaffCore.Config
         {
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 0,
+                Description = "File paths that will be skipped entirely.",
                 RuleName = "DiscardFilepathContains",
                 EnumerationScope = EnumerationScope.DirectoryEnumeration,
                 MatchLocation = MatchLoc.FilePath,

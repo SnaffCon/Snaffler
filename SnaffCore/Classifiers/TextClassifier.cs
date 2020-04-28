@@ -29,7 +29,9 @@ namespace Classifiers
                 case MatchListType.Contains:
                     foreach (string matchString in ClassifierRule.WordList)
                     {
-                        if (input.ToLower().Contains(matchString.ToLower()))
+                        int index = input.IndexOf(matchString, StringComparison.OrdinalIgnoreCase);
+                        if ( index >= 0)
+                        //if (input.ToLower().Contains(matchString.ToLower()))
                         {
                             return new TextResult()
                             {
@@ -43,7 +45,7 @@ namespace Classifiers
                 case MatchListType.EndsWith:
                     foreach (string matchString in ClassifierRule.WordList)
                     {
-                        if (input.ToLower().EndsWith(matchString.ToLower()))
+                        if (input.EndsWith(matchString, StringComparison.OrdinalIgnoreCase))
                         {
                             return new TextResult()
                             {
@@ -57,7 +59,7 @@ namespace Classifiers
                 case MatchListType.Exact:
                     foreach (string matchString in ClassifierRule.WordList)
                     {
-                        if (input.ToLower() == matchString.ToLower())
+                        if (input.Equals(matchString, StringComparison.OrdinalIgnoreCase))
                         {
                             return new TextResult()
                             {
@@ -71,7 +73,7 @@ namespace Classifiers
                 case MatchListType.StartsWith:
                     foreach (string matchString in ClassifierRule.WordList)
                     {
-                        if (input.ToLower().StartsWith(matchString.ToLower()))
+                        if (input.StartsWith(matchString, StringComparison.OrdinalIgnoreCase))
                         {
                             return new TextResult()
                             {

@@ -60,6 +60,10 @@ namespace SnaffCore.Config
                         "shadow",
                         "pwd.db",
                         "passwd",
+                        "running-config.cfg",
+                        "startup-config.cfg",
+                        "running-config",
+                        "startup-config"
                     },
                 }
                 );

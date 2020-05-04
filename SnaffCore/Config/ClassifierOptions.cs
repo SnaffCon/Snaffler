@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Classifiers;
 
 namespace SnaffCore.Config
@@ -19,10 +20,26 @@ namespace SnaffCore.Config
 
         public void PrepareClassifiers()
         {
+
             if (this.ClassifierRules.Count <= 0)
             {
                 this.BuildDefaultClassifiers();
             }
+
+            // Where rules are using regexen, we precompile them here.
+            // We're gonna use them a lot so efficiency matters.
+            foreach (ClassifierRule classifierRule in ClassifierRules)
+            {
+                if (classifierRule.WordListType == MatchListType.Regex)
+                {
+                    classifierRule.Regexes = new List<Regex>();
+                    foreach (string pattern in classifierRule.WordList)
+                    {
+                        classifierRule.Regexes.Add(new Regex(pattern, RegexOptions.Compiled));
+                    }
+                }
+            }
+
             ShareClassifiers = (from classifier in ClassifierRules
                 where classifier.EnumerationScope == EnumerationScope.ShareEnumeration
                 select classifier).ToList();

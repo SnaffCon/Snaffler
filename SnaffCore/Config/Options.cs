@@ -66,6 +66,7 @@ namespace SnaffCore.Config
 
         public Options()
         {
+            PrepareClassifiers();
                 //BuildDefaultClassifiers();
         }
     }

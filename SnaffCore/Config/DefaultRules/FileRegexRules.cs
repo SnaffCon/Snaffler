@@ -129,7 +129,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepCodeGrepContainsRed",
+                RuleName = "KeepCsGrepContainsRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -138,11 +138,10 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // csharp
-                    "new OleDbConnection\\(", // asp.net
-                    "sqlConnectionString\\( |\\)=\\( |\\)\"..*?\"",
-                    "connectionString\\( |\\)=\\( |\\)\"..*?\"",
-                    "validationKey\\( |\\)=\\( |\\)\"..*?\"",
-                    "decryptionKey\\( |\\)=\\( |\\)\"..*?\"",
+                    "[Ss][Qq][Ll][CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
+                    "[CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
+                    "[Vv][Aa][Ll][Ii][Dd][Aa][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
+                    "[Dd][Ee][Cc][Rr][Yy][Pp][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
                     "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
@@ -222,7 +221,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepCodeGrepContainsRed",
+                RuleName = "KeepRubyGrepContainsRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -493,10 +492,10 @@ namespace SnaffCore.Config
                 Triage = Triage.Red,
                 WordList = new List<string>()
                 {
-                    "sqlConnectionString\\( |\\)=\\( |\\)\"..*?\"",
-                    "connectionString\\( |\\)=\\( |\\)\"..*?\"",
-                    "validationKey\\( |\\)=\\( |\\)\"..*?\"",
-                    "decryptionKey\\( |\\)=\\( |\\)\"..*?\"",
+                    "[Ss][Qq][Ll][CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
+                    "[CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
+                    "[Vv][Aa][Ll][Ii][Dd][Aa][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
+                    "[Dd][Ee][Cc][Rr][Yy][Pp][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
                     "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token

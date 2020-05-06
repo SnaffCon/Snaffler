@@ -180,6 +180,11 @@ namespace Snaffler
                     Logger.Fatal(datetime + "[Fatal] " + message.Message);
                     Environment.Exit(1);
                     break;
+                case SnafflerMessageType.Finish:
+                    Logger.Info("Snaffler out.");
+                    Console.ReadKey();
+                    Environment.Exit(0);
+                    break;
             }
         }
 

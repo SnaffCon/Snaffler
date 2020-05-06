@@ -111,5 +111,14 @@ namespace SnaffCore.Concurrency
                 Type = SnafflerMessageType.ShareResult
             });
         }
+
+        public void Finish()
+        {
+            Q.Add(new SnafflerMessage()
+            {
+                DateTime = DateTime.Now,
+                Type = SnafflerMessageType.Finish
+            });
+        }
     }
 }

@@ -11,12 +11,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for python related strings.",
-                RuleName = "PyGrepExtExact",
+                RuleName = "PyContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepPyGrepContainsRed",
+                RelayTarget = "KeepPyRegexRed",
                 WordList = new List<string>()
                 {
                     // python
@@ -27,7 +27,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepPyGrepContainsRed",
+                RuleName = "KeepPyRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -56,12 +56,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for php related strings.",
-                RuleName = "phpGrepExtExact",
+                RuleName = "phpContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepPhpGrepContainsRed",
+                RelayTarget = "KeepPhpRegexRed",
                 WordList = new List<string>()
                 {
                     // php
@@ -76,7 +76,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepCodeGrepContainsRed",
+                RuleName = "KeepPhpRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -108,12 +108,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for CSharp and ASP.NET related strings.",
-                RuleName = "csGrepExtExact",
+                RuleName = "csContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepCsGrepContainsRed",
+                RelayTarget = "KeepCsRegexRed",
                 WordList = new List<string>()
                 {
                     // asp.net
@@ -129,7 +129,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepCsGrepContainsRed",
+                RuleName = "KeepCsRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -159,12 +159,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for Java and ColdFusion related strings.",
-                RuleName = "javaGrepExtExact",
+                RuleName = "javaContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepJavaGrepContainsRed",
+                RelayTarget = "KeepJavaRegexRed",
                 WordList = new List<string>()
                 {
                     // java
@@ -178,7 +178,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepJavaGrepContainsRed",
+                RuleName = "KeepJavaRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -206,12 +206,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for Rubby related strings.",
-                RuleName = "rubyGrepExtExact",
+                RuleName = "rubyContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepRubyGrepContainsRed",
+                RelayTarget = "KeepRubyRegexRed",
                 WordList = new List<string>()
                 {
                     // ruby
@@ -221,7 +221,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepRubyGrepContainsRed",
+                RuleName = "KeepRubyRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -250,12 +250,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for Perl related strings.",
-                RuleName = "perlGrepExtExact",
+                RuleName = "perlContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepPerlGrepContainsRed",
+                RelayTarget = "KeepPerlRegexRed",
                 WordList = new List<string>()
                 {
                     // perl
@@ -265,7 +265,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepPerlGrepContainsRed",
+                RuleName = "KeepPerlRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -294,12 +294,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for PowerShell related strings.",
-                RuleName = "psGrepExtExact",
+                RuleName = "psContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepPsGrepContainsRed",
+                RelayTarget = "KeepPsRegexRed",
                 WordList = new List<string>()
                 {
                     // powershell
@@ -311,7 +311,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepPsGrepContainsRed",
+                RuleName = "KeepPsRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -343,12 +343,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for cmd.exe/batch file related strings.",
-                RuleName = "cmdGrepExtExact",
+                RuleName = "cmdContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepCmdGrepContainsRed",
+                RelayTarget = "KeepCmdRegexRed",
                 WordList = new List<string>()
                 {
                     // cmd.exe
@@ -358,7 +358,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepCmdGrepContainsRed",
+                RuleName = "KeepCmdRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -376,12 +376,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for Bash related strings.",
-                RuleName = "bashGrepExtExact",
+                RuleName = "bashContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepBashGrepContainsRed",
+                RelayTarget = "KeepBashRegexRed",
                 WordList = new List<string>()
                 {
                     // bash, sh, zsh, etc
@@ -393,7 +393,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepBashGrepContainsRed",
+                RuleName = "KeepBashRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -422,12 +422,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for VBScript related strings.",
-                RuleName = "vbsGrepExtExact",
+                RuleName = "vbsContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepVbsGrepContainsRed",
+                RelayTarget = "KeepVbsRegexRed",
                 WordList = new List<string>()
                 {
                     ".vbs",
@@ -437,7 +437,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepVbsGrepContainsRed",
+                RuleName = "KeepVbsRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -452,12 +452,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be subjected to a generic search for keys and such.",
-                RuleName = "ConfigGrepExtExact",
+                RuleName = "ConfigContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepConfigGrepContainsRed",
+                RelayTarget = "KeepConfigRegexRed",
                 WordList = new List<string>()
                 {
                     ".yaml",
@@ -484,7 +484,7 @@ namespace SnaffCore.Config
 
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleName = "KeepConfigGrepContainsRed",
+                RuleName = "KeepConfigRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -515,12 +515,12 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be grepped for private keys.",
-                RuleName = "CertGrepExtExact",
+                RuleName = "CertContentByExtExact",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepCertGrepContainsRed",
+                RelayTarget = "KeepCertRegexRed",
                 WordList = new List<string>()
                 {
                     "_rsa",
@@ -534,7 +534,7 @@ namespace SnaffCore.Config
 
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleName = "KeepCertGrepContainsRed",
+                RuleName = "KeepCertRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,

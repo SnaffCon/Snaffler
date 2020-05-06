@@ -54,6 +54,7 @@ namespace SnaffCore
 
         public void Execute()
         {
+            DateTime startTime = DateTime.Now;
             // This is the main execution thread.
             Timer statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(1)
@@ -88,9 +89,12 @@ namespace SnaffCore
                 // lol whaaaayy
             }
 
-            Mq.Info("Finished!");
-            Console.ResetColor();
-            Environment.Exit(0);
+            DateTime finished = DateTime.Now;
+
+            TimeSpan runSpan = startTime.Subtract(finished);
+            Mq.Info("Finished at " + finished.ToLocalTime());
+            Mq.Info("Snafflin' took " + runSpan);
+            Mq.Finish();
         }
 
         private void ComputerDiscovery()

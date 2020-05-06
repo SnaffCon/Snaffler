@@ -6,6 +6,7 @@
         ShareResult,
         DirResult,
         FileResult,
+        Finish,
         Info,
         Degub,
         Trace,

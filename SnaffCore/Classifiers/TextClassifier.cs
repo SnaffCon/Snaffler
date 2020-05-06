@@ -148,23 +148,39 @@ namespace Classifiers
 
         internal string GetContext(string original, Regex matchRegex)
         {
-            int contextBytes = MyOptions.MatchContextBytes;
-            if (contextBytes == 0)
+            try
             {
-                return "";
+                int contextBytes = MyOptions.MatchContextBytes;
+                if (contextBytes == 0)
+                {
+                    return "";
+                }
+
+                if ((original.Length < 6) || (original.Length < contextBytes * 2))
+                {
+                    return original;
+                }
+
+                int foundIndex = matchRegex.Match(original).Index;
+
+                int contextStart = SubtractWithFloor(foundIndex, contextBytes, 0);
+                string matchContext = "";
+
+                if (original.Length <= (contextStart + (contextBytes * 2)))
+                {
+                    return Regex.Escape(original.Substring(contextStart));
+                }
+
+                if (contextBytes > 0) matchContext = original.Substring(contextStart, contextBytes * 2);
+
+                return Regex.Escape(matchContext);
+            }
+            catch (Exception e)
+            {
+                this.Mq.Error(e.ToString());
             }
 
-            if ((original.Length < 6) ||  (original.Length < contextBytes * 2))
-            {
-                return original;
-            }
-
-            int foundIndex = matchRegex.Match(original).Index;
-
-            int contextStart = SubtractWithFloor(foundIndex, contextBytes, 0);
-            string matchContext = "";
-            if (contextBytes > 0) matchContext = original.Substring(contextStart, contextBytes * 2);
-            return Regex.Escape(matchContext);
+            return "";
         }
 
         internal int SubtractWithFloor(int num1, int num2, int floor)

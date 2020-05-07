@@ -56,9 +56,6 @@ namespace Snaffler
                             new ConsoleWordHighlightingRule("{Black}", ConsoleOutputColor.Black,
                                 ConsoleOutputColor.White),
 
-
-                            new ConsoleWordHighlightingRule("[Trace]", ConsoleOutputColor.DarkGray,
-                                ConsoleOutputColor.Black),
                             new ConsoleWordHighlightingRule("[Trace]", ConsoleOutputColor.DarkGray,
                                 ConsoleOutputColor.Black),
                             new ConsoleWordHighlightingRule("[Degub]", ConsoleOutputColor.Gray,
@@ -170,6 +167,9 @@ namespace Snaffler
                 case SnafflerMessageType.FileResult:
                     Logger.Warn(datetime + "[File]" + FileResultLogFromMessage(message));
                     break;
+                case SnafflerMessageType.DirResult:
+                    Logger.Warn(datetime + "[Dir]" + DirResultLogFromMessage(message));
+                    break;
                 case SnafflerMessageType.ShareResult:
                     Logger.Warn(datetime + "[Share]" + ShareResultLogFromMessage(message));
                     break;
@@ -195,6 +195,14 @@ namespace Snaffler
             var triage = message.ShareResult.Triage.ToString();
             var shareResultTemplate = "{{0}}({1})";
             return string.Format(shareResultTemplate, triage, sharePath);
+        }
+
+        public string DirResultLogFromMessage(SnafflerMessage message)
+        {
+            var sharePath = message.DirResult.DirPath;
+            var triage = message.DirResult.Triage.ToString();
+            var dirResultTemplate = "{{0}}({1})";
+            return string.Format(dirResultTemplate, triage, sharePath);
         }
 
         public string FileResultLogFromMessage(SnafflerMessage message)

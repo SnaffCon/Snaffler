@@ -20,11 +20,6 @@ namespace SnaffCore.Config
 
         public void PrepareClassifiers()
         {
-            if (this.ClassifierRules.Count <= 0)
-            {
-                this.BuildDefaultClassifiers();
-            }
-
             // Where rules are using regexen, we precompile them here.
             // We're gonna use them a lot so efficiency matters.
             foreach (ClassifierRule classifierRule in ClassifierRules)
@@ -86,20 +81,20 @@ namespace SnaffCore.Config
 
             // sort everything into enumeration scopes
             ShareClassifiers = (from classifier in ClassifierRules
-                where classifier.EnumerationScope == EnumerationScope.ShareEnumeration
-                select classifier).ToList();
+                                where classifier.EnumerationScope == EnumerationScope.ShareEnumeration
+                                select classifier).ToList();
             DirClassifiers = (from classifier in ClassifierRules
-                where classifier.EnumerationScope == EnumerationScope.DirectoryEnumeration
-                select classifier).ToList();
+                              where classifier.EnumerationScope == EnumerationScope.DirectoryEnumeration
+                              select classifier).ToList();
             FileClassifiers = (from classifier in ClassifierRules
-                where classifier.EnumerationScope == EnumerationScope.FileEnumeration
-                select classifier).ToList();
+                               where classifier.EnumerationScope == EnumerationScope.FileEnumeration
+                               select classifier).ToList();
             ContentsClassifiers = (from classifier in ClassifierRules
-                where classifier.EnumerationScope == EnumerationScope.ContentsEnumeration
-                select classifier).ToList();
+                                   where classifier.EnumerationScope == EnumerationScope.ContentsEnumeration
+                                   select classifier).ToList();
         }
 
-        private void BuildDefaultClassifiers()
+        public void BuildDefaultClassifiers()
         {
             this.ClassifierRules = new List<ClassifierRule>();
             BuildShareRules();

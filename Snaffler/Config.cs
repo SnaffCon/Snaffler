@@ -112,7 +112,11 @@ namespace Snaffler
                     }
                 }
 
-                retVal.PrepareClassifiers();
+
+                if (retVal.ClassifierRules.Count <= 0)
+                {
+                    retVal.BuildDefaultClassifiers();
+                }
                 // get the args into our config
 
                 // output args
@@ -218,6 +222,7 @@ namespace Snaffler
                     }
                 }
 
+                retVal.PrepareClassifiers();
             }
             catch (Exception e)
             {

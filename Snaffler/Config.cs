@@ -140,7 +140,7 @@ namespace Snaffler
                     if (verboseArg.Parsed)
                     {
                         retVal.LogLevelString = verboseArg.Value;
-                        Mq.Degub("Set verbosity level to:" + retVal.LogLevelString);
+                        Mq.Degub("Requested verbosity level: " + retVal.LogLevelString);
                     }
 
                     // if enabled, display findings to the console

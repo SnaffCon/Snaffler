@@ -98,7 +98,7 @@ namespace SnaffCore.Concurrency
             {
                 DateTime = DateTime.Now,
                 DirResult = dirResult,
-                Type = SnafflerMessageType.ShareResult
+                Type = SnafflerMessageType.DirResult
             });
         }
         public void ShareResult(ShareResult shareResult)

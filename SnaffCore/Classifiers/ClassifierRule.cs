@@ -20,7 +20,7 @@ namespace Classifiers
         public MatchLoc MatchLocation { get; set; } = MatchLoc.FileName;
         public MatchListType WordListType { get; set; } = MatchListType.Contains;
         public List<string> WordList { get; set; } = new List<string>();
-        public List<Regex> Regexes { get; set; } = new List<Regex>();
+        public List<Regex> Regexes { get; set; }
 
         // define the severity of any matches
         public Triage Triage { get; set; } = Triage.Black;

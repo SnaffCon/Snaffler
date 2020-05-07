@@ -20,7 +20,6 @@ namespace SnaffCore.Config
 
         public void PrepareClassifiers()
         {
-
             if (this.ClassifierRules.Count <= 0)
             {
                 this.BuildDefaultClassifiers();
@@ -30,54 +29,62 @@ namespace SnaffCore.Config
             // We're gonna use them a lot so efficiency matters.
             foreach (ClassifierRule classifierRule in ClassifierRules)
             {
-                if (classifierRule.WordListType == MatchListType.Regex)
+                classifierRule.Regexes = new List<Regex>();
+                switch (classifierRule.WordListType)
                 {
-                    classifierRule.Regexes = new List<Regex>();
-                    foreach (string pattern in classifierRule.WordList)
-                    {
-                        classifierRule.Regexes.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
-                    }
-                }
-                else
-                {
-                    switch (classifierRule.WordListType)
-                    {
-                        case MatchListType.Contains:
-                            classifierRule.Regexes = new List<Regex>();
-                            foreach (string word in classifierRule.WordList)
-                            {
-                                string pattern = Regex.Escape(word);
-                                classifierRule.Regexes.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
-                            }
-                            break;
-                        case MatchListType.EndsWith:
-                            foreach (string word in classifierRule.WordList)
-                            {
-                                string pattern = Regex.Escape(word);
-                                pattern = pattern + "$";
-                                classifierRule.Regexes.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
-                            }
-                            break;
-                        case MatchListType.StartsWith:
-                            foreach (string word in classifierRule.WordList)
-                            {
-                                string pattern = Regex.Escape(word);
-                                pattern = "^" + pattern;
-                                classifierRule.Regexes.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
-                            }
-                            break;
-                        case MatchListType.Exact:
-                            foreach (string word in classifierRule.WordList)
-                            {
-                                string pattern = Regex.Escape(word);
-                                pattern = "^" + pattern + "$";
-                                classifierRule.Regexes.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
-                            }
-                            break;
-                    }
+                    case MatchListType.Regex:
+                        foreach (string pattern in classifierRule.WordList)
+                        {
+                            classifierRule.Regexes.Add(new Regex(pattern,
+                                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
+                        }
+
+                        break;
+                    case MatchListType.Contains:
+                        classifierRule.Regexes = new List<Regex>();
+                        foreach (string word in classifierRule.WordList)
+                        {
+                            string pattern = Regex.Escape(word);
+                            classifierRule.Regexes.Add(new Regex(pattern,
+                                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
+                        }
+
+                        break;
+                    case MatchListType.EndsWith:
+                        foreach (string word in classifierRule.WordList)
+                        {
+                            string pattern = Regex.Escape(word);
+                            pattern = pattern + "$";
+                            classifierRule.Regexes.Add(new Regex(pattern,
+                                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
+                        }
+
+                        break;
+                    case MatchListType.StartsWith:
+                        foreach (string word in classifierRule.WordList)
+                        {
+                            string pattern = Regex.Escape(word);
+                            pattern = "^" + pattern;
+                            classifierRule.Regexes.Add(new Regex(pattern,
+                                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
+                        }
+
+                        break;
+                    case MatchListType.Exact:
+                        foreach (string word in classifierRule.WordList)
+                        {
+                            string pattern = Regex.Escape(word);
+                            pattern = "^" + pattern + "$";
+                            classifierRule.Regexes.Add(new Regex(pattern,
+                                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
+                        }
+
+                        break;
+
                 }
             }
 
+            // sort everything into enumeration scopes
             ShareClassifiers = (from classifier in ClassifierRules
                 where classifier.EnumerationScope == EnumerationScope.ShareEnumeration
                 select classifier).ToList();
@@ -95,12 +102,10 @@ namespace SnaffCore.Config
         private void BuildDefaultClassifiers()
         {
             this.ClassifierRules = new List<ClassifierRule>();
-            
             BuildShareRules();
             BuildPathRules();
             BuildFileDiscardRules();
-            BuildFileNameRules();
-            BuildSimpleGrepClassifiers();
+            BuildFileNameRules(); 
             BuildFileContentRules();
         }
     }

@@ -73,15 +73,9 @@ namespace Snaffler
             parser.Arguments.Add(configFileArg);
             parser.Arguments.Add(outFileArg);
             parser.Arguments.Add(helpArg);
-            //parser.Arguments.Add(extMatchArg);
-            //parser.Arguments.Add(nameMatchArg);
-            //parser.Arguments.Add(grepMatchArg);
-            //parser.Arguments.Add(extSkipMatchArg);
-            //parser.Arguments.Add(partialMatchArg);
             parser.Arguments.Add(stdOutArg);
             parser.Arguments.Add(snaffleArg);
             parser.Arguments.Add(snaffleSizeArg);
-            //parser.Arguments.Add(fileHuntArg);
             parser.Arguments.Add(dirTargetArg);
             parser.Arguments.Add(maxThreadsArg);
             parser.Arguments.Add(domainArg);
@@ -97,25 +91,19 @@ namespace Snaffler
                 Environment.Exit(0);
             }
 
-
             try
             {
                 parser.ParseCommandLine(args);
 
+                var settings = TomlSettings.Create(cfg => cfg
+                    .ConfigureType<LogLevel>(tc =>
+                        tc.WithConversionFor<TomlString>(conv => conv
+                            .FromToml(s => (LogLevel) Enum.Parse(typeof(LogLevel), s.Value, ignoreCase: true))
+                            .ToToml(e => e.ToString()))));
+
                 if (configFileArg.Parsed)
                 {
-                    var settings = TomlSettings.Create(cfg => cfg
-                        .ConfigureType<LogLevel>(tc =>
-                            tc.WithConversionFor<TomlString>(conv => conv
-                                .FromToml(s => (LogLevel)Enum.Parse(typeof(LogLevel), s.Value, ignoreCase: true))
-                                .ToToml(e => e.ToString()))));
-                    if (configFileArg.Value.Equals("generate"))
-                    {
-                        Toml.WriteFile(retVal, ".\\default.toml", settings);
-                        Mq.Info("Wrote default config values to .\\default.toml");
-                        Mq.Terminate();
-                    }
-                    else
+                    if (!configFileArg.Value.Equals("generate"))
                     {
                         string configFile = configFileArg.Value;
                         retVal = Toml.ReadFile<Options>(configFile, settings);
@@ -123,104 +111,113 @@ namespace Snaffler
                         Mq.Info("Read config file from " + configFile);
                     }
                 }
-                else
+
+                retVal.PrepareClassifiers();
+                // get the args into our config
+
+                // output args
+                if (outFileArg.Parsed && (!String.IsNullOrEmpty(outFileArg.Value)))
                 {
-                    retVal.PrepareClassifiers();
-                    // get the args into our config
+                    retVal.LogToFile = true;
+                    retVal.LogFilePath = outFileArg.Value;
+                    Mq.Degub("Logging to file at " + retVal.LogFilePath);
+                }
 
-                    // output args
-                    if (outFileArg.Parsed && (!String.IsNullOrEmpty(outFileArg.Value)))
+                // Set loglevel.
+                if (verboseArg.Parsed)
+                {
+                    retVal.LogLevelString = verboseArg.Value;
+                    Mq.Degub("Requested verbosity level: " + retVal.LogLevelString);
+                }
+
+                // if enabled, display findings to the console
+                retVal.LogToConsole = stdOutArg.Parsed;
+                Mq.Degub("Enabled logging to stdout.");
+
+                if (maxThreadsArg.Parsed)
+                {
+                    retVal.MaxThreads = maxThreadsArg.Value;
+                    Mq.Degub("Max threads set to " + maxThreadsArg.Value);
+                }
+
+                // args that tell us about targeting
+                if ((domainArg.Parsed) && (!String.IsNullOrEmpty(domainArg.Value)))
+                {
+                    retVal.TargetDomain = domainArg.Value;
+                    Mq.Degub("Target domain is " + domainArg.Value);
+                }
+
+                if ((domainControllerArg.Parsed) && (!String.IsNullOrEmpty(domainControllerArg.Value)))
+                {
+                    retVal.TargetDc = domainControllerArg.Value;
+                    Mq.Degub("Target DC is " + domainControllerArg.Value);
+                }
+
+                if (dirTargetArg.Parsed)
+                {
+                    retVal.ShareFinderEnabled = false;
+                    retVal.PathTargets = new string[] {dirTargetArg.Value};
+                    Mq.Degub("Disabled finding shares.");
+                    Mq.Degub("Target path is " + dirTargetArg.Value);
+                }
+
+                if (maxGrepSizeArg.Parsed)
+                {
+                    retVal.MaxSizeToGrep = maxGrepSizeArg.Value;
+                    Mq.Degub("We won't bother looking inside files if they're bigger than " + retVal.MaxSizeToGrep +
+                             " bytes");
+                }
+
+                if (snaffleArg.Parsed)
+                {
+                    retVal.SnafflePath = snaffleArg.Value;
+                }
+
+                if (snaffleSizeArg.Parsed)
+                {
+                    retVal.MaxSizeToSnaffle = snaffleSizeArg.Value;
+                }
+
+                // how many bytes 
+                if (grepContextArg.Parsed)
+                {
+                    retVal.MatchContextBytes = grepContextArg.Value;
+                    Mq.Degub(
+                        "We'll show you " + grepContextArg.Value +
+                        " bytes of context around matches inside files.");
+                }
+
+                // if enabled, grab a copy of files that we like.
+                if (snaffleArg.Parsed)
+                {
+                    if (snaffleArg.Value.Length <= 0)
                     {
-                        retVal.LogToFile = true;
-                        retVal.LogFilePath = outFileArg.Value;
-                        Mq.Degub("Logging to file at " + retVal.LogFilePath);
+                        Mq.Error("-m or -mirror arg requires a path value.");
+                        throw new ArgumentException("Invalid argument combination.");
                     }
 
-                    // Set loglevel.
-                    if (verboseArg.Parsed)
+                    retVal.Snaffle = true;
+                    retVal.SnafflePath = snaffleArg.Value.TrimEnd('\\');
+                    Mq.Degub("Mirroring matched files to path " + retVal.SnafflePath);
+                }
+
+                if (!retVal.LogToConsole && !retVal.LogToFile)
+                {
+                    Mq.Error(
+                        "\nYou didn't enable output to file or to the console so you won't see any results or debugs or anything. Your l0ss.");
+                    throw new ArgumentException("Pointless argument combination.");
+                }
+
+                if (configFileArg.Parsed)
+                {
+                    if (configFileArg.Value.Equals("generate"))
                     {
-                        retVal.LogLevelString = verboseArg.Value;
-                        Mq.Degub("Requested verbosity level: " + retVal.LogLevelString);
-                    }
-
-                    // if enabled, display findings to the console
-                    retVal.LogToConsole = stdOutArg.Parsed;
-                    Mq.Degub("Enabled logging to stdout.");
-
-                    if (maxThreadsArg.Parsed)
-                    {
-                        retVal.MaxThreads = maxThreadsArg.Value;
-                        Mq.Degub("Max threads set to " + maxThreadsArg.Value);
-                    }
-
-                    // args that tell us about targeting
-                    if ((domainArg.Parsed) && (!String.IsNullOrEmpty(domainArg.Value)))
-                    {
-                        retVal.TargetDomain = domainArg.Value;
-                        Mq.Degub("Target domain is " + domainArg.Value);
-                    }
-
-                    if ((domainControllerArg.Parsed) && (!String.IsNullOrEmpty(domainControllerArg.Value)))
-                    {
-                        retVal.TargetDc = domainControllerArg.Value;
-                        Mq.Degub("Target DC is " + domainControllerArg.Value);
-                    }
-
-                    if (dirTargetArg.Parsed)
-                    {
-                        retVal.ShareFinderEnabled = false;
-                        retVal.PathTargets = new string[]{dirTargetArg.Value};
-                        Mq.Degub("Disabled finding shares.");
-                        Mq.Degub("Target path is " + dirTargetArg.Value);
-                    }
-
-                    if (maxGrepSizeArg.Parsed)
-                    {
-                        retVal.MaxSizeToGrep = maxGrepSizeArg.Value;
-                        Mq.Degub("We won't bother looking inside files if they're bigger than " + retVal.MaxSizeToGrep +
-                                 " bytes");
-                    }
-
-                    if (snaffleArg.Parsed)
-                    {
-                        retVal.SnafflePath = snaffleArg.Value;
-                    }
-
-                    if (snaffleSizeArg.Parsed)
-                    {
-                        retVal.MaxSizeToSnaffle = snaffleSizeArg.Value;
-                    }
-
-                    // how many bytes 
-                    if (grepContextArg.Parsed)
-                    {
-                        retVal.MatchContextBytes = grepContextArg.Value;
-                        Mq.Degub(
-                            "We'll show you " + grepContextArg.Value +
-                            " bytes of context around matches inside files.");
-                    }
-
-                    // if enabled, grab a copy of files that we like.
-                    if (snaffleArg.Parsed)
-                    {
-                        if (snaffleArg.Value.Length <= 0)
-                        {
-                            Mq.Error("-m or -mirror arg requires a path value.");
-                            throw new ArgumentException("Invalid argument combination.");
-                        }
-
-                        retVal.Snaffle = true;
-                        retVal.SnafflePath = snaffleArg.Value.TrimEnd('\\');
-                        Mq.Degub("Mirroring matched files to path " + retVal.SnafflePath);
-                    }
-
-                    if (!retVal.LogToConsole && !retVal.LogToFile)
-                    {
-                        Mq.Error(
-                            "\nYou didn't enable output to file or to the console so you won't see any results or debugs or anything. Your l0ss.");
-                        throw new ArgumentException("Pointless argument combination.");
+                        Toml.WriteFile(retVal, ".\\default.toml", settings);
+                        Mq.Info("Wrote default config values to .\\default.toml");
+                        Mq.Terminate();
                     }
                 }
+
             }
             catch (Exception e)
             {

@@ -2,10 +2,13 @@
 using System.Numerics;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Classifiers;
 using SnaffCore.ActiveDirectory;
 using SnaffCore.Concurrency;
 using SnaffCore.ShareFind;
@@ -129,13 +132,27 @@ namespace SnaffCore
                 foreach (string user in adData.GetDomainUsers())
                 {
                     MyOptions.DomainUsersToMatch.Add(user);
+                    Mq.Degub("Found interesting user in AD: " + user);
                 }
             }
-            if (MyOptions.DomainUsersRule)
+            if (MyOptions.CreateDomainUsersRule)
             {
-                throw new NotImplementedException();
-                //MyOptions.FileClassifiers.Add
-                // create the actual rule
+                try
+                {
+                    ClassifierRule configClassifierRule =
+                        MyOptions.ClassifierRules.First(thing => thing.RuleName == "KeepConfigRegexRed");
+
+                    foreach (string user in MyOptions.DomainUsersToMatch)
+                    {
+                        Regex regex = new Regex(Regex.Escape(user),
+                            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                        configClassifierRule.Regexes.Add(regex);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Mq.Error("Something went wrong adding domain users to rules.");
+                }
             }
             // immediately call ShareDisco which should handle the rest.
             ShareDiscovery(targetComputers.ToArray());

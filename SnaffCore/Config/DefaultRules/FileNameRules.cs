@@ -5,7 +5,7 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
-        private void BuildFileKeepClassifiers()
+        private void BuildFileNameRules()
         {
             this.ClassifierRules.Add(
                 new ClassifierRule()
@@ -206,23 +206,29 @@ namespace SnaffCore.Config
                 }
                 );
 
-            this.ClassifierRules.Add(
-                new ClassifierRule()
-                {
-                    Description = "Files with these extensions will be parsed as x509 certificates to see if they have private keys.",
-                    RuleName = "KeepCertContainsPrivKeyRed",
-                    EnumerationScope = EnumerationScope.FileEnumeration,
-                    MatchLocation = MatchLoc.FileExtension,
-                    WordListType = MatchListType.Exact,
-                    MatchAction = MatchAction.CheckForKeys,
-                    Triage = Triage.Red,
-                    WordList = new List<string>()
+            /*
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                RuleOrder = 12,
+                RuleName = "KeepNameContainsGreen",
+                EnumerationScope = EnumerationScope.FileEnumeration,
+                MatchLocation = MatchLoc.FileName,
+                WordListType = MatchListType.Contains,
+                MatchAction = MatchAction.Snaffle,
+                Triage = Triage.Green,
+                WordList = new List<string>()
                     {
-                        ".der",
-                        ".pfx"
+                        //magic words
+                        "passw",
+                        "as-built",
+                        "handover",
+                        "secret",
+                        "thycotic",
+                        "cyberark",
                     },
-                }
-                );
+            });
+            */
+
         }
     }
 }

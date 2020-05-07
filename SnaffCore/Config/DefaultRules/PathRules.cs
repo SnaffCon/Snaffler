@@ -5,7 +5,7 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
-        private void BuildPathClassifiers()
+        private void BuildPathRules()
         {
             this.ClassifierRules.Add(new ClassifierRule()
             {

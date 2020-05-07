@@ -139,8 +139,7 @@ namespace SnaffCore.ActiveDirectory
                             mySearcher.PropertiesToLoad.Add("adminCount");
                             mySearcher.PropertiesToLoad.Add("sAMAccountName");
                             mySearcher.PropertiesToLoad.Add("userAccountControl");
-
-
+                            
                             foreach (SearchResult resEnt in mySearcher.FindAll())
                             {
                                 try

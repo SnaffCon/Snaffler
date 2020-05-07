@@ -5,7 +5,7 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
-        private void BuildFileDiscardClassifiers()
+        private void BuildFileDiscardRules()
         {
             this.ClassifierRules.Add(
                 new ClassifierRule()
@@ -20,7 +20,6 @@ namespace SnaffCore.Config
                     {
                         // always skip these file extensions
                         // image formats
-                        
                         ".bmp",
                         ".eps",
                         ".gif",

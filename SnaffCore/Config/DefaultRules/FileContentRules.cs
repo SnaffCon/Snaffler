@@ -5,13 +5,13 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
-        private void BuildFileRegexClassifiers()
+        private void BuildFileContentRules()
         {
             // Python
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for python related strings.",
-                RuleName = "PyContentByExtExact",
+                RuleName = "PyContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -56,7 +56,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for php related strings.",
-                RuleName = "phpContentByExtExact",
+                RuleName = "phpContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -108,7 +108,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for CSharp and ASP.NET related strings.",
-                RuleName = "csContentByExtExact",
+                RuleName = "csContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -159,7 +159,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for Java and ColdFusion related strings.",
-                RuleName = "javaContentByExtExact",
+                RuleName = "javaContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -206,7 +206,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for Rubby related strings.",
-                RuleName = "rubyContentByExtExact",
+                RuleName = "rubyContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -250,7 +250,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for Perl related strings.",
-                RuleName = "perlContentByExtExact",
+                RuleName = "perlContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -294,7 +294,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for PowerShell related strings.",
-                RuleName = "psContentByExtExact",
+                RuleName = "psContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -343,7 +343,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for cmd.exe/batch file related strings.",
-                RuleName = "cmdContentByExtExact",
+                RuleName = "cmdContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -376,7 +376,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for Bash related strings.",
-                RuleName = "bashContentByExtExact",
+                RuleName = "bashContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -422,7 +422,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for VBScript related strings.",
-                RuleName = "vbsContentByExtExact",
+                RuleName = "vbsContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -448,11 +448,11 @@ namespace SnaffCore.Config
                     // TODO LOL
                 }
             });
-
+            
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be subjected to a generic search for keys and such.",
-                RuleName = "ConfigContentByExtExact",
+                RuleName = "ConfigContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -515,7 +515,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be grepped for private keys.",
-                RuleName = "CertContentByExtExact",
+                RuleName = "CertContentByExt",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
@@ -545,6 +545,25 @@ namespace SnaffCore.Config
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----"
                 },
             });
+
+
+            this.ClassifierRules.Add(
+                new ClassifierRule()
+                {
+                    Description = "Files with these extensions will be parsed as x509 certificates to see if they have private keys.",
+                    RuleName = "KeepCertContainsPrivKeyRed",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.CheckForKeys,
+                    Triage = Triage.Red,
+                    WordList = new List<string>()
+                    {
+                        ".der",
+                        ".pfx"
+                    },
+                }
+            );
         }
     }
 }

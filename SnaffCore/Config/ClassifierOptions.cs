@@ -35,7 +35,7 @@ namespace SnaffCore.Config
                     classifierRule.Regexes = new List<Regex>();
                     foreach (string pattern in classifierRule.WordList)
                     {
-                        classifierRule.Regexes.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.CultureInvariant));
+                        classifierRule.Regexes.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
                     }
                 }
                 else
@@ -96,12 +96,12 @@ namespace SnaffCore.Config
         {
             this.ClassifierRules = new List<ClassifierRule>();
             
-            BuildShareClassifiers();
-            BuildPathClassifiers();
-            BuildFileDiscardClassifiers();
-            BuildFileKeepClassifiers();
+            BuildShareRules();
+            BuildPathRules();
+            BuildFileDiscardRules();
+            BuildFileNameRules();
             BuildSimpleGrepClassifiers();
-            BuildFileRegexClassifiers();
+            BuildFileContentRules();
         }
     }
 }

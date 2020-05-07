@@ -60,11 +60,10 @@
     <Compile Include="Concurrency\TaskHandler.cs" />
     <Compile Include="Config\ClassifierOptions.cs" />
     <Compile Include="Config\DefaultRules\FileDiscardRules.cs" />
-    <Compile Include="Config\DefaultRules\FileKeepRules.cs" />
+    <Compile Include="Config\DefaultRules\FileNameRules.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Classifiers\ClassifierRule.cs" />
-    <Compile Include="Config\DefaultRules\FileRegexRules.cs" />
-    <Compile Include="Config\DefaultRules\FileSimpleGrepRules.cs" />
+    <Compile Include="Config\DefaultRules\FileContentRules.cs" />
     <Compile Include="Config\DefaultRules\PathRules.cs" />
     <Compile Include="Config\DefaultRules\ShareRules.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

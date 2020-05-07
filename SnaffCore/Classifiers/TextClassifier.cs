@@ -23,10 +23,13 @@ namespace Classifiers
         // Methods for classification
         internal TextResult TextMatch(string input)
         {
+            /*
             // generic match checking
             switch (ClassifierRule.WordListType)
             {
+                
                 case MatchListType.Contains:
+                 
                     foreach (string matchString in ClassifierRule.WordList)
                     {
                         int index = input.IndexOf(matchString, StringComparison.OrdinalIgnoreCase);
@@ -84,18 +87,19 @@ namespace Classifiers
                     }
 
                     break;
-                case MatchListType.Regex:
-                    foreach (string matchString in ClassifierRule.WordList)
+                case MatchListType.Regex: 
+                */
+                    foreach (Regex regex in ClassifierRule.Regexes)
                     {
                         try
                         {
-                            Regex regex = new Regex(matchString);
+                            //Regex regex = new Regex(matchString);
 
                             if (regex.IsMatch(input))
                             {
                                 return new TextResult()
                                 {
-                                    MatchedStrings = new List<string>() { matchString },
+                                    MatchedStrings = new List<string>() { regex.ToString() },
                                     MatchContext = GetContext(input, regex)
                                 };
                             }
@@ -105,45 +109,14 @@ namespace Classifiers
                             Mq.Error(e.ToString());
                         }
                     }
+                    /*
                     break;
                 default:
                     return null;
+                    
             }
+            */
             return null;
-        }
-
-        internal string GetContext(string original, string matchString)
-        {
-            try
-            {
-                int contextBytes = MyOptions.MatchContextBytes;
-                if (contextBytes == 0)
-                {
-                    return "";
-                }
-
-                if (original.Length <= (contextBytes * 2))
-                {
-                    return original;
-                }
-
-                int foundIndex = original.IndexOf(matchString, StringComparison.OrdinalIgnoreCase);
-
-                int contextStart = SubtractWithFloor(foundIndex, contextBytes, 0);
-                string matchContext = "";
-                if (contextBytes > 0) matchContext = original.Substring(contextStart, contextBytes * 2);
-
-                return Regex.Escape(matchContext);
-            }
-            catch (ArgumentOutOfRangeException e)
-            {
-                return original;
-            }
-            catch (Exception e)
-            {
-                Mq.Trace(e.ToString());
-                return "";
-            }
         }
 
         internal string GetContext(string original, Regex matchRegex)

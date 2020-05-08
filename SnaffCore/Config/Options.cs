@@ -15,7 +15,7 @@ namespace SnaffCore.Config
         public bool ScanNetlogon { get; set; } = true;
 
         // Concurrency Options
-        public int MaxThreads { get; set; } = 30;
+        //public int MaxThreads { get; set; } = 30;
         public int ShareThreads { get; set; } = 30;
         public int TreeThreads { get; set; } = 20;
         public int FileThreads { get; set; } = 50;
@@ -51,6 +51,7 @@ namespace SnaffCore.Config
             "opsmgr",
             "adm"
         };
+
         public List<string> DomainUsersToMatch = new List<string>();
 
         // this sets the maximum size of file to look inside.
@@ -66,7 +67,7 @@ namespace SnaffCore.Config
 
         public Options()
         {
-            PrepareClassifiers();
+            //PrepareClassifiers();
                 //BuildDefaultClassifiers();
         }
     }

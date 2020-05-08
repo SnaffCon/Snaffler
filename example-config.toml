@@ -1,0 +1,374 @@
+# Sample Config File
+
+## Resource Use Options
+# This is a bit of a balancing act and maximising performance will depend somewhat on your environment and how much RAM you're willing to consume.
+# More threads will obviously need more CPU and lots more ram, where increasing the queue sizes will have a dramatic impact on ram usage.
+# These values should limit RAM usage to between 500-1000MB.
+#
+# The most important thing is that you generally want a lot more threads allocated to filescanning compared to the other two. 
+#
+# Think about it this way:
+# A completed sharefinder task will create a number of new treewalker tasks equal to the number of readable shares on the target computer. Most of the time this will be zero, it will rarely be more than a few hundred.
+# A treewalker task will create a number of new filescanner tasks equal to the number of readable files on the target filesystem. This could be anywhere between zero and *millions*.
+# Filescanner tasks don't create new tasks, when they finish that's the end of the road.
+#
+# With this in mind I hope it's obvious that to keep things flowing along nicely you want to make sure the filescanner queues are getting cleared out at a decent pace. Everything else should flow on from that.
+ShareThreads = 30 # number of threads to allocate to checking domain computers for readable file shares, i.e. share-finder tasks
+TreeThreads = 20 # number of threads to allocate to walking the directory structures of shares to find all the files, i.e. tree-walker tasks.
+FileThreads = 50 # number of threads to allocate to checking files to determine if they should be snaffled, i.e. file-scanner tasks.
+MaxShareQueue = 20000 # Upper limit of share-finder tasks to put in the queue before we wait for some to be cleared out.
+MaxTreeQueue = 20000 # Upper limit of tree-walker tasks to put in the queue before we wait for some to be cleared out.
+MaxFileQueue = 200000 # Upper limit of file-scanner tasks to put in the queue before we wait for some to be cleared out.
+
+## Output options
+# These control where the output goes, e.g. to stdout/console, a file, etc.
+LogToFile = true # whether or not to log output to a file.
+LogFilePath = "C:\\example" # what file to log output to.
+LogToConsole = false # whether or not to send output to stdout 
+LogLevelString = "info" # how verbose to be. options include: 
+# "data" which will only show actual results.
+# "info" (which is the default) which will tell you some basic stuff about what snaffler is doing.
+# "degub" (or "debug" if you prefer) which will show some debugging info too.
+# "trace" which will be insanely noisy and throw errors all over the joint.
+
+Snaffle = true # if set to true, this will actually retrieve (or SNAFFLE if you will...) a copy of files that are deemed worthy by a filescanner task.
+MaxSizeToSnaffle = 100000 # obviously we don't want to download a 200GB full disk backup of a DC to your 40GB testing VM, so this is an upper limit on file size to 'snaffle' in bytes.
+SnafflePath = "C:\\snaffleout" # the path that snaffled files will be put in. We'll reproduce the directory structure that they were found in so you should be able to figure out where they came from even if you lose the log file.
+
+## Targeting options
+TargetDomain = "target.tld" # the domain to target. You'll want to set this and TargetDC if you're running Snaffler with `runas /netonly` or whatever, but by default Snaffler should figure this out on its own.
+TargetDC = "dc01.target.tld" # the DC to query for computers and users. By default Snaffler should figure this out on its own.
+ShareFinderEnabled = false # whether to query the AD domain for computers and then search those computers for readable shares. 
+# If you set ShareFinderEnabled to false you'll need to set a value in ComputerTargets or PathTargets
+ComputerTargets = ["computer1", "computer2"] 
+PathTargets = ["Z:\\temp","C:\\thing"]
+ScanSysvol = true # enables scanning of the domain SYSVOL share. Will only scan it once even if multiple domain controllers are scanned.
+ScanNetlogon = true # enables scanning of the domain NETLOGON share. Will only scan it once even if multiple domain controllers are scanned.
+#######################################
+QueryDomainForUsers = true # whether to fetch a list of domain users, filter out highly privileged ones and accounts that seem to be service accounts, and add them to one or more rules.
+DomainUsersToMatch = ["svc-sqlserver", "domainadmin"] # if you don't want to do QueryDomainForUsers you can set the values manually here. If QueryDomainForUsers is true it will overwrite whatever you put in here.
+CreateDomainUsersRule = false # whether to add them to a rule. there's no point having this set to false if you have both DomainUsersToMatch and QueryDomainForUsers false/blank.
+####################################### 
+MaxSizeToGrep = 200 # the maximum size file in bytes that we should look inside. Reducing this number will reduce memory usage and substantially speed things up, but will potentially skip a lot of interesting stuff
+MatchContextBytes = 200 # how many bytes of 'context' to show on either side of a match inside a file.
+
+## Rules
+# These define what we're going to actually look for. See README.md for details.
+[[ClassifierRules]]
+EnumerationScope = "ShareEnumeration"
+RuleName = "DiscardShareEndsWith"
+MatchAction = "Discard"
+Description = "Skips scanning inside shares ending with these words."
+MatchLocation = "ShareName"
+WordListType = "EndsWith"
+WordList = ["\\print$", "\\ipc$"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ShareEnumeration"
+RuleName = "KeepCDollaShare"
+MatchAction = "Snaffle"
+Description = "Notifies the user that they can read C$ but doesn't actually scan inside it."
+MatchLocation = "ShareName"
+WordListType = "EndsWith"
+WordList = ["\\C$"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "DirectoryEnumeration"
+RuleName = "DiscardFilepathContains"
+MatchAction = "Discard"
+Description = "File paths that will be skipped entirely."
+MatchLocation = "FilePath"
+WordListType = "Contains"
+WordList = ["winsxs", "syswow64", "system32", "systemapps", "servicing\\packages", "Microsoft.NET\\Framework", "ADMIN$\\immersivecontrolpanel", "windows\\immersivecontrolpanel", "ADMIN$\\diagnostics", "windows\\diagnostics", "ADMIN$\\debug", "windows\\debug", "node_modules", "vendor\\bundle", "vendor\\cache", "locale\\", "localization\\", "\\AppData\\Local\\Microsoft\\", "\\AppData\\Roaming\\Microsoft\\", "\\wsuscontent"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "DiscardExtExact"
+MatchAction = "Discard"
+Description = "Skip any further scanning for files with these extensions."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".bmp", ".eps", ".gif", ".ico", ".jfi", ".jfif", ".jif", ".jpe", ".jpeg", ".jpg", ".png", ".psd", ".svg", ".tif", ".tiff", ".webp", ".xcf", ".ttf", ".otf", ".lock", ".css", ".less"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepExtExactBlack"
+MatchAction = "Snaffle"
+Description = "Files with these extensions are very very interesting."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".kdbx", ".kdb", ".ppk", ".vmdk", ".vhdx", ".ova", ".ovf", ".psafe3", ".cscfg", ".kwallet", ".tblk", ".ovpn"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepFilenameExactBlack"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+WordList = ["id_rsa", "id_dsa", "NTDS.DIT", "shadow", "pwd.db", "passwd", "running-config.cfg", "startup-config.cfg", "running-config", "startup-config"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepPathContainsBlack"
+MatchAction = "Snaffle"
+Description = "Files with a path containing these strings are very very interesting."
+MatchLocation = "FilePath"
+WordListType = "Contains"
+WordList = [".ssh\\", ".purple\\accounts.xml", ".aws\\", ".gem\\credentials", "doctl\\config.yaml", "config\\hub"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepExtExactRed"
+MatchAction = "Snaffle"
+Description = "Files with these extensions are QUITE interesting."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".key", ".pk12", ".p12", ".pkcs12", ".jks", ".rdp", ".rdg", ".asc", ".bek", ".tpm", ".fve", ".pcap", ".cap", ".key", ".keypair", ".keychain", ".wim", ".mdf", ".sdf", ".sqldump"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepFilenameExactRed"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+WordList = ["unattend.xml", ".netrc", "_netrc", ".htpasswd", "otr.private_key", ".secret_token.rb", "carrierwave.rb", "database.yml", "omniauth.rb", "settings.py", ".agilekeychain", ".keychain", "jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml", "credentials.xml", "LocalSettings.php", "Favorites.plist", "knife.rb", "proxy.config", "proftpdpasswd", "robomongo.json", "filezilla.xml", "recentservers.xml", "terraform.tfvars", ".exports", ".functions", ".extra", ".bash_history", ".zsh_history", ".sh_history", "zhistory", ".mysql_history", ".psql_history", ".pgpass", ".irb_history", ".dbeaver-data-sources.xml", ".s3vfg", "sftp-config.json", "config.inc", "config.php", "keystore", "keyring", ".tugboat", ".git-credentials", ".gitconfig", ".dockercfg", ".npmrc", ".env", ".bashrc", ".profile", ".zshrc"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "PyContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepPyRegexRed"
+Description = "Files with these extensions will be searched for python related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".py"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepPyRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["mysql\\.connector\\.connect\\(", "psycopg2\\.connect\\(", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "phpContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepPhpRegexRed"
+Description = "Files with these extensions will be searched for php related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".php", ".phtml", ".inc", ".php3", ".php5", ".php7"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepPhpRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["mysql_connect[[:space:]]*\\(.*\\$.*\\)", "mysql_pconnect[[:space:]]*\\(.*\\$.*\\)", "mysql_change_user[[:space:]]*\\(.*\\$.*\\)", "pg_connect[[:space:]]*\\(.*\\$.*\\)", "pg_pconnect[[:space:]]*\\(.*\\$.*\\)", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "csContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepCsRegexRed"
+Description = "Files with these extensions will be searched for CSharp and ASP.NET related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".aspx", ".ashx", ".asmx", ".asp", ".cshtml", ".cs", ".ascx"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepCsRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["[Ss][Qq][Ll][CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[Vv][Aa][Ll][Ii][Dd][Aa][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[Dd][Ee][Cc][Rr][Yy][Pp][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "javaContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepJavaRegexRed"
+Description = "Files with these extensions will be searched for Java and ColdFusion related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".jsp", ".do", ".java", ".cfm"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepJavaRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["\\.getConnection\\(\\\"jdbc\\:", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "rubyContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepRubyRegexRed"
+Description = "Files with these extensions will be searched for Rubby related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".rb"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepRubyRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["DBI\\.connect\\(", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "perlContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepPerlRegexRed"
+Description = "Files with these extensions will be searched for Perl related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".pl"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepPerlRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["DBI\\-\\>connect\\(", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "psContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepPsRegexRed"
+Description = "Files with these extensions will be searched for PowerShell related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".psd1", ".psm1", ".ps1"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepPsRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = [" -Credential ", "net user ", "psexec .{0-100} -p ", "-SecureString", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "cmdContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepCmdRegexRed"
+Description = "Files with these extensions will be searched for cmd.exe/batch file related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".bat"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepCmdRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["net user ", "psexec .{0-100} -p "]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "bashContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepBashRegexRed"
+Description = "Files with these extensions will be searched for Bash related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".sh", ".rc", ".profile"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepBashRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["sshpass -p.*['|\\\"]", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "vbsContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepVbsRegexRed"
+Description = "Files with these extensions will be searched for VBScript related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".vbs", ".wsf"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepVbsRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = []
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "ConfigContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepConfigRegexRed"
+Description = "Files with these extensions will be subjected to a generic search for keys and such."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".yaml", ".yml", ".toml", ".xml", ".json", ".config", ".ini", ".inf", ".cnf", ".conf", ".properties", ".env", ".dist", ".txt", ".sql", ".log", ".sqlite", ".sqlite3", ".fdb"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepConfigRegexRed"
+MatchAction = "Snaffle"
+Description = "A description of what a rule does."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["[Ss][Qq][Ll][CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[Vv][Aa][Ll][Ii][Dd][Aa][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[Dd][Ee][Cc][Rr][Yy][Pp][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", "NVRAM config last updated", "enable password ."]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "CertContentByExt"
+MatchAction = "Relay"
+RelayTarget = "KeepCertRegexRed"
+Description = "Files with these extensions will be grepped for private keys."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = ["_rsa", "_dsa", "_ed25519", "_ecdsa", "_ed25519", ".pem"]
+Triage = "Black"
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepCertRegexRed"
+MatchAction = "Snaffle"
+Description = "A description of what a rule does."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+WordList = ["-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----"]
+Triage = "Red"
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepCertContainsPrivKeyRed"
+MatchAction = "CheckForKeys"
+Description = "Files with these extensions will be parsed as x509 certificates to see if they have private keys."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+WordList = [".der", ".pfx"]
+Triage = "Red"

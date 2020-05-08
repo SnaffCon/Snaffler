@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using NLog;
@@ -183,7 +184,10 @@ namespace Snaffler
                 case SnafflerMessageType.Finish:
                     Logger.Info("Snaffler out.");
                     Console.WriteLine("Press any key to exit.");
-                    Console.ReadKey();
+                    if (Debugger.IsAttached)
+                    {
+                        Console.ReadKey();
+                    }
                     Environment.Exit(0);
                     break;
             }

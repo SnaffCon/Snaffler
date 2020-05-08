@@ -60,9 +60,9 @@ namespace SnaffCore
             DateTime startTime = DateTime.Now;
             // This is the main execution thread.
             Timer statusUpdateTimer =
-                new Timer(TimeSpan.FromMinutes(1)
+                new Timer(TimeSpan.FromMinutes(0.5)
                     .TotalMilliseconds) {AutoReset = true}; // Set the time (1 min in this case)
-            statusUpdateTimer.Elapsed += StatusUpdate;
+            statusUpdateTimer.Elapsed += TimedStatusUpdate;
             statusUpdateTimer.Start();
 
             // if we haven't been told what dir or computer to target, we're going to need to do share discovery. that means finding computers from the domain.
@@ -91,9 +91,8 @@ namespace SnaffCore
             {
                 // lol whaaaayy
             }
-
+            StatusUpdate();
             DateTime finished = DateTime.Now;
-
             TimeSpan runSpan = startTime.Subtract(finished);
             Mq.Info("Finished at " + finished.ToLocalTime());
             Mq.Info("Snafflin' took " + runSpan);
@@ -204,7 +203,12 @@ namespace SnaffCore
         }
 
         // This method is called every minute
-        private void StatusUpdate(object sender, ElapsedEventArgs e)
+        private void TimedStatusUpdate(object sender, ElapsedEventArgs e)
+        {
+            StatusUpdate();
+        }
+
+        private void StatusUpdate()
         {
             //lock (StatusObjectLocker)
             //{

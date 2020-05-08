@@ -1,8 +1,8 @@
-﻿using System;
+﻿using SnaffCore.Concurrency;
+using System;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.DirectoryServices.ActiveDirectory;
-using SnaffCore.Concurrency;
 using static SnaffCore.Config.Options;
 
 namespace SnaffCore.ActiveDirectory
@@ -61,7 +61,7 @@ namespace SnaffCore.ActiveDirectory
         {
             try
             {
-                var dcCollection = DomainController.FindAll(DirectoryContext);
+                DomainControllerCollection dcCollection = DomainController.FindAll(DirectoryContext);
                 foreach (DomainController dc in dcCollection)
                 {
                     DomainControllers.Add(dc.IPAddress);
@@ -87,18 +87,18 @@ namespace SnaffCore.ActiveDirectory
                 GetDomainControllers();
             }
 
-            var domainComputers = new List<string>();
-            var domainUsers = new List<string>();
+            List<string> domainComputers = new List<string>();
+            List<string> domainUsers = new List<string>();
             // we do this so if the first one fails we keep trying til we find a DC we can talk to.
-            foreach (var domainController in DomainControllers)
+            foreach (string domainController in DomainControllers)
             {
                 try
                 {
                     // TODO add support for user defined creds here.
 
-                    using (var entry = new DirectoryEntry("LDAP://" + domainController))
+                    using (DirectoryEntry entry = new DirectoryEntry("LDAP://" + domainController))
                     {
-                        using (var mySearcher = new DirectorySearcher(entry))
+                        using (DirectorySearcher mySearcher = new DirectorySearcher(entry))
                         {
                             mySearcher.Filter = ("(objectClass=computer)");
 
@@ -118,13 +118,13 @@ namespace SnaffCore.ActiveDirectory
                                 // Note: Properties can contain multiple values.
                                 if (resEnt.Properties["dNSHostName"].Count > 0)
                                 {
-                                    var computerName = (string) resEnt.Properties["dNSHostName"][0];
+                                    string computerName = (string)resEnt.Properties["dNSHostName"][0];
                                     domainComputers.Add(computerName);
                                 }
                             }
                         }
                         // now users
-                        using (var mySearcher = new DirectorySearcher(entry))
+                        using (DirectorySearcher mySearcher = new DirectorySearcher(entry))
                         {
                             mySearcher.Filter = ("(objectClass=user)");
 
@@ -139,7 +139,7 @@ namespace SnaffCore.ActiveDirectory
                             mySearcher.PropertiesToLoad.Add("adminCount");
                             mySearcher.PropertiesToLoad.Add("sAMAccountName");
                             mySearcher.PropertiesToLoad.Add("userAccountControl");
-                            
+
                             foreach (SearchResult resEnt in mySearcher.FindAll())
                             {
                                 try
@@ -159,7 +159,7 @@ namespace SnaffCore.ActiveDirectory
                                         continue;
                                     }
 
-                                    var userName = (string)resEnt.Properties["sAMAccountName"][0];
+                                    string userName = (string)resEnt.Properties["sAMAccountName"][0];
 
                                     // skip computer accounts
                                     if (userName.EndsWith("$"))

@@ -1,5 +1,4 @@
 ﻿using SnaffCore.Concurrency;
-using SnaffCore.TreeWalk;
 
 namespace Classifiers
 {

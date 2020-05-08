@@ -1,11 +1,11 @@
-﻿using System;
+﻿using SnaffCore.Concurrency;
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
-using SnaffCore.Concurrency;
 using static SnaffCore.Config.Options;
 
 namespace Classifiers

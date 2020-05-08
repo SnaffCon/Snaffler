@@ -1,15 +1,12 @@
-﻿using System;
+﻿using Classifiers;
+using SnaffCore.Concurrency;
+using SnaffCore.TreeWalk;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Classifiers;
-using SnaffCore;
-using SnaffCore.Concurrency;
-using SnaffCore.TreeWalk;
 using static SnaffCore.Config.Options;
 
 namespace SnaffCore.ShareFind
@@ -26,12 +23,12 @@ namespace SnaffCore.ShareFind
         internal void GetComputerShares(string computer)
         {
             // find the shares
-            var hostShareInfos = GetHostShareInfo(computer);
-            var treeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
+            HostShareInfo[] hostShareInfos = GetHostShareInfo(computer);
+            BlockingStaticTaskScheduler treeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
 
-            foreach (var hostShareInfo in hostShareInfos)
+            foreach (HostShareInfo hostShareInfo in hostShareInfos)
             {
-                var shareName = GetShareName(hostShareInfo, computer);
+                string shareName = GetShareName(hostShareInfo, computer);
                 if (!String.IsNullOrWhiteSpace(shareName))
                 {
                     bool matched = false;
@@ -85,11 +82,11 @@ namespace SnaffCore.ShareFind
                 string[] files = Directory.GetFiles(share);
                 return true;
             }
-            catch (UnauthorizedAccessException e)
+            catch (UnauthorizedAccessException)
             {
                 return false;
             }
-            catch (DirectoryNotFoundException e) 
+            catch (DirectoryNotFoundException)
             {
                 return false;
             }
@@ -105,11 +102,11 @@ namespace SnaffCore.ShareFind
             // takes a HostShareInfo object and a computer name and turns it into a usable path.
 
             // first we want to throw away any errored out ones.
-            string[] errors = {"ERROR=53", "ERROR=5"};
+            string[] errors = { "ERROR=53", "ERROR=5" };
             if (errors.Contains(hostShareInfo.shi1_netname))
             {
                 //Mq.Trace(hostShareInfo.shi1_netname + " on " + computer +
-                                //", but this is usually no cause for alarm.");
+                //", but this is usually no cause for alarm.");
                 return null;
             }
             return $"\\\\{computer}\\{hostShareInfo.shi1_netname}";
@@ -118,21 +115,21 @@ namespace SnaffCore.ShareFind
         private HostShareInfo[] GetHostShareInfo(string server)
         {
             // gets a share info object when given a host.
-            var shareInfos = new List<HostShareInfo>();
-            var entriesread = 0;
-            var totalentries = 0;
-            var resumeHandle = 0;
-            var nStructSize = Marshal.SizeOf(typeof(HostShareInfo));
-            var bufPtr = IntPtr.Zero;
-            var ret = NetShareEnum(new StringBuilder(server), 1, ref bufPtr, MaxPreferredLength, ref entriesread,
+            List<HostShareInfo> shareInfos = new List<HostShareInfo>();
+            int entriesread = 0;
+            int totalentries = 0;
+            int resumeHandle = 0;
+            int nStructSize = Marshal.SizeOf(typeof(HostShareInfo));
+            IntPtr bufPtr = IntPtr.Zero;
+            int ret = NetShareEnum(new StringBuilder(server), 1, ref bufPtr, MaxPreferredLength, ref entriesread,
                 ref totalentries,
                 ref resumeHandle);
             if (ret == NerrSuccess)
             {
-                var currentPtr = bufPtr;
-                for (var i = 0; i < entriesread; i++)
+                IntPtr currentPtr = bufPtr;
+                for (int i = 0; i < entriesread; i++)
                 {
-                    var shi1 = (HostShareInfo) Marshal.PtrToStructure(currentPtr, typeof(HostShareInfo));
+                    HostShareInfo shi1 = (HostShareInfo)Marshal.PtrToStructure(currentPtr, typeof(HostShareInfo));
                     shareInfos.Add(shi1);
                     currentPtr += nStructSize;
                 }

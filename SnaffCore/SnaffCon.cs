@@ -1,19 +1,17 @@
-﻿using System;
-using System.Numerics;
+﻿using Classifiers;
+using SnaffCore.ActiveDirectory;
+using SnaffCore.Concurrency;
+using SnaffCore.Config;
+using SnaffCore.ShareFind;
+using SnaffCore.TreeWalk;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Timers;
-using Classifiers;
-using SnaffCore.ActiveDirectory;
-using SnaffCore.Concurrency;
-using SnaffCore.ShareFind;
-using SnaffCore.TreeWalk;
-using SnaffCore.Config;
 using static SnaffCore.Config.Options;
 using Timer = System.Timers.Timer;
 
@@ -61,7 +59,8 @@ namespace SnaffCore
             // This is the main execution thread.
             Timer statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(0.5)
-                    .TotalMilliseconds) {AutoReset = true}; // Set the time (1 min in this case)
+                    .TotalMilliseconds)
+                { AutoReset = true }; // Set the time (1 min in this case)
             statusUpdateTimer.Elapsed += TimedStatusUpdate;
             statusUpdateTimer.Start();
 
@@ -100,7 +99,7 @@ namespace SnaffCore
         {
             Mq.Info("Getting users and computers from AD.");
             // We do this single threaded cos it's fast and not easily divisible.
-            var adData = new ActiveDirectory.AdData();
+            AdData adData = new ActiveDirectory.AdData();
             List<string> targetComputers = adData.GetDomainComputers();
             if (targetComputers == null)
             {
@@ -111,7 +110,7 @@ namespace SnaffCore
                     Mq.Terminate();
                 }
             }
-            var numTargetComputers = targetComputers.Count.ToString();
+            string numTargetComputers = targetComputers.Count.ToString();
             Mq.Info("Got " + numTargetComputers + " computers from AD.");
             if (targetComputers.Count == 0)
             {
@@ -155,7 +154,7 @@ namespace SnaffCore
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Mq.Error("Something went wrong adding domain users to rules.");
             }
@@ -164,7 +163,7 @@ namespace SnaffCore
         private void ShareDiscovery(string[] computerTargets)
         {
             Mq.Info("Starting to find readable shares.");
-            foreach (var computer in computerTargets)
+            foreach (string computer in computerTargets)
             {
                 // ShareFinder Task Creation - this kicks off the rest of the flow
                 Mq.Info("Creating a sharefinder task for " + computer);
@@ -216,36 +215,36 @@ namespace SnaffCore
         {
             //lock (StatusObjectLocker)
             //{
-                // get memory usage for status update
-                string memorynumber;
-                using (Process proc = Process.GetCurrentProcess())
-                {
-                    long memorySize64 = proc.PrivateMemorySize64;
-                    memorynumber = BytesToString(memorySize64);
-                }
+            // get memory usage for status update
+            string memorynumber;
+            using (Process proc = Process.GetCurrentProcess())
+            {
+                long memorySize64 = proc.PrivateMemorySize64;
+                memorynumber = BytesToString(memorySize64);
+            }
 
-                TaskCounters shareTaskCounters = ShareTaskScheduler.Scheduler.GetTaskCounters();
-                TaskCounters treeTaskCounters = TreeTaskScheduler.Scheduler.GetTaskCounters();
-                TaskCounters fileTaskCounters = FileTaskScheduler.Scheduler.GetTaskCounters();
+            TaskCounters shareTaskCounters = ShareTaskScheduler.Scheduler.GetTaskCounters();
+            TaskCounters treeTaskCounters = TreeTaskScheduler.Scheduler.GetTaskCounters();
+            TaskCounters fileTaskCounters = FileTaskScheduler.Scheduler.GetTaskCounters();
 
-                var updateText = new StringBuilder("Status Update: \n");
-                updateText.Append("ShareFinder Tasks Completed: " + shareTaskCounters.CompletedTasks + "\n");
-                updateText.Append("ShareFinder Tasks Remaining: " + shareTaskCounters.CurrentTasksRemaining + "\n");
-                updateText.Append("ShareFinder Tasks Running: " + shareTaskCounters.CurrentTasksRunning + "\n");
-                updateText.Append("TreeWalker Tasks Completed: " + treeTaskCounters.CompletedTasks + "\n");
-                updateText.Append("TreeWalker Tasks Remaining: " + treeTaskCounters.CurrentTasksRemaining + "\n");
-                updateText.Append("TreeWalker Tasks Running: " + treeTaskCounters.CurrentTasksRunning + "\n");
-                updateText.Append("FileScanner Tasks Completed: " + fileTaskCounters.CompletedTasks + "\n");
-                updateText.Append("FileScanner Tasks Remaining: " + fileTaskCounters.CurrentTasksRemaining + "\n");
-                updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\n");
-                updateText.Append(memorynumber + " RAM in use.");
+            StringBuilder updateText = new StringBuilder("Status Update: \n");
+            updateText.Append("ShareFinder Tasks Completed: " + shareTaskCounters.CompletedTasks + "\n");
+            updateText.Append("ShareFinder Tasks Remaining: " + shareTaskCounters.CurrentTasksRemaining + "\n");
+            updateText.Append("ShareFinder Tasks Running: " + shareTaskCounters.CurrentTasksRunning + "\n");
+            updateText.Append("TreeWalker Tasks Completed: " + treeTaskCounters.CompletedTasks + "\n");
+            updateText.Append("TreeWalker Tasks Remaining: " + treeTaskCounters.CurrentTasksRemaining + "\n");
+            updateText.Append("TreeWalker Tasks Running: " + treeTaskCounters.CurrentTasksRunning + "\n");
+            updateText.Append("FileScanner Tasks Completed: " + fileTaskCounters.CompletedTasks + "\n");
+            updateText.Append("FileScanner Tasks Remaining: " + fileTaskCounters.CurrentTasksRemaining + "\n");
+            updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\n");
+            updateText.Append(memorynumber + " RAM in use.");
 
-                Mq.Info(updateText.ToString());
+            Mq.Info(updateText.ToString());
 
-                if (FileTaskScheduler.Done() && ShareTaskScheduler.Done() && TreeTaskScheduler.Done())
-                {
-                    AllTasksComplete = true;
-                }
+            if (FileTaskScheduler.Done() && ShareTaskScheduler.Done() && TreeTaskScheduler.Done())
+            {
+                AllTasksComplete = true;
+            }
             //}
         }
 
@@ -254,9 +253,9 @@ namespace SnaffCore
             string[] suf = { "B", "kB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
             if (byteCount == 0)
                 return "0" + suf[0];
-            var bytes = Math.Abs(byteCount);
-            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            var num = Math.Round(bytes / Math.Pow(1024, place), 1);
+            long bytes = Math.Abs(byteCount);
+            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
             return (Math.Sign(byteCount) * num) + suf[place];
         }
     }

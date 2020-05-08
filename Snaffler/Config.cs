@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using CommandLineParser.Arguments;
+﻿using CommandLineParser.Arguments;
 using Nett;
 using NLog;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
+using System;
+using System.Linq;
 
 namespace Snaffler
 {
@@ -38,38 +38,38 @@ namespace Snaffler
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Mq.Info("Parsing args...");
-            var retVal = new Options();
+            Options retVal = new Options();
 
             // define args
-            var configFileArg = new ValueArgument<string>('z', "config","Path to a .toml config file.");
-            var outFileArg = new ValueArgument<string>('o', "outfile",
+            ValueArgument<string> configFileArg = new ValueArgument<string>('z', "config", "Path to a .toml config file.");
+            ValueArgument<string> outFileArg = new ValueArgument<string>('o', "outfile",
                 "Path for output file. You probably want this if you're not using -s.");
-            var verboseArg = new ValueArgument<string>('v', "verbosity",
+            ValueArgument<string> verboseArg = new ValueArgument<string>('v', "verbosity",
                 "Controls verbosity level, options are Trace (most verbose), Debug (less verbose), Info (less verbose still, default), and Data (results only). e.g '-v debug' ");
-            var helpArg = new SwitchArgument('h', "help", "Displays this help.", false);
-            var stdOutArg = new SwitchArgument('s', "stdout",
+            SwitchArgument helpArg = new SwitchArgument('h', "help", "Displays this help.", false);
+            SwitchArgument stdOutArg = new SwitchArgument('s', "stdout",
                 "Enables outputting results to stdout as soon as they're found. You probably want this if you're not using -o.",
                 false);
-            var snaffleArg = new ValueArgument<string>('m', "snaffle",
+            ValueArgument<string> snaffleArg = new ValueArgument<string>('m', "snaffle",
                 "Enables and assigns an output dir for Snaffler to automatically snaffle a copy of any found files.");
-            var snaffleSizeArg = new ValueArgument<long>('l', "snafflesize", "Maximum size of file to snaffle, in bytes. Defaults to 10MB.");
+            ValueArgument<long> snaffleSizeArg = new ValueArgument<long>('l', "snafflesize", "Maximum size of file to snaffle, in bytes. Defaults to 10MB.");
             //var fileHuntArg = new SwitchArgument('f', "filehuntoff",
             //    "Disables file discovery, will only perform computer and share discovery.", false);
-            var dirTargetArg = new ValueArgument<string>('i', "dirtarget",
+            ValueArgument<string> dirTargetArg = new ValueArgument<string>('i', "dirtarget",
                 "Disables computer and share discovery, requires a path to a directory in which to perform file discovery.");
-            var maxThreadsArg = new ValueArgument<int>('t', "threads", "Maximum number of threads. Default 30.");
-            var domainArg = new ValueArgument<string>('d', "domain",
+            ValueArgument<int> maxThreadsArg = new ValueArgument<int>('t', "threads", "Maximum number of threads. Default 30.");
+            ValueArgument<string> domainArg = new ValueArgument<string>('d', "domain",
                 "Domain to search for computers to search for shares on to search for files in. Easy.");
-            var domainControllerArg = new ValueArgument<string>('c', "domaincontroller",
+            ValueArgument<string> domainControllerArg = new ValueArgument<string>('c', "domaincontroller",
                 "Domain controller to query for a list of domain computers.");
-            var maxGrepSizeArg = new ValueArgument<long>('r', "maxgrepsize",
+            ValueArgument<long> maxGrepSizeArg = new ValueArgument<long>('r', "maxgrepsize",
                 "The maximum size file (in bytes) to search inside for interesting strings. Defaults to 500k.");
-            var grepContextArg = new ValueArgument<int>('j', "grepcontext",
+            ValueArgument<int> grepContextArg = new ValueArgument<int>('j', "grepcontext",
                 "How many bytes of context either side of found strings in files to show, e.g. -j 200");
 
             // list of letters i haven't used yet: abefgknpquwxy
 
-            var parser = new CommandLineParser.CommandLineParser();
+            CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
             parser.Arguments.Add(outFileArg);
             parser.Arguments.Add(helpArg);
@@ -95,10 +95,10 @@ namespace Snaffler
             {
                 parser.ParseCommandLine(args);
 
-                var settings = TomlSettings.Create(cfg => cfg
+                TomlSettings settings = TomlSettings.Create(cfg => cfg
                     .ConfigureType<LogLevel>(tc =>
                         tc.WithConversionFor<TomlString>(conv => conv
-                            .FromToml(s => (LogLevel) Enum.Parse(typeof(LogLevel), s.Value, ignoreCase: true))
+                            .FromToml(s => (LogLevel)Enum.Parse(typeof(LogLevel), s.Value, ignoreCase: true))
                             .ToToml(e => e.ToString()))));
 
                 if (configFileArg.Parsed)
@@ -160,7 +160,7 @@ namespace Snaffler
                 if (dirTargetArg.Parsed)
                 {
                     retVal.ShareFinderEnabled = false;
-                    retVal.PathTargets = new string[] {dirTargetArg.Value};
+                    retVal.PathTargets = new string[] { dirTargetArg.Value };
                     Mq.Degub("Disabled finding shares.");
                     Mq.Degub("Target path is " + dirTargetArg.Value);
                 }

@@ -1,5 +1,5 @@
-﻿using System;
-using Classifiers;
+﻿using Classifiers;
+using System;
 
 namespace SnaffCore.Concurrency
 {

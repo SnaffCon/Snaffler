@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using Classifiers;
 
 namespace SnaffCore.Config
 {
@@ -71,7 +69,7 @@ namespace SnaffCore.Config
         public Options()
         {
             //PrepareClassifiers();
-                //BuildDefaultClassifiers();
+            //BuildDefaultClassifiers();
         }
     }
 }

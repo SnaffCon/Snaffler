@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SnaffCore.Concurrency;
+using System;
 using System.IO;
-using SnaffCore.Concurrency;
 using static SnaffCore.Config.Options;
 
 namespace Classifiers
@@ -53,11 +53,11 @@ namespace Classifiers
                                     Mq.FileResult(fileResult);
                                 }
                             }
-                            catch (UnauthorizedAccessException e)
+                            catch (UnauthorizedAccessException)
                             {
                                 return;
                             }
-                            catch (IOException e)
+                            catch (IOException)
                             {
                                 return;
                             }
@@ -77,7 +77,7 @@ namespace Classifiers
                 Mq.Error(e.ToString());
                 return;
             }
-        }   
+        }
 
         public bool ByteMatch(byte[] fileBytes)
         {

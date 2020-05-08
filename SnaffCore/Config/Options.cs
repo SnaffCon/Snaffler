@@ -35,7 +35,7 @@ namespace SnaffCore.Config
         public string TargetDc { get; set; }
 
         // FileScanner Options
-        public bool CreateDomainUsersRule { get; set; } = false;
+        public bool CreateDomainUsersRule { get; set; } = true;
         public bool QueryDomainForUsers { get; set; } = true;
         public List<string> DomainUserMatchStrings = new List<string>()
         {
@@ -63,7 +63,7 @@ namespace SnaffCore.Config
         public string SnafflePath { get; set; }
 
         // Content processing options
-        public int MatchContextBytes { get; set; } = 50;
+        public int MatchContextBytes { get; set; } = 200;
 
         public Options()
         {

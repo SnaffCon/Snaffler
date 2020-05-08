@@ -22,34 +22,34 @@ MaxFileQueue = 200000 # Upper limit of file-scanner tasks to put in the queue be
 
 ## Output options
 # These control where the output goes, e.g. to stdout/console, a file, etc.
-LogToFile = true # whether or not to log output to a file.
-LogFilePath = "C:\\example" # what file to log output to.
-LogToConsole = false # whether or not to send output to stdout 
+LogToFile = false # whether or not to log output to a file.
+# LogFilePath = "C:\\example" # what file to log output to.
+LogToConsole = true # whether or not to send output to stdout 
 LogLevelString = "info" # how verbose to be. options include: 
 # "data" which will only show actual results.
 # "info" (which is the default) which will tell you some basic stuff about what snaffler is doing.
 # "degub" (or "debug" if you prefer) which will show some debugging info too.
 # "trace" which will be insanely noisy and throw errors all over the joint.
 
-Snaffle = true # if set to true, this will actually retrieve (or SNAFFLE if you will...) a copy of files that are deemed worthy by a filescanner task.
-MaxSizeToSnaffle = 100000 # obviously we don't want to download a 200GB full disk backup of a DC to your 40GB testing VM, so this is an upper limit on file size to 'snaffle' in bytes.
-SnafflePath = "C:\\snaffleout" # the path that snaffled files will be put in. We'll reproduce the directory structure that they were found in so you should be able to figure out where they came from even if you lose the log file.
+Snaffle = false # if set to true, this will actually retrieve (or SNAFFLE if you will...) a copy of files that are deemed worthy by a filescanner task.
+MaxSizeToSnaffle = 10000000 # obviously we don't want to download a 200GB full disk backup of a DC to your 40GB testing VM, so this is an upper limit on file size to 'snaffle' in bytes.
+# SnafflePath = "C:\\snaffleout" # the path that snaffled files will be put in. We'll reproduce the directory structure that they were found in so you should be able to figure out where they came from even if you lose the log file.
 
 ## Targeting options
-TargetDomain = "target.tld" # the domain to target. You'll want to set this and TargetDC if you're running Snaffler with `runas /netonly` or whatever, but by default Snaffler should figure this out on its own.
-TargetDC = "dc01.target.tld" # the DC to query for computers and users. By default Snaffler should figure this out on its own.
-ShareFinderEnabled = false # whether to query the AD domain for computers and then search those computers for readable shares. 
+# TargetDomain = "target.tld" # the domain to target. You'll want to set this and TargetDC if you're running Snaffler with `runas /netonly` or whatever, but by default Snaffler should figure this out on its own.
+# TargetDC = "dc01.target.tld" # the DC to query for computers and users. By default Snaffler should figure this out on its own.
+ShareFinderEnabled = true # whether to query the AD domain for computers and then search those computers for readable shares. 
 # If you set ShareFinderEnabled to false you'll need to set a value in ComputerTargets or PathTargets
-ComputerTargets = ["computer1", "computer2"] 
-PathTargets = ["Z:\\temp","C:\\thing"]
+# ComputerTargets = ["computer1", "computer2"] 
+# PathTargets = ["Z:\\temp","C:\\thing"]
 ScanSysvol = true # enables scanning of the domain SYSVOL share. Will only scan it once even if multiple domain controllers are scanned.
 ScanNetlogon = true # enables scanning of the domain NETLOGON share. Will only scan it once even if multiple domain controllers are scanned.
 #######################################
 QueryDomainForUsers = true # whether to fetch a list of domain users, filter out highly privileged ones and accounts that seem to be service accounts, and add them to one or more rules.
-DomainUsersToMatch = ["svc-sqlserver", "domainadmin"] # if you don't want to do QueryDomainForUsers you can set the values manually here. If QueryDomainForUsers is true it will overwrite whatever you put in here.
-CreateDomainUsersRule = false # whether to add them to a rule. there's no point having this set to false if you have both DomainUsersToMatch and QueryDomainForUsers false/blank.
+# DomainUsersToMatch = ["svc-sqlserver", "domainadmin"] # if you don't want to do QueryDomainForUsers you can set the values manually here. If QueryDomainForUsers is true it will overwrite whatever you put in here.
+# CreateDomainUsersRule = true # whether to add them to a rule. there's no point having this set to false if you have both DomainUsersToMatch and QueryDomainForUsers false/blank.
 ####################################### 
-MaxSizeToGrep = 200 # the maximum size file in bytes that we should look inside. Reducing this number will reduce memory usage and substantially speed things up, but will potentially skip a lot of interesting stuff
+MaxSizeToGrep = 1000000 # the maximum size file in bytes that we should look inside. Reducing this number will reduce memory usage and substantially speed things up, but will potentially skip a lot of interesting stuff
 MatchContextBytes = 200 # how many bytes of 'context' to show on either side of a match inside a file.
 
 ## Rules

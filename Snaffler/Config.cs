@@ -138,11 +138,11 @@ namespace Snaffler
                 retVal.LogToConsole = stdOutArg.Parsed;
                 Mq.Degub("Enabled logging to stdout.");
 
-                if (maxThreadsArg.Parsed)
-                {
-                    retVal.MaxThreads = maxThreadsArg.Value;
-                    Mq.Degub("Max threads set to " + maxThreadsArg.Value);
-                }
+                //if (maxThreadsArg.Parsed)
+                //{
+                //    retVal.MaxThreads = maxThreadsArg.Value;
+                //    Mq.Degub("Max threads set to " + maxThreadsArg.Value);
+                //}
 
                 // args that tell us about targeting
                 if ((domainArg.Parsed) && (!String.IsNullOrEmpty(domainArg.Value)))

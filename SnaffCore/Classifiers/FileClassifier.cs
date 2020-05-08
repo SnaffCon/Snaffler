@@ -141,7 +141,6 @@ namespace Classifiers
                     // https://github.com/adamhathcock/sharpcompress
                     // TODO FUUUUUCK
                     throw new NotImplementedException("Haven't implemented walking dir structures inside archives. Prob needs pool queue.");
-                    return false;
                 default:
                     Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                     return false;

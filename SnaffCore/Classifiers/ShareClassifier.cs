@@ -52,6 +52,7 @@ namespace Classifiers
                         {
                             ShareResult shareResult = new ShareResult()
                             {
+                                Triage = ClassifierRule.Triage,
                                 Listable = true,
                                 SharePath = share
                             };
@@ -92,6 +93,6 @@ namespace Classifiers
         public bool ScanShare { get; set; }
         public string SharePath { get; set; }
         public bool Listable { get; set; }
-        public Triage Triage { get; set; }
+        public Triage Triage { get; set; } = Triage.Green;
     }
 }

@@ -68,7 +68,7 @@ namespace SnaffCore
             // if we haven't been told what dir or computer to target, we're going to need to do share discovery. that means finding computers from the domain.
             if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
             {
-                ComputerDiscovery();
+                DomainDiscovery();
             }
             // if we've been told what computers to hit...
             else if (MyOptions.ComputerTargets != null)
@@ -86,11 +86,8 @@ namespace SnaffCore
                 Mq.Error("OctoParrot says: AWK! I SHOULDN'T BE!");
             }
 
-            // TODO (NOT THIS)
-            while (!AllTasksComplete)
-            {
-                // lol whaaaayy
-            }
+            SpinWait.SpinUntil(() => AllTasksComplete);
+
             StatusUpdate();
             DateTime finished = DateTime.Now;
             TimeSpan runSpan = startTime.Subtract(finished);
@@ -99,17 +96,16 @@ namespace SnaffCore
             Mq.Finish();
         }
 
-        private void ComputerDiscovery()
+        private void DomainDiscovery()
         {
             Mq.Info("Getting users and computers from AD.");
             // We do this single threaded cos it's fast and not easily divisible.
             var adData = new ActiveDirectory.AdData();
             List<string> targetComputers = adData.GetDomainComputers();
-            List<string> targetUsers = adData.GetDomainUsers();
-            if ((targetComputers == null) || (targetUsers == null))
+            if (targetComputers == null)
             {
                 Mq.Error(
-                    "Something fucked out finding the users or computers in the domain. You must be holding it wrong.");
+                    "Something fucked out finding stuff in the domain. You must be holding it wrong.");
                 while (true)
                 {
                     Mq.Terminate();
@@ -126,35 +122,43 @@ namespace SnaffCore
                 }
             }
             // Push list of fun users to Options
-            if (MyOptions.QueryDomainForUsers)
+            if (MyOptions.DomainUserRules)
             {
                 foreach (string user in adData.GetDomainUsers())
                 {
                     MyOptions.DomainUsersToMatch.Add(user);
-                    Mq.Degub("Found interesting user in AD: " + user);
                 }
-            }
-            if (MyOptions.CreateDomainUsersRule)
-            {
-                try
-                {
-                    ClassifierRule configClassifierRule =
-                        MyOptions.ClassifierRules.First(thing => thing.RuleName == "KeepConfigRegexRed");
-
-                    foreach (string user in MyOptions.DomainUsersToMatch)
-                    {
-                        Regex regex = new Regex(Regex.Escape(user),
-                            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-                        configClassifierRule.Regexes.Add(regex);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Mq.Error("Something went wrong adding domain users to rules.");
-                }
+                PrepDomainUserRules();
             }
             // immediately call ShareDisco which should handle the rest.
             ShareDiscovery(targetComputers.ToArray());
+        }
+
+        public void PrepDomainUserRules()
+        {
+            try
+            {
+                if (MyOptions.DomainUsersWordlistRules.Count >= 1)
+                {
+                    foreach (string ruleName in MyOptions.DomainUsersWordlistRules)
+                    {
+                        ClassifierRule configClassifierRule =
+                            MyOptions.ClassifierRules.First(thing => thing.RuleName == ruleName);
+
+                        foreach (string user in MyOptions.DomainUsersToMatch)
+                        {
+                            string pattern = "( |'|\")" + Regex.Escape(user) + "( |'|\")";
+                            Regex regex = new Regex(pattern,
+                                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                            configClassifierRule.Regexes.Add(regex);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Mq.Error("Something went wrong adding domain users to rules.");
+            }
         }
 
         private void ShareDiscovery(string[] computerTargets)

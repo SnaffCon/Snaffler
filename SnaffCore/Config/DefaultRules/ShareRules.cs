@@ -24,15 +24,17 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 RuleName = "KeepCDollaShare",
-                Description = "Notifies the user that they can read C$ or ADMIN$ but doesn't actually scan inside it.",
+                Description = "Notifies the user that they can read C$ or ADMIN$ or something fun/noisy, but doesn't actually scan inside it.",
                 EnumerationScope = EnumerationScope.ShareEnumeration,
                 MatchLocation = MatchLoc.ShareName,
                 MatchAction = MatchAction.Snaffle,
                 WordListType = MatchListType.EndsWith,
+                Triage = Triage.Black,
                 WordList = new List<string>()
                     {
                         "\\C$",
-                        "\\ADMIN$"
+                        "\\ADMIN$",
+                        "\\Users",
                     },
             });
         }

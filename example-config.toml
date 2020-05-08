@@ -46,6 +46,7 @@ ScanSysvol = true # enables scanning of the domain SYSVOL share. Will only scan 
 ScanNetlogon = true # enables scanning of the domain NETLOGON share. Will only scan it once even if multiple domain controllers are scanned.
 #######################################
 QueryDomainForUsers = true # whether to fetch a list of domain users, filter out highly privileged ones and accounts that seem to be service accounts, and add them to one or more rules.
+# AppendDomainUsersToRules
 # DomainUsersToMatch = ["svc-sqlserver", "domainadmin"] # if you don't want to do QueryDomainForUsers you can set the values manually here. If QueryDomainForUsers is true it will overwrite whatever you put in here.
 # CreateDomainUsersRule = true # whether to add them to a rule. there's no point having this set to false if you have both DomainUsersToMatch and QueryDomainForUsers false/blank.
 ####################################### 

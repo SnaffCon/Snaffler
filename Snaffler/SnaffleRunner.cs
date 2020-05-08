@@ -166,13 +166,13 @@ namespace Snaffler
                     Logger.Info(datetime + "[Info] " + message.Message);
                     break;
                 case SnafflerMessageType.FileResult:
-                    Logger.Warn(datetime + "[File]" + FileResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[File] " + FileResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.DirResult:
-                    Logger.Warn(datetime + "[Dir]" + DirResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[Dir] " + DirResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.ShareResult:
-                    Logger.Warn(datetime + "[Share]" + ShareResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[Share] " + ShareResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.Error:
                     Logger.Error(datetime + "[Error] " + message.Message);
@@ -197,7 +197,7 @@ namespace Snaffler
         {
             var sharePath = message.ShareResult.SharePath;
             var triage = message.ShareResult.Triage.ToString();
-            var shareResultTemplate = "{{0}}({1})";
+            var shareResultTemplate = "{{{0}}}({1})";
             return string.Format(shareResultTemplate, triage, sharePath);
         }
 
@@ -205,7 +205,7 @@ namespace Snaffler
         {
             var sharePath = message.DirResult.DirPath;
             var triage = message.DirResult.Triage.ToString();
-            var dirResultTemplate = "{{0}}({1})";
+            var dirResultTemplate = "{{{0}}}({1})";
             return string.Format(dirResultTemplate, triage, sharePath);
         }
 

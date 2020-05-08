@@ -23,7 +23,7 @@ namespace Classifiers
         public List<Regex> Regexes { get; set; }
 
         // define the severity of any matches
-        public Triage Triage { get; set; } = Triage.Black;
+        public Triage Triage { get; set; } = Triage.Green;
     }
 
     public enum EnumerationScope

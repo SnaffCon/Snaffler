@@ -118,7 +118,39 @@ namespace Classifiers
             */
             return null;
         }
+        internal string GetContext(string original, string matchString)
+        {
+            try
+            {
+                int contextBytes = MyOptions.MatchContextBytes;
+                if (contextBytes == 0)
+                {
+                    return "";
+                }
 
+                if (original.Length <= (contextBytes * 2))
+                {
+                    return original;
+                }
+
+                int foundIndex = original.IndexOf(matchString, StringComparison.OrdinalIgnoreCase);
+
+                int contextStart = SubtractWithFloor(foundIndex, contextBytes, 0);
+                string matchContext = "";
+                if (contextBytes > 0) matchContext = original.Substring(contextStart, contextBytes * 2);
+
+                return Regex.Escape(matchContext);
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                return original;
+            }
+            catch (Exception e)
+            {
+                Mq.Trace(e.ToString());
+                return "";
+            }
+        }
         internal string GetContext(string original, Regex matchRegex)
         {
             try

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Numerics;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,7 +39,7 @@ namespace SnaffCore.Concurrency
             {
                 return true;
             }
-
+            
             return false;
         }
         public void New(Action action)
@@ -198,7 +198,7 @@ namespace SnaffCore.Concurrency
         // Gets an enumerable of the tasks currently scheduled on this scheduler. 
         protected sealed override IEnumerable<Task> GetScheduledTasks()
         {
-            bool lockTaken = false;
+            var lockTaken = false;
             try
             {
                 Monitor.TryEnter(_tasks, ref lockTaken);

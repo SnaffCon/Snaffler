@@ -1,5 +1,5 @@
-﻿using Classifiers;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Classifiers;
 
 namespace SnaffCore.Config
 {

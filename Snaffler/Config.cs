@@ -109,9 +109,9 @@ namespace Snaffler
                         retVal = Toml.ReadFile<Options>(configFile, settings);
                         retVal.PrepareClassifiers();
                         Mq.Info("Read config file from " + configFile);
+                        return retVal;
                     }
                 }
-
 
                 if (retVal.ClassifierRules.Count <= 0)
                 {

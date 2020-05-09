@@ -33,7 +33,7 @@ namespace SnaffCore.Config
         public string TargetDc { get; set; }
 
         // FileScanner Options
-        public bool DomainUserRules { get; set; } = true;
+        public bool DomainUserRules { get; set; } = false;
         public List<string> DomainUserMatchStrings = new List<string>()
         {
             "sql",

@@ -1,4 +1,4 @@
-# Sample Config File
+# Snaffler Sample Config File
 
 ## Resource Use Options
 # This is a bit of a balancing act and maximising performance will depend somewhat on your environment and how much RAM you're willing to consume.
@@ -13,6 +13,7 @@
 # Filescanner tasks don't create new tasks, when they finish that's the end of the road.
 #
 # With this in mind I hope it's obvious that to keep things flowing along nicely you want to make sure the filescanner queues are getting cleared out at a decent pace. Everything else should flow on from that.
+
 ShareThreads = 30 # number of threads to allocate to checking domain computers for readable file shares, i.e. share-finder tasks
 TreeThreads = 20 # number of threads to allocate to walking the directory structures of shares to find all the files, i.e. tree-walker tasks.
 FileThreads = 50 # number of threads to allocate to checking files to determine if they should be snaffled, i.e. file-scanner tasks.
@@ -46,9 +47,8 @@ ScanSysvol = true # enables scanning of the domain SYSVOL share. Will only scan 
 ScanNetlogon = true # enables scanning of the domain NETLOGON share. Will only scan it once even if multiple domain controllers are scanned.
 #######################################
 QueryDomainForUsers = true # whether to fetch a list of domain users, filter out highly privileged ones and accounts that seem to be service accounts, and add them to one or more rules.
-# AppendDomainUsersToRules
 # DomainUsersToMatch = ["svc-sqlserver", "domainadmin"] # if you don't want to do QueryDomainForUsers you can set the values manually here. If QueryDomainForUsers is true it will overwrite whatever you put in here.
-# CreateDomainUsersRule = true # whether to add them to a rule. there's no point having this set to false if you have both DomainUsersToMatch and QueryDomainForUsers false/blank.
+# DomainUsersWordlistRules = ["KeepConfigRegexRed"] # Which rule(s) to add the usernames to.
 ####################################### 
 MaxSizeToGrep = 1000000 # the maximum size file in bytes that we should look inside. Reducing this number will reduce memory usage and substantially speed things up, but will potentially skip a lot of interesting stuff
 MatchContextBytes = 200 # how many bytes of 'context' to show on either side of a match inside a file.

@@ -6,7 +6,7 @@ namespace Snaffler
     {
         private static void Main(string[] args)
         {
-            SnaffleRunner runner = new SnaffleRunner();
+            var runner = new SnaffleRunner();
             runner.Run(args);
             Console.ReadKey();
         }

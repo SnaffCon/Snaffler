@@ -1,6 +1,6 @@
-﻿using Classifiers;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
+using Classifiers;
 
 namespace SnaffCore.Concurrency
 {

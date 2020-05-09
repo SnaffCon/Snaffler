@@ -1,13 +1,13 @@
-﻿using NLog;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+using NLog;
 using NLog.Config;
 using NLog.Targets;
 using SnaffCore;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace Snaffler
 {
@@ -32,7 +32,7 @@ namespace Snaffler
                 //------------------------------------------
                 // set up new fangled logging
                 //------------------------------------------
-                LoggingConfiguration nlogConfig = new LoggingConfiguration();
+                var nlogConfig = new LoggingConfiguration();
 
                 ColoredConsoleTarget logconsole = null;
                 FileTarget logfile = null;
@@ -116,7 +116,7 @@ namespace Snaffler
                 }
 
                 controller = new SnaffCon(myOptions);
-                Task thing = Task.Factory.StartNew(() => { controller.Execute(); });
+                var thing = Task.Factory.StartNew(() => { controller.Execute(); });
 
                 while (true)
                 {
@@ -133,7 +133,7 @@ namespace Snaffler
         private void DumpQueue()
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            while (Mq.Q.TryTake(out SnafflerMessage message))
+            while (Mq.Q.TryTake(out var message))
             {
                 // emergency dump of queue contents to console
                 Console.WriteLine(message.Message);
@@ -145,7 +145,7 @@ namespace Snaffler
         private void HandleOutput()
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            foreach (SnafflerMessage message in Mq.Q.GetConsumingEnumerable())
+            foreach (var message in Mq.Q.GetConsumingEnumerable())
             {
                 ProcessMessage(message);
             }
@@ -153,7 +153,7 @@ namespace Snaffler
 
         private void ProcessMessage(SnafflerMessage message)
         {
-            string datetime = message.DateTime.ToString("yyyy-MM-dd HH:mm:ss zzz ");
+            var datetime = message.DateTime.ToString("yyyy-MM-dd HH:mm:ss zzz ");
             switch (message.Type)
             {
                 case SnafflerMessageType.Trace:
@@ -195,17 +195,17 @@ namespace Snaffler
 
         public string ShareResultLogFromMessage(SnafflerMessage message)
         {
-            string sharePath = message.ShareResult.SharePath;
-            string triage = message.ShareResult.Triage.ToString();
-            string shareResultTemplate = "{{{0}}}({1})";
+            var sharePath = message.ShareResult.SharePath;
+            var triage = message.ShareResult.Triage.ToString();
+            var shareResultTemplate = "{{{0}}}({1})";
             return string.Format(shareResultTemplate, triage, sharePath);
         }
 
         public string DirResultLogFromMessage(SnafflerMessage message)
         {
-            string sharePath = message.DirResult.DirPath;
-            string triage = message.DirResult.Triage.ToString();
-            string dirResultTemplate = "{{{0}}}({1})";
+            var sharePath = message.DirResult.DirPath;
+            var triage = message.DirResult.Triage.ToString();
+            var dirResultTemplate = "{{{0}}}({1})";
             return string.Format(dirResultTemplate, triage, sharePath);
         }
 
@@ -213,36 +213,36 @@ namespace Snaffler
         {
             try
             {
-                string matchedclassifier = message.FileResult.MatchedRule.RuleName; //message.FileResult.WhyMatched.ToString();
-                string triageString = message.FileResult.MatchedRule.Triage.ToString();
+                var matchedclassifier = message.FileResult.MatchedRule.RuleName; //message.FileResult.WhyMatched.ToString();
+                var triageString = message.FileResult.MatchedRule.Triage.ToString();
 
-                string canread = "";
+                var canread = "";
                 if (message.FileResult.RwStatus.CanRead)
                 {
                     canread = "R";
                 }
 
-                string canwrite = "";
+                var canwrite = "";
                 if (message.FileResult.RwStatus.CanWrite)
                 {
                     canwrite = "W";
                 }
 
-                string matchedstring = "";
+                var matchedstring = "";
 
-                long fileSize = message.FileResult.FileInfo.Length;
-                string fileSizeString = BytesToString(fileSize);
+                var fileSize = message.FileResult.FileInfo.Length;
+                var fileSizeString = BytesToString(fileSize);
 
-                string filepath = message.FileResult.FileInfo.FullName;
+                var filepath = message.FileResult.FileInfo.FullName;
 
-                string matchcontext = "";
+                var matchcontext = "";
                 if (message.FileResult.TextResult != null)
                 {
                     matchedstring = message.FileResult.TextResult.MatchedStrings[0];
                     matchcontext = message.FileResult.TextResult.MatchContext;
                 }
 
-                string fileResultTemplate = " {{{0}}}<{1}|{2}{3}|{4}|{5}>({6}) {7}";
+                var fileResultTemplate = " {{{0}}}<{1}|{2}{3}|{4}|{5}>({6}) {7}";
                 return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString,
                     filepath, matchcontext);
             }
@@ -285,14 +285,14 @@ namespace Snaffler
             }
         }
 
-        private static String BytesToString(long byteCount)
+    private static String BytesToString(long byteCount)
         {
-            string[] suf = { "B", "kB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+            string[] suf = {"B", "kB", "MB", "GB", "TB", "PB", "EB"}; //Longs run out around EB
             if (byteCount == 0)
                 return "0" + suf[0];
-            long bytes = Math.Abs(byteCount);
-            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
+            var bytes = Math.Abs(byteCount);
+            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            var num = Math.Round(bytes / Math.Pow(1024, place), 1);
             return (Math.Sign(byteCount) * num) + suf[place];
         }
 
@@ -316,7 +316,7 @@ namespace Snaffler
 
         public void PrintBanner()
         {
-            string[] barfLines = new[]
+            var barfLines = new[]
             {
                 @" .::::::.:::.    :::.  :::.    .-:::::'.-:::::':::    .,:::::: :::::::..   ",
                 @";;;`    ``;;;;,  `;;;  ;;`;;   ;;;'''' ;;;'''' ;;;    ;;;;'''' ;;;;``;;;;  ",
@@ -338,10 +338,10 @@ namespace Snaffler
                 ConsoleColor.White
             };
 
-            int i = 0;
-            foreach (string barfLine in barfLines)
+            var i = 0;
+            foreach (var barfLine in barfLines)
             {
-                string barfOne = barfLine;
+                var barfOne = barfLine;
                 WriteColorLine(barfOne, patternOne[i]);
                 i += 1;
             }

@@ -1,7 +1,11 @@
-﻿using SnaffCore.Concurrency;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Security.AccessControl;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using SnaffCore.Concurrency;
 using static SnaffCore.Config.Options;
 
 namespace Classifiers
@@ -85,33 +89,33 @@ namespace Classifiers
                     break;
                 case MatchListType.Regex: 
                 */
-            foreach (Regex regex in ClassifierRule.Regexes)
-            {
-                try
-                {
-                    //Regex regex = new Regex(matchString);
-
-                    if (regex.IsMatch(input))
+                    foreach (Regex regex in ClassifierRule.Regexes)
                     {
-                        return new TextResult()
+                        try
                         {
-                            MatchedStrings = new List<string>() { regex.ToString() },
-                            MatchContext = GetContext(input, regex)
-                        };
-                    }
-                }
-                catch (Exception e)
-                {
-                    Mq.Error(e.ToString());
-                }
-            }
-            /*
-            break;
-        default:
-            return null;
+                            //Regex regex = new Regex(matchString);
 
-    }
-    */
+                            if (regex.IsMatch(input))
+                            {
+                                return new TextResult()
+                                {
+                                    MatchedStrings = new List<string>() { regex.ToString() },
+                                    MatchContext = GetContext(input, regex)
+                                };
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Mq.Error(e.ToString());
+                        }
+                    }
+                    /*
+                    break;
+                default:
+                    return null;
+                    
+            }
+            */
             return null;
         }
         internal string GetContext(string original, string matchString)
@@ -137,7 +141,7 @@ namespace Classifiers
 
                 return Regex.Escape(matchContext);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (ArgumentOutOfRangeException e)
             {
                 return original;
             }

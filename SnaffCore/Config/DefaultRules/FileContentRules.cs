@@ -1,5 +1,5 @@
-﻿using Classifiers;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Classifiers;
 
 namespace SnaffCore.Config
 {
@@ -417,7 +417,7 @@ namespace SnaffCore.Config
                     "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
                 }
             });
-
+            
             // vbscript etc
             this.ClassifierRules.Add(new ClassifierRule()
             {
@@ -448,7 +448,7 @@ namespace SnaffCore.Config
                     // TODO LOL
                 }
             });
-
+            
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be subjected to a generic search for keys and such.",

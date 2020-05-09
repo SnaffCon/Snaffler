@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Classifiers;
+﻿using Classifiers;
 using SnaffCore.Concurrency;
 using SnaffCore.FileScan;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using static SnaffCore.Config.Options;
 
 namespace SnaffCore.TreeWalk
@@ -13,7 +11,7 @@ namespace SnaffCore.TreeWalk
     public class TreeWalker
     {
         private BlockingMq Mq { get; set; }
-        private BlockingStaticTaskScheduler FileTaskScheduler {get; set;}
+        private BlockingStaticTaskScheduler FileTaskScheduler { get; set; }
 
         public TreeWalker(string shareRoot)
         {
@@ -37,7 +35,7 @@ namespace SnaffCore.TreeWalk
             try
             {
                 // Walks a tree checking files and generating results as it goes.
-                var dirs = new Stack<string>(20);
+                Stack<string> dirs = new Stack<string>(20);
 
                 if (!Directory.Exists(shareRoot))
                 {
@@ -48,18 +46,18 @@ namespace SnaffCore.TreeWalk
 
                 while (dirs.Count > 0)
                 {
-                    var currentDir = dirs.Pop();
+                    string currentDir = dirs.Pop();
                     string[] subDirs;
                     try
                     {
                         subDirs = Directory.GetDirectories(currentDir);
                     }
-                    catch (UnauthorizedAccessException e)
+                    catch (UnauthorizedAccessException)
                     {
                         //Mq.Trace(e.ToString());
                         continue;
                     }
-                    catch (DirectoryNotFoundException e)
+                    catch (DirectoryNotFoundException)
                     {
                         //Mq.Trace(e.ToString());
                         continue;
@@ -75,13 +73,13 @@ namespace SnaffCore.TreeWalk
                     {
                         files = Directory.GetFiles(currentDir);
                     }
-                    catch (UnauthorizedAccessException e)
+                    catch (UnauthorizedAccessException)
                     {
                         //Mq.Trace(e.ToString());
                         continue;
                     }
-                    catch (DirectoryNotFoundException e)
-                    { 
+                    catch (DirectoryNotFoundException)
+                    {
                         //Mq.Trace(e.ToString());
                         continue;
                     }
@@ -95,7 +93,7 @@ namespace SnaffCore.TreeWalk
                     foreach (string file in files)
                     {
                         FileTaskScheduler.New(() =>
-                        { 
+                        {
                             try
                             {
                                 FileScanner fileScanner = new FileScanner(file);
@@ -108,7 +106,7 @@ namespace SnaffCore.TreeWalk
                     }
 
                     // Push the subdirectories onto the stack for traversal if they aren't on any discard-lists etc.
-                    foreach (var dirStr in subDirs)
+                    foreach (string dirStr in subDirs)
                     {
                         foreach (ClassifierRule classifier in MyOptions.DirClassifiers)
                         {

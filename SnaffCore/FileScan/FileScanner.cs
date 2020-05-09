@@ -1,9 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Classifiers;
+﻿using Classifiers;
 using SnaffCore.Concurrency;
+using System;
+using System.IO;
 using static SnaffCore.Config.Options;
 
 namespace SnaffCore.FileScan

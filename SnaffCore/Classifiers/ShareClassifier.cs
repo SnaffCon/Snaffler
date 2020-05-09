@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SnaffCore.Concurrency;
+using System;
 using System.IO;
-using SnaffCore.Concurrency;
 using static SnaffCore.Config.Options;
 
 namespace Classifiers
@@ -75,7 +75,7 @@ namespace Classifiers
                 string[] files = Directory.GetFiles(share);
                 return true;
             }
-            catch (UnauthorizedAccessException e)
+            catch (UnauthorizedAccessException)
             {
                 return false;
             }

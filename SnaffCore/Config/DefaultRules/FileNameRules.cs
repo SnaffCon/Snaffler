@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Classifiers;
+﻿using Classifiers;
+using System.Collections.Generic;
 
 namespace SnaffCore.Config
 {
@@ -68,28 +68,28 @@ namespace SnaffCore.Config
                 }
                 );
 
-                this.ClassifierRules.Add(
-                    new ClassifierRule()
-                    {
-                        Description = "Files with a path containing these strings are very very interesting.",
-                        RuleName = "KeepPathContainsBlack",
-                        EnumerationScope = EnumerationScope.FileEnumeration,
-                        MatchLocation = MatchLoc.FilePath,
-                        WordListType = MatchListType.Contains,
-                        MatchAction = MatchAction.Snaffle,
-                        Triage = Triage.Black,
-                        WordList = new List<string>()
-                    {
+            this.ClassifierRules.Add(
+                new ClassifierRule()
+                {
+                    Description = "Files with a path containing these strings are very very interesting.",
+                    RuleName = "KeepPathContainsBlack",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FilePath,
+                    WordListType = MatchListType.Contains,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Black,
+                    WordList = new List<string>()
+                {
                         ".ssh\\",
                         ".purple\\accounts.xml",
                         ".aws\\",
                         ".gem\\credentials",
                         "doctl\\config.yaml",
                         "config\\hub"
-                    },
-                    }
-                );
-            
+                },
+                }
+            );
+
 
             this.ClassifierRules.Add(
                 new ClassifierRule()
@@ -138,7 +138,7 @@ namespace SnaffCore.Config
                     },
                 }
                 );
-            
+
 
             this.ClassifierRules.Add(
                 new ClassifierRule()

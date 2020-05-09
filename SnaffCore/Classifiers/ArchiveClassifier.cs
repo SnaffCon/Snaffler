@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Security.Cryptography;
-using SharpCompress.Archives;
+﻿using SharpCompress.Archives;
 using SnaffCore.Concurrency;
 using SnaffCore.FileScan;
+using System;
+using System.IO;
+using System.Security.Cryptography;
 
 namespace Classifiers
 {
@@ -25,8 +24,8 @@ namespace Classifiers
             // look inside archives for files we like.
             try
             {
-                var archive = ArchiveFactory.Open(fileInfo.FullName);
-                foreach (var entry in archive.Entries)
+                IArchive archive = ArchiveFactory.Open(fileInfo.FullName);
+                foreach (IArchiveEntry entry in archive.Entries)
                 {
                     if (!entry.IsDirectory)
                     {
@@ -41,11 +40,11 @@ namespace Classifiers
                     }
                 }
             }
-            catch (CryptographicException e)
+            catch (CryptographicException)
             {
                 Mq.FileResult(new FileResult(fileInfo)
                 {
-                    MatchedRule = new ClassifierRule() {Triage = Triage.Black, RuleName = "EncryptedArchive"}
+                    MatchedRule = new ClassifierRule() { Triage = Triage.Black, RuleName = "EncryptedArchive" }
                 });
             }
             catch (Exception e)

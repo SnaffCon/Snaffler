@@ -24,11 +24,8 @@ namespace SnaffCore.Config
                         "systemapps",
                         "servicing\\packages",
                         "Microsoft.NET\\Framework",
-                        "ADMIN$\\immersivecontrolpanel",
                         "windows\\immersivecontrolpanel",
-                        "ADMIN$\\diagnostics",
                         "windows\\diagnostics",
-                        "ADMIN$\\debug", // might want to put this one back in it's kind of interesting?
                         "windows\\debug",
                         "node_modules",
                         "vendor\\bundle",

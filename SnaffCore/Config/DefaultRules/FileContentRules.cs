@@ -419,6 +419,7 @@ namespace SnaffCore.Config
             });
 
             // vbscript etc
+            /*
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for VBScript related strings.",
@@ -448,6 +449,7 @@ namespace SnaffCore.Config
                     // TODO LOL
                 }
             });
+            */
 
             this.ClassifierRules.Add(new ClassifierRule()
             {
@@ -523,11 +525,10 @@ namespace SnaffCore.Config
                 RelayTarget = "KeepCertRegexRed",
                 WordList = new List<string>()
                 {
-                    "_rsa",
-                    "_dsa",
-                    "_ed25519",
-                    "_ecdsa",
-                    "_ed25519",
+                    "_rsa", // test file created
+                    "_dsa", // test file created
+                    "_ed25519", // test file created
+                    "_ecdsa", // test file created
                     ".pem",
                 },
             });
@@ -546,7 +547,7 @@ namespace SnaffCore.Config
                 },
             });
 
-
+  // dsa | ecdsa | ed25519 | rsa]
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
@@ -559,8 +560,11 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
-                        ".der",
-                        ".pfx"
+                        ".der",   // test file created
+                        ".pfx",
+                        ".pk12",
+                        ".p12",
+                        ".pkcs12",
                     },
                 }
             );

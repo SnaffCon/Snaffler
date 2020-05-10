@@ -20,25 +20,26 @@ namespace SnaffCore.Config
                     WordList = new List<string>()
                     {
                         // keepass databases
-                        ".kdbx",
-                        ".kdb",
+                        ".kdbx", // test file created
+                        ".kdb", // test file created
                         // putty private keys
-                        ".ppk",
+                        ".ppk", // test file created
                         // virtual disks
-                        ".vmdk",
-                        ".vhdx",
+                        ".vmdk", // test file created
+                        ".vhd", // test file created
+                        ".vhdx", // test file created
                         // virtual machines
                         ".ova",
-                        ".ovf",
+                        ".ovf", // test file created
                         // password safe
-                        ".psafe3",
+                        ".psafe3", // test file created
                         // cloud service config
-                        ".cscfg",
+                        ".cscfg", // test file created
                         // kde wallet manager
-                        ".kwallet",
+                        ".kwallet", // test file created
                         // vpn profiles
-                        ".tblk",
-                        ".ovpn",
+                        ".tblk", // test file created
+                        ".ovpn", // test file created
                     },
                 });
 
@@ -54,16 +55,18 @@ namespace SnaffCore.Config
                     WordList = new List<string>()
                     {
                         // these are file names that we always want to keep if it's an exact match.
-                        "id_rsa",
-                        "id_dsa",
-                        "NTDS.DIT",
-                        "shadow",
-                        "pwd.db",
-                        "passwd",
-                        "running-config.cfg",
-                        "startup-config.cfg",
-                        "running-config",
-                        "startup-config"
+                        "id_rsa", // test file created
+                        "id_dsa", // test file created
+                        "id_ecdsa", // test file created
+                        "id_ed25519", // test file created
+                        "NTDS.DIT", // test file created
+                        "shadow", // test file created
+                        "pwd.db", // test file created
+                        "passwd", // test file created
+                        "running-config.cfg", // test file created
+                        "startup-config.cfg", // test file created
+                        "running-config", // test file created
+                        "startup-config" // test file created
                     },
                 }
                 );
@@ -80,12 +83,12 @@ namespace SnaffCore.Config
                     Triage = Triage.Black,
                     WordList = new List<string>()
                 {
-                        ".ssh\\",
-                        ".purple\\accounts.xml",
-                        ".aws\\",
-                        ".gem\\credentials",
-                        "doctl\\config.yaml",
-                        "config\\hub"
+                        ".ssh\\", // test file created
+                        ".purple\\accounts.xml", // test file created
+                        ".aws\\", // test file created
+                        ".gem\\credentials", // test file created
+                        "doctl\\config.yaml", // test file created
+                        "config\\hub"  // test file created
                 },
                 }
             );
@@ -103,38 +106,28 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
-                        // backups
-                        //".bak",
-                        // priv keys and certs
-                        ".key",
-                        ".pk12",
-                        ".p12",
-                        ".pkcs12",
-                        //".pfx",
-                        ".jks",
+                        ".jks", // test file created
                         // rdp
-                        ".rdp",
-                        ".rdg",
-                        // actionscript
-                        ".asc",
+                        ".rdp", // test file created
+                        ".rdg", // test file created
                         // bitlocker recovery keys
-                        ".bek",
+                        ".bek", // test file created
                         // tpm backups
-                        ".tpm",
-                        ".fve",
+                        ".tpm", // test file created
+                        ".fve", // test file created
                         // packet capture
-                        ".pcap",
-                        ".cap",
+                        ".pcap", // test file created
+                        ".cap", // test file created
                         // misc key material
-                        ".key",
-                        ".keypair",
-                        ".keychain",
+                        ".key", // test file created
+                        ".keypair", // test file created
+                        ".keychain", // test file created
                         // disk image
-                        ".wim",
+                        ".wim", // test file created
                         // db backups
-                        ".mdf",
-                        ".sdf",
-                        ".sqldump"
+                        ".mdf", // test file created
+                        ".sdf", // test file created
+                        ".sqldump" // test file created
                     },
                 }
                 );
@@ -152,56 +145,56 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
-                        "unattend.xml",
-                        ".netrc",
-                        "_netrc",
-                        ".htpasswd",
-                        "otr.private_key",
-                        ".secret_token.rb",
-                        "carrierwave.rb",
-                        "database.yml",
-                        "omniauth.rb",
-                        "settings.py",
-                        ".agilekeychain",
-                        ".keychain",
-                        "jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml",
-                        "credentials.xml",
-                        "LocalSettings.php",
-                        "Favorites.plist",
-                        "knife.rb",
-                        "proxy.config",
-                        "proftpdpasswd",
-                        "robomongo.json",
-                        "filezilla.xml",
-                        "recentservers.xml",
-                        "terraform.tfvars",
-                        ".exports",
-                        ".functions",
-                        ".extra",
-                        ".bash_history",
-                        ".zsh_history",
-                        ".sh_history",
-                        "zhistory",
-                        ".mysql_history",
-                        ".psql_history",
-                        ".pgpass",
-                        ".irb_history",
-                        ".dbeaver-data-sources.xml",
-                        ".s3vfg",
-                        "sftp-config.json",
-                        "config.inc",
-                        "config.php",
-                        "keystore",
-                        "keyring",
-                        ".tugboat",
-                        ".git-credentials",
-                        ".gitconfig",
-                        ".dockercfg",
-                        ".npmrc",
-                        ".env",
-                        ".bashrc",
-                        ".profile",
-                        ".zshrc",
+                        "unattend.xml", // test file created
+                        ".netrc", // test file created
+                        "_netrc", // test file created
+                        ".htpasswd", // test file created
+                        "otr.private_key", // test file created
+                        ".secret_token.rb", // test file created
+                        "carrierwave.rb", // test file created
+                        "database.yml", // test file created
+                        "omniauth.rb", // test file created
+                        "settings.py", // test file created
+                        ".agilekeychain", // test file created
+                        ".keychain", // test file created
+                        "jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml", // test file created
+                        "credentials.xml", // test file created
+                        "LocalSettings.php", // test file created
+                        "Favorites.plist", // test file created
+                        "knife.rb", // test file created
+                        "proxy.config", // test file created
+                        "proftpdpasswd", // test file created
+                        "robomongo.json", // test file created
+                        "filezilla.xml", // test file created
+                        "recentservers.xml", // test file created
+                        "terraform.tfvars", // test file created
+                        ".exports", // test file created
+                        ".functions", // test file created
+                        ".extra", // test file created
+                        ".bash_history", // test file created
+                        ".zsh_history", // test file created
+                        ".sh_history", // test file created
+                        "zhistory", // test file created
+                        ".mysql_history", // test file created
+                        ".psql_history", // test file created
+                        ".pgpass", // test file created
+                        ".irb_history", // test file created
+                        ".dbeaver-data-sources.xml", // test file created
+                        ".s3vfg", // test file created
+                        "sftp-config.json", // test file created
+                        "config.inc", // test file created
+                        "config.php", // test file created
+                        "keystore", // test file created
+                        "keyring", // test file created
+                        ".tugboat", // test file created
+                        ".git-credentials", // test file created
+                        ".gitconfig", // test file created
+                        ".dockercfg", // test file created
+                        ".npmrc", // test file created
+                        ".env", // test file created
+                        ".bashrc", // test file created
+                        ".profile", // test file created
+                        ".zshrc", // test file created
                     },
                 }
                 );

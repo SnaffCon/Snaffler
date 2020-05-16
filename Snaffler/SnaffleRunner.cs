@@ -215,6 +215,7 @@ namespace Snaffler
             {
                 string matchedclassifier = message.FileResult.MatchedRule.RuleName; //message.FileResult.WhyMatched.ToString();
                 string triageString = message.FileResult.MatchedRule.Triage.ToString();
+                string modifiedStamp = message.FileResult.FileInfo.LastWriteTime.ToString();
 
                 string canread = "";
                 if (message.FileResult.RwStatus.CanRead)
@@ -242,8 +243,8 @@ namespace Snaffler
                     matchcontext = message.FileResult.TextResult.MatchContext;
                 }
 
-                string fileResultTemplate = " {{{0}}}<{1}|{2}{3}|{4}|{5}>({6}) {7}";
-                return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString,
+                string fileResultTemplate = " {{{0}}}<{1}|{2}{3}|{4}|{5}|{6}>({7}) {8}";
+                return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString, modifiedStamp,
                     filepath, matchcontext);
             }
             catch (Exception e)

@@ -92,7 +92,7 @@ namespace SnaffCore.Concurrency
                 this._taskCounters.CurrentTasksQueued = _tasks.Count;
                 this._taskCounters.CurrentTasksRunning = _delegatesQueuedOrRunning;
                 this._taskCounters.CurrentTasksRemaining = this._taskCounters.CurrentTasksQueued + this._taskCounters.CurrentTasksRunning;
-                this._taskCounters.CompletedTasks = this._taskCounters.TotalTasksQueued - this._taskCounters.CompletedTasks;
+                this._taskCounters.CompletedTasks = this._taskCounters.TotalTasksQueued - this._taskCounters.CurrentTasksRemaining;
             }
         }
 
@@ -186,7 +186,10 @@ namespace SnaffCore.Concurrency
             if (taskWasPreviouslyQueued)
                 // Try to run the task. 
                 if (TryDequeue(task))
+                {
+                    RecalculateCounters();
                     return TryExecuteTask(task);
+                }
                 else
                     return false;
             return TryExecuteTask(task);

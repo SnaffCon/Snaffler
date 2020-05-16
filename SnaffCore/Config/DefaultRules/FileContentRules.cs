@@ -49,7 +49,7 @@ namespace SnaffCore.Config
                     "(client_secret|CLIENT_SECRET)", // fun
                     "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
-                    "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
+                    "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
             });
             // PHP
@@ -101,7 +101,7 @@ namespace SnaffCore.Config
                     "(client_secret|CLIENT_SECRET)", // fun
                     "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
-                    "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
+                    "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
             });
             // CSharp
@@ -152,7 +152,7 @@ namespace SnaffCore.Config
                     "(client_secret|CLIENT_SECRET)", // fun
                     "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
-                    "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
+                    "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
             });
             //Java
@@ -199,7 +199,7 @@ namespace SnaffCore.Config
                     "(client_secret|CLIENT_SECRET)", // fun
                     "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
-                    "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
+                    "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
             });
             // Ruby
@@ -242,7 +242,7 @@ namespace SnaffCore.Config
                     "(client_secret|CLIENT_SECRET)", // fun
                     "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
-                    "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
+                    "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
             });
 
@@ -286,7 +286,7 @@ namespace SnaffCore.Config
                     "(client_secret|CLIENT_SECRET)", // fun
                     "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
-                    "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
+                    "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
             });
 
@@ -320,7 +320,6 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // PS
-                    " -Credential ",
                     "net user ",
                     "psexec .{0-100} -p ",
                     "-SecureString",
@@ -335,7 +334,7 @@ namespace SnaffCore.Config
                     "(client_secret|CLIENT_SECRET)", // fun
                     "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
-                    "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
+                    "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
             });
 
@@ -414,7 +413,7 @@ namespace SnaffCore.Config
                     "(client_secret|CLIENT_SECRET)", // fun
                     "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
-                    "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
+                    "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
             });
 
@@ -508,7 +507,7 @@ namespace SnaffCore.Config
                     "(client_secret|CLIENT_SECRET)", // fun
                     "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
-                    "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", // aws access key
+                    "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                     // network device config
                     "NVRAM config last updated",
                     "enable password .",

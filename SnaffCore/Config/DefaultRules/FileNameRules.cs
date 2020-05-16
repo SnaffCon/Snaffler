@@ -28,9 +28,6 @@ namespace SnaffCore.Config
                         ".vmdk", // test file created
                         ".vhd", // test file created
                         ".vhdx", // test file created
-                        // virtual machines
-                        ".ova",
-                        ".ovf", // test file created
                         // password safe
                         ".psafe3", // test file created
                         // cloud service config
@@ -83,7 +80,7 @@ namespace SnaffCore.Config
                     Triage = Triage.Black,
                     WordList = new List<string>()
                 {
-                        ".ssh\\", // test file created
+                        "\\.ssh\\", // test file created
                         ".purple\\accounts.xml", // test file created
                         ".aws\\", // test file created
                         ".gem\\credentials", // test file created
@@ -124,6 +121,9 @@ namespace SnaffCore.Config
                         ".keychain", // test file created
                         // disk image
                         ".wim", // test file created
+                        // virtual machines
+                        ".ova", // test file created
+                        ".ovf", // test file created
                         // db backups
                         ".mdf", // test file created
                         ".sdf", // test file created

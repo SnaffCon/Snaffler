@@ -23,7 +23,7 @@ namespace SnaffCore.Config
             });
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleName = "KeepCDollaShare",
+                RuleName = "KeepShareBlack",
                 Description = "Notifies the user that they can read C$ or ADMIN$ or something fun/noisy, but doesn't actually scan inside it.",
                 EnumerationScope = EnumerationScope.ShareEnumeration,
                 MatchLocation = MatchLoc.ShareName,
@@ -33,7 +33,20 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                     {
                         "\\C$",
-                        "\\ADMIN$",
+                        "\\ADMIN$"
+                    },
+            });
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                RuleName = "KeepShareRed",
+                Description = "Notifies the user that they can read C$ or ADMIN$ or something fun/noisy, but doesn't actually scan inside it.",
+                EnumerationScope = EnumerationScope.ShareEnumeration,
+                MatchLocation = MatchLoc.ShareName,
+                MatchAction = MatchAction.Snaffle,
+                WordListType = MatchListType.EndsWith,
+                Triage = Triage.Black,
+                WordList = new List<string>()
+                    {
                         "\\Users",
                     },
             });

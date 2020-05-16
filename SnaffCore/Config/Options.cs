@@ -14,12 +14,12 @@ namespace SnaffCore.Config
 
         // Concurrency Options
         //public int MaxThreads { get; set; } = 30;
-        public int ShareThreads { get; set; } = 30;
-        public int TreeThreads { get; set; } = 20;
-        public int FileThreads { get; set; } = 50;
-        public int MaxFileQueue { get; set; } = 200000;
-        public int MaxTreeQueue { get; set; } = 20000;
-        public int MaxShareQueue { get; set; } = 20000;
+        public int ShareThreads { get; set; } = 2;//30;
+        public int TreeThreads { get; set; } = 2;//20;
+        public int FileThreads { get; set; } = 4;//50;
+        public int MaxFileQueue { get; set; } = 10;//200000;
+        public int MaxTreeQueue { get; set; } = 3;//20000;
+        public int MaxShareQueue { get; set; } = 3;//20000;
 
         // Logging Options
         public bool LogToFile { get; set; } = false;

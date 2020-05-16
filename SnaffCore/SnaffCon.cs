@@ -89,7 +89,7 @@ namespace SnaffCore
 
             StatusUpdate();
             DateTime finished = DateTime.Now;
-            TimeSpan runSpan = startTime.Subtract(finished);
+            TimeSpan runSpan = finished.Subtract(startTime);
             Mq.Info("Finished at " + finished.ToLocalTime());
             Mq.Info("Snafflin' took " + runSpan);
             Mq.Finish();

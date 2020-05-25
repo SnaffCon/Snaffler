@@ -1,6 +1,7 @@
 ﻿using SnaffCore.Concurrency;
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using static SnaffCore.Config.Options;
 
 namespace Classifiers
@@ -62,6 +63,50 @@ namespace Classifiers
                                 return;
                             }
                             return;
+                        case MatchLoc.FileLength:
+                            try
+                            {
+                                bool lengthResult = SizeMatch(fileInfo);
+                                if (lengthResult)
+                                {
+                                    fileResult = new FileResult(fileInfo)
+                                    {
+                                        MatchedRule = ClassifierRule
+                                    };
+                                    Mq.FileResult(fileResult);
+                                }
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                                return;
+                            }
+                            catch (IOException)
+                            {
+                                return;
+                            }
+                            return;
+                        case MatchLoc.FileMD5:
+                            try
+                            {
+                                bool Md5Result = MD5Match(fileInfo);
+                                if (Md5Result)
+                                {
+                                    fileResult = new FileResult(fileInfo)
+                                    {
+                                        MatchedRule = ClassifierRule
+                                    };
+                                    Mq.FileResult(fileResult);
+                                }
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                                return;
+                            }
+                            catch (IOException)
+                            {
+                                return;
+                            }
+                            return;
                         default:
                             Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                             return;
@@ -79,6 +124,34 @@ namespace Classifiers
             }
         }
 
+        public bool SizeMatch(FileInfo fileInfo)
+        {
+            if (this.ClassifierRule.MatchLength == fileInfo.Length)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool MD5Match(FileInfo fileInfo)
+        {
+            string md5Sum = GetMD5HashFromFile(fileInfo.FullName);
+            if (md5Sum == this.ClassifierRule.MatchMD5.ToUpper())
+            {
+                return true;
+            }
+            return false;
+        }
+        protected string GetMD5HashFromFile(string fileName)
+        {
+            using (var md5 = MD5.Create())
+            {
+                using (var stream = File.OpenRead(fileName))
+                {
+                    return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", string.Empty);
+                }
+            }
+        }
         public bool ByteMatch(byte[] fileBytes)
         {
             // TODO

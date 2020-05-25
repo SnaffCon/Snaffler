@@ -138,7 +138,10 @@ namespace Snaffler
                 // emergency dump of queue contents to console
                 Console.WriteLine(message.Message);
             }
-
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                Console.ReadKey();
+            }
             Environment.Exit(1);
         }
 

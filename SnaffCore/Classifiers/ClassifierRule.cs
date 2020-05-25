@@ -19,6 +19,8 @@ namespace Classifiers
         // define the behaviour of this rule
         public MatchLoc MatchLocation { get; set; } = MatchLoc.FileName;
         public MatchListType WordListType { get; set; } = MatchListType.Contains;
+        public int MatchLength { get; set; } = 0;
+        public string MatchMD5 { get; set; }
         public List<string> WordList { get; set; } = new List<string>();
         public List<Regex> Regexes { get; set; }
 
@@ -41,7 +43,9 @@ namespace Classifiers
         FileName,
         FileExtension,
         FileContentAsString,
-        FileContentAsBytes
+        FileContentAsBytes,
+        FileLength,
+        FileMD5
     }
 
     public enum MatchListType

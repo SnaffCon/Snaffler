@@ -54,8 +54,14 @@ namespace Classifiers
                 case MatchLoc.FilePath:
                     stringToMatch = fileInfo.FullName;
                     break;
+                case MatchLoc.FileLength:
+                    if (!SizeMatch(fileInfo))
+                    {
+                        return false;
+                    }
+                    else break;
                 default:
-                    Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
+                    Mq.Error("You've got a misconfigured file classifier rule named " + ClassifierRule.RuleName + ".");
                     return false;
             }
 
@@ -145,6 +151,14 @@ namespace Classifiers
                     Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                     return false;
             }
+        }
+        public bool SizeMatch(FileInfo fileInfo)
+        {
+            if (this.ClassifierRule.MatchLength == fileInfo.Length)
+            {
+                return true;
+            }
+            return false;
         }
 
         public bool x509PrivKeyMatch(FileInfo fileInfo)
@@ -363,4 +377,6 @@ namespace Classifiers
             return writeRight;
         }
     }
+
+
 }

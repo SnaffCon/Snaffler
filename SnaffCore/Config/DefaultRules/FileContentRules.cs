@@ -36,18 +36,18 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // python
-                    "mysql\\.connector\\.connect\\(", //python
-                    "psycopg2\\.connect\\(", // python postgres
+                    //"mysql\\.connector\\.connect\\(", //python
+                    //"psycopg2\\.connect\\(", // python postgres
                     // generic tokens etc, same for most languages.
                     "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    "aws[_\\-\\.]?key", // aws mnagic
-                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    "[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
-                    "client_secret", // fun
-                    "secret[_\\-\\.]?(key)?[[:space:]]*=",
+                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    //"aws[_\\-\\.]?key", // aws mnagic
+                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    //"[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
+                    //"client_secret", // fun
+                    //"secret[_\\-\\.]?(key)?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -85,21 +85,21 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // php
-                    "mysql_connect[[:space:]]*\\(.*\\$.*\\)", // php
-                    "mysql_pconnect[[:space:]]*\\(.*\\$.*\\)", // php
-                    "mysql_change_user[[:space:]]*\\(.*\\$.*\\)", // php
-                    "pg_connect[[:space:]]*\\(.*\\$.*\\)", // php
-                    "pg_pconnect[[:space:]]*\\(.*\\$.*\\)", // php
+                    //"mysql_connect[[:space:]]*\\(.*\\$.*\\)", // php
+                    //"mysql_pconnect[[:space:]]*\\(.*\\$.*\\)", // php
+                    //"mysql_change_user[[:space:]]*\\(.*\\$.*\\)", // php
+                    //"pg_connect[[:space:]]*\\(.*\\$.*\\)", // php
+                    //"pg_pconnect[[:space:]]*\\(.*\\$.*\\)", // php
                     // generic tokens etc, same for most languages.
                     "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    "aws[_\\-\\.]?key", // aws mnagic
-                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    "[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
-                    "client_secret", // fun
-                    "secret[_\\-\\.]?(key)?[[:space:]]*=",
+                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    //"aws[_\\-\\.]?key", // aws mnagic
+                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    //"[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
+                    //"client_secret", // fun
+                    //"secret[_\\-\\.]?(key)?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -143,13 +143,13 @@ namespace SnaffCore.Config
                     "decryptionkey[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    "aws[_\\-\\.]?key", // aws mnagic
-                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    "[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
-                    "client_secret", // fun
-                    "secret[_\\-\\.]?(key)?[[:space:]]*=",
+                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    //"aws[_\\-\\.]?key", // aws mnagic
+                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    //"[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
+                    //"client_secret", // fun
+                    //"secret[_\\-\\.]?(key)?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -186,17 +186,17 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // java
-                    "\\.getConnection\\(\\\"jdbc\\:",
+                    //"\\.getConnection\\(\\\"jdbc\\:",
                     // generic tokens etc, same for most languages.
                     "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    "aws[_\\-\\.]?key", // aws mnagic
-                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    "[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
-                    "client_secret", // fun
-                    "secret[_\\-\\.]?(key)?[[:space:]]*=",
+                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    //"aws[_\\-\\.]?key", // aws mnagic
+                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    //"[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
+                    //"client_secret", // fun
+                    //"secret[_\\-\\.]?(key)?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -229,17 +229,17 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // ruby
-                    "DBI\\.connect\\(",
+                    //"DBI\\.connect\\(",
                     // generic tokens etc, same for most languages.
                     "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    "aws[_\\-\\.]?key", // aws mnagic
-                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    "[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
-                    "client_secret", // fun
-                    "secret[_\\-\\.]?(key)?[[:space:]]*=",
+                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    //"aws[_\\-\\.]?key", // aws mnagic
+                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    //"[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
+                    //"client_secret", // fun
+                    //"secret[_\\-\\.]?(key)?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -273,17 +273,17 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // perl
-                    "DBI\\-\\>connect\\(",
+                    //"DBI\\-\\>connect\\(",
                     // generic tokens etc, same for most languages.
                     "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    "aws[_\\-\\.]?key", // aws mnagic
-                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    "[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
-                    "client_secret", // fun
-                    "secret[_\\-\\.]?(key)?[[:space:]]*=",
+                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    //"aws[_\\-\\.]?key", // aws mnagic
+                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    //"[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
+                    //"client_secret", // fun
+                    //"secret[_\\-\\.]?(key)?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -325,13 +325,13 @@ namespace SnaffCore.Config
                     // generic tokens etc, same for most languages.
                     "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,00} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    "aws[_\\-\\.]?key", // aws mnagic
-                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    "[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
-                    "client_secret", // fun
-                    "secret[_\\-\\.]?(key)?[[:space:]]*=",
+                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    //"aws[_\\-\\.]?key", // aws mnagic
+                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    //"[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
+                    //"client_secret", // fun
+                    //"secret[_\\-\\.]?(key)?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -404,13 +404,13 @@ namespace SnaffCore.Config
                     // generic tokens etc, same for most languages.
                     "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    "aws[_\\-\\.]?key", // aws mnagic
-                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    "[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
-                    "client_secret", // fun
-                    "secret[_\\-\\.]?(key)?[[:space:]]*=",
+                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    //"aws[_\\-\\.]?key", // aws mnagic
+                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    //"[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
+                    //"client_secret", // fun
+                    //"secret[_\\-\\.]?(key)?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -492,19 +492,19 @@ namespace SnaffCore.Config
                 Triage = Triage.Red,
                 WordList = new List<string>()
                 {
-                    "[Ss][Qq][Ll][CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
-                    "[CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
+                    "sqlconnectionstring[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
+                    "connectionstring[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "validationkey[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "decryptionkey[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    "aws[_\\-\\.]?key", // aws mnagic
-                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    "[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
-                    "client_secret", // fun
-                    "secret[_\\-\\.]?(key)?[[:space:]]*=",
+                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    //"aws[_\\-\\.]?key", // aws mnagic
+                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    //"[_\\-\\.]oauth[[:space:]]*=", // oauth stuff
+                    //"client_secret", // fun
+                    //"secret[_\\-\\.]?(key)?[[:space:]]*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                     // network device config

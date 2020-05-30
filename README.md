@@ -38,19 +38,17 @@ HOWEVER... if you add the correct incantations, it will enable the aforementione
 
 The key incantations are: 
 
-`-o`   Enables outputting results to a file. You probably want this if you're not using -s. e.g. `-o C:\users\thing\snaffler.log`
+`-o`   Enables outputting results to a file. You probably want this if you're not using `-s`. e.g. `-o C:\users\thing\snaffler.log`
 
-`-s`   Enables outputting results to stdout as soon as they're found. You probably want this if you're not using -o.
+`-s`   Enables outputting results to stdout as soon as they're found. You probably want this if you're not using `-o`.
 
 `-v`   Controls verbosity level, options are Trace (most verbose), Debug (less verbose), Info (less verbose still, default), and Data (results only). e.g `-v debug` 
 
 `-m`   Enables and assigns an output dir for snaffler to automatically take a copy of (or Snaffle... if you will) any found files that it likes.
 
-`-l`   Maximum size of files to Snaffle. Defaults to 10MB.
+`-l`   Maximum size of files (in bytes) to Snaffle. Defaults to 10000000, which is *about* 10MB.
 
 `-i`   Disables computer and share discovery, requires a path to a directory in which to perform file discovery.
-
-`-t`   Maximum number of threads. Default 30.
 
 `-d`   Domain to search for computers to search for shares on to search for files in. Easy.
 
@@ -94,8 +92,6 @@ RuleName = "DiscardFilepathContains" # This can be whatever you want. We've been
                                      # MatchType" naming scheme, but you can call it "Stinky" if you want. ¯\_(ツ)_/¯
 MatchAction = "Discard" # What to do with things that match the rule. In this case, we want to discard anything that matches this rule.
                         # Valid options include: Snaffle (keep), Discard, Relay (example of this below), and CheckForKeys (example below).
-RuleOrder = 0 # Within each EnumerationScope we tell Snaffler what order to run the rules in. 
-              # You generally want to put simpler rules first, followed by complex multi-step ones.
 MatchLocation = "FilePath" # What part of the file/dir/share to look at to check for a match. In this case we're looking at the whole path.
                            # Valid options include: ShareName, FilePath, FileName, FileExtension, FileContentAsString, FileContentAsBytes,
                            # although obviously not all of these will apply in all EnumerationScopes.
@@ -112,7 +108,6 @@ In this case I'm mostly throwing away fonts, images, CSS, etc.
 EnumerationScope = "FileEnumeration" # We're looking at the actual files, not the shares or dirs or whatever.
 RuleName = "DiscardExtExact" # just a name
 MatchAction = "Discard" # We're discarding these
-RuleOrder = 0 # starts at 0 again because we're in a different EnumerationScope
 MatchLocation = "FileExtension" # This time we're only looking at the file extension part of the file's name.
 WordListType = "Exact" # and we only want exact matches. 
 WordList = [".bmp", ".eps", ".gif", ".ico", ".jfi", ".jfif", ".jif", ".jpe", ".jpeg", ".jpg", ".png", ".psd", ".svg", ".tif", ".tiff", ".webp", ".xcf", ".ttf", ".otf", ".lock", ".css", ".less"] # list of file extensions.
@@ -125,7 +120,6 @@ EnumerationScope = "FileEnumeration" # Still looking at files
 RuleName = "KeepExtExactBlack" # Just a name
 MatchAction = "Snaffle" # This time we are 'snaffling' these. This usually just means send it to the UI, 
                        # but if you turn on the appropriate option it will also grtab a copy.
-RuleOrder = 1 # We're doing this AFTER we throw away the stuff we don't want in the previous rule.
 MatchLocation = "FileExtension" # We're looking at file extensions again
 WordListType = "Exact" # With Exact Matches
 WordList = [".kdbx", ".kdb", ".ppk", ".vmdk", ".vhdx", ".ova", ".ovf", ".psafe3", ".cscfg", ".kwallet", ".tblk", ".ovpn", ".mdf", ".sdf", ".sqldump"] # and a bunch of fun file extensions.
@@ -138,7 +132,6 @@ This one is basically the same, but we're looking at the whole file name. Simple
 EnumerationScope = "FileEnumeration"
 RuleName = "KeepFilenameExactBlack"
 MatchAction = "Snaffle"
-RuleOrder = 2
 MatchLocation = "FileName"
 WordListType = "Exact"
 WordList = ["id_rsa", "id_dsa", "NTDS.DIT", "shadow", "pwd.db", "passwd"]
@@ -150,7 +143,6 @@ This one is a bit nifty, check this out...
 [[Classifiers]]
 EnumerationScope = "FileEnumeration" # we're looking for files...
 RuleName = "KeepCertContainsPrivKeyRed" 
-RuleOrder = 6
 MatchLocation = "FileExtension" # specifically, ones with certain file extensions...
 WordListType = "Exact"
 WordList = [".der", ".pfx"] # specifically these ones...
@@ -167,7 +159,6 @@ You can chain these together as much as you like, although I imagine you'll star
 [[Classifiers]]
 EnumerationScope = "FileEnumeration" # this one looks at files...
 RuleName = "ConfigGrepExtExact"
-RuleOrder = 10
 MatchLocation = "FileExtension" # specifically the extensions...
 WordListType = "Exact"
 WordList = [".yaml", ".xml", ".json", ".config", ".ini", ".inf", ".cnf", ".conf"] # these ones.
@@ -177,8 +168,7 @@ RelayTarget = "KeepConfigGrepContainsRed" # To the rule with this RuleName!
 [[Classifiers]]
 RuleName = "KeepConfigGrepContainsRed" # which is this one! This is why following a naming convention really helps.
 EnumerationScope = "ContentsEnumeration" # this one looks at file content!
-MatchAction = "Snaffle" # it keeps matches
-RuleOrder = 0
+MatchAction = "Snaffle" # it keeps files that match
 MatchLocation = "FileContentAsString" # it's looking at the contents as a string (rather than a byte array)
 WordListType = "Contains" # it's using simple matching
 WordList = ["password=", " connectionString=\"", "sqlConnectionString=\"", "validationKey=", "decryptionKey=", "NVRAM config last updated"]
@@ -196,7 +186,7 @@ Next step on the roadmap is a bunch of extra concurrency magic to make everythin
 We're also going to: 
  - Add parsing of MS Word and Excel documents.
  - Add parsing of archive files, ideally treating them as just another dir to walk through looking for goodies.
- - Add even more things we should be searching for inside files, like db connection strings from various languages. **More words for the wordlists! `string[]`s for the `string` throne!**
+ - Keep refining the rules and regexen. **More words for the wordlists! `string[]`s for the `string` throne!**
 
 ![A dumb joke about wordlists.](./WORDLISTS.png)
 
@@ -207,14 +197,14 @@ Dwight's GitHub profile is like that amazing back aisle at a hardware store that
 
 While no code was taken (mainly cos it's Ruby lol) we did steal a bunch of nifty ideas from `plunder2` (http://joshstone.us/plunder2/)
 
-Wordlists were also curated from those found in some other similar-ish tools like trufflehog, gitrobber, and graudit.
+Wordlists were also curated from those found in some other similar-ish tools like trufflehog, shhgit, gitrobber, and graudit.
 
 
 ## Is it OPSEC safe? (Whatever the hell that means)
 
 Pffft, no. It's noisy as fuck.
 
-Look let's put it this way... If it's the kind of environment where you'd feel confident running something like CrackMapExec, then uhhh, yeah man... It's real stealthy.
+Look let's put it this way... If it's the kind of environment where you'd feel confident running BloodHound in non-stealth mode, then uhhh, yeah man... It's real stealthy.
 
 
 ## How can I help or get help?

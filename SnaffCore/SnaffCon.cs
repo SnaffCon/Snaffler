@@ -1,249 +1,262 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
-using SnaffCore.ComputerFind;
+﻿using Classifiers;
+using SnaffCore.ActiveDirectory;
 using SnaffCore.Concurrency;
+using SnaffCore.Config;
 using SnaffCore.ShareFind;
-using SnaffCore.ShareScan;
+using SnaffCore.TreeWalk;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Timers;
+using static SnaffCore.Config.Options;
 using Timer = System.Timers.Timer;
 
 namespace SnaffCore
 {
     public class SnaffCon
     {
-        private Config.Config Config { get; set; }
-        private LimitedConcurrencyLevelTaskScheduler SharefinderLcts { get; set; }
-        private TaskFactory SharefinderTaskFactory { get; set; }
-        private CancellationTokenSource SharefinderCts { get; set; }
-        private List<Task> SharefinderTasks { get; set; } = new List<Task>();
-        private LimitedConcurrencyLevelTaskScheduler SharescannerLcts { get; set; }
-        private TaskFactory SharescannerTaskFactory { get; set; }
-        private CancellationTokenSource SharescannerCts { get; set; }
-        private List<Task> SharescannerTasks { get; set; } = new List<Task>();
-        private bool SysvolTaskCreated { get; set; }
-        private bool NetlogonTaskCreated { get; set; }
+        private bool AllTasksComplete { get; set; } = false;
+        private BlockingMq Mq { get; set; }
 
-        public SnaffCon(Config.Config conf)
+        private static BlockingStaticTaskScheduler ShareTaskScheduler;
+        private static BlockingStaticTaskScheduler TreeTaskScheduler;
+        private static BlockingStaticTaskScheduler FileTaskScheduler;
+
+        public SnaffCon(Options options)
         {
-            Config = conf;
-            SharefinderLcts = new LimitedConcurrencyLevelTaskScheduler(Config.MaxThreads);
-            SharefinderTaskFactory = new TaskFactory(SharefinderLcts);
-            SharefinderCts = new CancellationTokenSource();
-            SharescannerLcts = new LimitedConcurrencyLevelTaskScheduler(Config.MaxThreads);
-            SharescannerTaskFactory = new TaskFactory(SharescannerLcts);
-            SharescannerCts = new CancellationTokenSource();
+            MyOptions = options;
+            Mq = BlockingMq.GetMq();
+
+            int shareThreads = MyOptions.ShareThreads;
+            int treeThreads = MyOptions.TreeThreads;
+            int fileThreads = MyOptions.FileThreads;
+
+            ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, MyOptions.MaxShareQueue);
+            TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, MyOptions.MaxTreeQueue);
+            FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, MyOptions.MaxFileQueue);
+        }
+
+        public static BlockingStaticTaskScheduler GetShareTaskScheduler()
+        {
+            return ShareTaskScheduler;
+        }
+        public static BlockingStaticTaskScheduler GetTreeTaskScheduler()
+        {
+            return TreeTaskScheduler;
+        }
+        public static BlockingStaticTaskScheduler GetFileTaskScheduler()
+        {
+            return FileTaskScheduler;
         }
 
         public void Execute()
         {
-            var targetComputers = new List<string>();
-            var foundShares = new ConcurrentBag<string>();
-
-            var statusUpdateTimer =
-                new Timer(TimeSpan.FromMinutes(1)
-                    .TotalMilliseconds) {AutoReset = true}; // Set the time (5 mins in this case)
-            statusUpdateTimer.Elapsed += StatusUpdate;
+            DateTime startTime = DateTime.Now;
+            // This is the main execution thread.
+            Timer statusUpdateTimer =
+                new Timer(TimeSpan.FromMinutes(0.5)
+                    .TotalMilliseconds)
+                { AutoReset = true }; // Set the time (1 min in this case)
+            statusUpdateTimer.Elapsed += TimedStatusUpdate;
             statusUpdateTimer.Start();
 
-            if (Config.DirTarget == null)
+            // if we haven't been told what dir or computer to target, we're going to need to do share discovery. that means finding computers from the domain.
+            if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
             {
-                Config.Mq.Info("Getting computers from AD.");
-                // We do this single threaded cos it's fast and not easily divisible.
-                var activeDirectory = new ActiveDirectory(Config);
-                targetComputers = activeDirectory.DomainComputers;
-                if (targetComputers == null)
-                {
-                    Config.Mq.Error(
-                        "Something fucked out finding the computers in the domain. You must be holding it wrong.");
-                    while (true)
-                    {
-                        Config.Mq.Terminate();
-                    }
-                }
-
-                var numTargetComputers = targetComputers.Count.ToString();
-                Config.Mq.Info("Got " + numTargetComputers + " computers from AD.");
-                if (targetComputers.Count == 0)
-                {
-                    Config.Mq.Error("Didn't find any domain computers. Seems weird. Try pouring water on it.");
-                    while (true)
-                    {
-                        Config.Mq.Terminate();
-                    }
-                }
+                DomainDiscovery();
             }
+            // if we've been told what computers to hit...
+            else if (MyOptions.ComputerTargets != null)
+            {
+                ShareDiscovery(MyOptions.ComputerTargets);
+            }
+            // otherwise we should have a set of path targets...
+            else if (MyOptions.PathTargets != null)
+            {
+                FileDiscovery(MyOptions.PathTargets);
+            }
+            // but if that hasn't been done, something has gone wrong.
             else
             {
-                foundShares.Add(Config.DirTarget);
+                Mq.Error("OctoParrot says: AWK! I SHOULDN'T BE!");
             }
 
-            if (Config.ShareFinderEnabled)
+            SpinWait.SpinUntil(() => AllTasksComplete);
+
+            StatusUpdate();
+            DateTime finished = DateTime.Now;
+            TimeSpan runSpan = finished.Subtract(startTime);
+            Mq.Info("Finished at " + finished.ToLocalTime());
+            Mq.Info("Snafflin' took " + runSpan);
+            Mq.Finish();
+        }
+
+        private void DomainDiscovery()
+        {
+            Mq.Info("Getting users and computers from AD.");
+            // We do this single threaded cos it's fast and not easily divisible.
+            AdData adData = new ActiveDirectory.AdData();
+            List<string> targetComputers = adData.GetDomainComputers();
+            if (targetComputers == null)
             {
-                Config.Mq.Info("Starting to find readable shares.");
-                foreach (var computer in targetComputers)
+                Mq.Error(
+                    "Something fucked out finding stuff in the domain. You must be holding it wrong.");
+                while (true)
                 {
-                    Config.Mq.Info("Creating a sharefinder task for " + computer);
-                    var t = SharefinderTaskFactory.StartNew(() =>
-                    {
-                        try
-                        {
-                            var shareFinder = new ShareFinder();
-                            var taskFoundShares = shareFinder.GetReadableShares(computer, Config);
-                            if (taskFoundShares.Count > 0)
-                            {
-                                foreach (var taskFoundShare in taskFoundShares)
-                                {
-                                    if (!String.IsNullOrWhiteSpace(taskFoundShare))
-                                    {
-                                        foundShares.Add(taskFoundShare);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Config.Mq.Info(computer + " had no shares on it");
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Config.Mq.Trace(e.ToString());
-                        }
-                    }, SharefinderCts.Token);
-                    SharefinderTasks.Add(t);
+                    Mq.Terminate();
                 }
-
-                Config.Mq.Info("Created all " + SharefinderTasks.Count + " sharefinder tasks.");
             }
-
-
-            if (Config.ShareScanEnabled)
+            string numTargetComputers = targetComputers.Count.ToString();
+            Mq.Info("Got " + numTargetComputers + " computers from AD.");
+            if (targetComputers.Count == 0)
             {
-                var shareFinderTasksDone = false;
-                Config.Mq.Info("Starting to search shares for files.");
-                // keep going until all sharefinder tasks are completed or faulted, and there's no shares left to start scanner tasks for
-                while (shareFinderTasksDone == false || !foundShares.IsEmpty)
+                Mq.Error("Didn't find any domain computers. Seems weird. Try pouring water on it.");
+                while (true)
                 {
-                    // check if all the shareFinder Tasks are done
-                    var completedShareFinderTasks = Array.FindAll(SharefinderTasks.ToArray(),
-                        element => element.Status == TaskStatus.RanToCompletion);
-                    var faultedShareFinderTasks = Array.FindAll(SharefinderTasks.ToArray(),
-                        element => element.Status == TaskStatus.Faulted);
-                    if ((completedShareFinderTasks.Length + faultedShareFinderTasks.Length) ==
-                        SharefinderTasks.Count)
-                    {
-                        // update the completion status.
-                        shareFinderTasksDone = true;
-                        Config.Mq.Info("All Sharefinder Tasks completed.");
-                    }
+                    Mq.Terminate();
+                }
+            }
+            // Push list of fun users to Options
+            if (MyOptions.DomainUserRules)
+            {
+                foreach (string user in adData.GetDomainUsers())
+                {
+                    MyOptions.DomainUsersToMatch.Add(user);
+                }
+                PrepDomainUserRules();
+            }
+            // immediately call ShareDisco which should handle the rest.
+            ShareDiscovery(targetComputers.ToArray());
+        }
 
-                    //pull shares out of the result bag and make scanner tasks for them.
-                    while (foundShares.TryTake(out var share))
+        public void PrepDomainUserRules()
+        {
+            try
+            {
+                if (MyOptions.DomainUsersWordlistRules.Count >= 1)
+                {
+                    foreach (string ruleName in MyOptions.DomainUsersWordlistRules)
                     {
-                        if (!String.IsNullOrWhiteSpace(share))
+                        ClassifierRule configClassifierRule =
+                            MyOptions.ClassifierRules.First(thing => thing.RuleName == ruleName);
+
+                        foreach (string user in MyOptions.DomainUsersToMatch)
                         {
-                            // skip ipc$ and print$ every time
-                            if ((share.ToLower().EndsWith("ipc$")) || (share.ToLower().EndsWith("print$")))
-                            {
-                                continue;
-                            }
-
-                            if (share.ToLower().EndsWith("sysvol"))
-                            {
-                                if (SysvolTaskCreated)
-                                {
-                                    continue;
-                                }
-
-                                SysvolTaskCreated = true;
-                            }
-                            else if (share.ToLower().EndsWith("netlogon"))
-                            {
-                                if (NetlogonTaskCreated)
-                                {
-                                    continue;
-                                }
-
-                                NetlogonTaskCreated = true;
-                            }
-
-                            // check if it's an admin share
-                            var isCDollarShare = share.EndsWith("C$");
-                            // put a result on the queue
-                            Config.Mq.ShareResult(new ShareFinder.ShareResult {IsAdminShare = isCDollarShare, Listable = true, SharePath = share});
-                            // bail out if we're not scanning admin shares
-                            if (isCDollarShare && !Config.ScanCDollarShares)
-                            {
-                                continue;
-                            }
-
-                            // otherwise create a TreeWalker task
-                            Config.Mq.Info("Creating ShareScanner for:" + share);
-                            var t = SharescannerTaskFactory.StartNew(() =>
-                            {
-                                try
-                                {
-                                    var treeWalker = new TreeWalker(Config, share);
-                                }
-                                catch (Exception e)
-                                {
-                                    Config.Mq.Trace(e.ToString());
-                                }
-                            }, SharescannerCts.Token);
-                            SharescannerTasks.Add(t);
+                            string pattern = "( |'|\")" + Regex.Escape(user) + "( |'|\")";
+                            Regex regex = new Regex(pattern,
+                                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                            configClassifierRule.Regexes.Add(regex);
                         }
                     }
                 }
+            }
+            catch (Exception)
+            {
+                Mq.Error("Something went wrong adding domain users to rules.");
+            }
+        }
 
-                var shareScannerTasksDone = false;
-
-                while (!shareScannerTasksDone)
+        private void ShareDiscovery(string[] computerTargets)
+        {
+            Mq.Info("Starting to find readable shares.");
+            foreach (string computer in computerTargets)
+            {
+                // ShareFinder Task Creation - this kicks off the rest of the flow
+                Mq.Info("Creating a sharefinder task for " + computer);
+                ShareTaskScheduler.New(() =>
                 {
-                    var completedShareScannerTasks = Array.FindAll(SharescannerTasks.ToArray(),
-                        element => element.Status == TaskStatus.RanToCompletion);
-                    var faultedShareScannerTasks = Array.FindAll(SharescannerTasks.ToArray(),
-                        element => element.Status == TaskStatus.Faulted);
-                    if ((completedShareScannerTasks.Length + faultedShareScannerTasks.Length) ==
-                        SharescannerTasks.Count)
+                    try
                     {
-                        shareScannerTasksDone = true;
-                        Config.Mq.Info("All ShareScanner tasks finished!");
+                        ShareFinder shareFinder = new ShareFinder();
+                        shareFinder.GetComputerShares(computer);
                     }
-                }
+                    catch (Exception e)
+                    {
+                        Mq.Trace(e.ToString());
+                    }
+                });
+            }
+            Mq.Info("Created all sharefinder tasks.");
+        }
+
+        private void FileDiscovery(string[] pathTargets)
+        {
+            foreach (string pathTarget in pathTargets)
+            {
+                // ShareScanner Task Creation - this kicks off the rest of the flow
+                Mq.Info("Creating a TreeWalker task for " + pathTarget);
+                TreeTaskScheduler.New(() =>
+                {
+                    try
+                    {
+                        TreeWalker treeWalker = new TreeWalker(pathTarget);
+                    }
+                    catch (Exception e)
+                    {
+                        Mq.Trace(e.ToString());
+                    }
+                });
             }
 
-            Config.Mq.Info("Finished!");
-            Console.ResetColor();
-            Environment.Exit(0);
-            // This is the main execution thread.
+            Mq.Info("Created all TreeWalker tasks.");
         }
 
         // This method is called every minute
-        private void StatusUpdate(object sender, ElapsedEventArgs e)
+        private void TimedStatusUpdate(object sender, ElapsedEventArgs e)
         {
-            var totalShareFinderTasksCount = SharefinderTasks.Count;
-            var totalShareScannerTasksCount = SharescannerTasks.Count;
-            var completedShareFinderTasks = Array.FindAll(SharefinderTasks.ToArray(),
-                element => element.Status == TaskStatus.RanToCompletion);
-            var completedShareFinderTasksCount = completedShareFinderTasks.Length;
+            StatusUpdate();
+        }
 
-            var completedShareScannerTasks = Array.FindAll(SharescannerTasks.ToArray(),
-                element => element.Status == TaskStatus.RanToCompletion);
-            var completedShareScannerTasksCount = completedShareScannerTasks.Length;
+        private void StatusUpdate()
+        {
+            //lock (StatusObjectLocker)
+            //{
+            // get memory usage for status update
+            string memorynumber;
+            using (Process proc = Process.GetCurrentProcess())
+            {
+                long memorySize64 = proc.PrivateMemorySize64;
+                memorynumber = BytesToString(memorySize64);
+            }
 
-            var updateText = new StringBuilder("Status Update: \n");
+            TaskCounters shareTaskCounters = ShareTaskScheduler.Scheduler.GetTaskCounters();
+            TaskCounters treeTaskCounters = TreeTaskScheduler.Scheduler.GetTaskCounters();
+            TaskCounters fileTaskCounters = FileTaskScheduler.Scheduler.GetTaskCounters();
 
-            updateText.Append("Sharescanner Tasks Completed: " + completedShareScannerTasksCount + "\n");
-            updateText.Append("Sharescanner Tasks Remaining: " +
-                              (totalShareScannerTasksCount - completedShareScannerTasksCount) + "\n");
-            updateText.Append("Sharefinder Tasks Completed: " + completedShareFinderTasksCount + "\n");
-            updateText.Append("Sharefinder Tasks Remaining: " +
-                              (totalShareFinderTasksCount - completedShareFinderTasksCount) + "\n");
+            StringBuilder updateText = new StringBuilder("Status Update: \n");
+            updateText.Append("ShareFinder Tasks Completed: " + shareTaskCounters.CompletedTasks + "\n");
+            updateText.Append("ShareFinder Tasks Remaining: " + shareTaskCounters.CurrentTasksRemaining + "\n");
+            updateText.Append("ShareFinder Tasks Running: " + shareTaskCounters.CurrentTasksRunning + "\n");
+            updateText.Append("TreeWalker Tasks Completed: " + treeTaskCounters.CompletedTasks + "\n");
+            updateText.Append("TreeWalker Tasks Remaining: " + treeTaskCounters.CurrentTasksRemaining + "\n");
+            updateText.Append("TreeWalker Tasks Running: " + treeTaskCounters.CurrentTasksRunning + "\n");
+            updateText.Append("FileScanner Tasks Completed: " + fileTaskCounters.CompletedTasks + "\n");
+            updateText.Append("FileScanner Tasks Remaining: " + fileTaskCounters.CurrentTasksRemaining + "\n");
+            updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\n");
+            updateText.Append(memorynumber + " RAM in use.");
 
-            Config.Mq.Info(updateText.ToString());
+            Mq.Info(updateText.ToString());
+
+            if (FileTaskScheduler.Done() && ShareTaskScheduler.Done() && TreeTaskScheduler.Done())
+            {
+                AllTasksComplete = true;
+            }
+            //}
+        }
+
+        private static String BytesToString(long byteCount)
+        {
+            string[] suf = { "B", "kB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+            if (byteCount == 0)
+                return "0" + suf[0];
+            long bytes = Math.Abs(byteCount);
+            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
+            return (Math.Sign(byteCount) * num) + suf[place];
         }
     }
 }

@@ -1,39 +1,46 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using NLog;
+﻿using NLog;
 using NLog.Config;
 using NLog.Targets;
 using SnaffCore;
+using SnaffCore.Concurrency;
 using SnaffCore.Config;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Snaffler
 {
     public class SnaffleRunner
     {
-        internal Config Config { get; set; }
-        private BlockingMq MqHandle { get; set; }
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private BlockingMq Mq { get; set; }
+        private LogLevel LogLevel { get; set; }
 
         public void Run(string[] args)
         {
             PrintBanner();
-            MqHandle = new BlockingMq();
+            BlockingMq.MakeMq();
+            Mq = BlockingMq.GetMq();
             SnaffCon controller = null;
+            Options myOptions;
+
             try
             {
-                Config = new Config(args, MqHandle);
-                controller = new SnaffCon(Config);
+                myOptions = Config.Parse(args);
+
                 //------------------------------------------
                 // set up new fangled logging
                 //------------------------------------------
-                var nlogConfig = new LoggingConfiguration();
+                LoggingConfiguration nlogConfig = new LoggingConfiguration();
 
                 ColoredConsoleTarget logconsole = null;
                 FileTarget logfile = null;
 
+                ParseLogLevelString(myOptions.LogLevelString);
+
                 // Targets where to log to: File and Console
-                if (Config.LogToConsole)
+                if (myOptions.LogToConsole)
                 {
                     logconsole = new ColoredConsoleTarget("logconsole")
                     {
@@ -41,6 +48,15 @@ namespace Snaffler
                         UseDefaultRowHighlightingRules = false,
                         WordHighlightingRules =
                         {
+                            new ConsoleWordHighlightingRule("{Green}", ConsoleOutputColor.DarkGreen,
+                                ConsoleOutputColor.White),
+                            new ConsoleWordHighlightingRule("{Yellow}", ConsoleOutputColor.DarkYellow,
+                                ConsoleOutputColor.White),
+                            new ConsoleWordHighlightingRule("{Red}", ConsoleOutputColor.DarkRed,
+                                ConsoleOutputColor.White),
+                            new ConsoleWordHighlightingRule("{Black}", ConsoleOutputColor.Black,
+                                ConsoleOutputColor.White),
+
                             new ConsoleWordHighlightingRule("[Trace]", ConsoleOutputColor.DarkGray,
                                 ConsoleOutputColor.Black),
                             new ConsoleWordHighlightingRule("[Degub]", ConsoleOutputColor.Gray,
@@ -59,30 +75,33 @@ namespace Snaffler
                             {
                                 CompileRegex = true,
                                 Regex = @"<.*\|.*\|.*\|.*?>",
-                                ForegroundColor = ConsoleOutputColor.Cyan
+                                ForegroundColor = ConsoleOutputColor.Cyan,
+                                BackgroundColor = ConsoleOutputColor.Black
                             },
                             new ConsoleWordHighlightingRule
                             {
                                 CompileRegex = true,
                                 Regex = @"^\d\d\d\d-\d\d\-\d\d \d\d:\d\d:\d\d [\+-]\d\d:\d\d ",
-                                ForegroundColor = ConsoleOutputColor.DarkGray
+                                ForegroundColor = ConsoleOutputColor.DarkGray,
+                                BackgroundColor = ConsoleOutputColor.Black
                             },
                             new ConsoleWordHighlightingRule
                             {
                                 CompileRegex = true,
                                 Regex = @"\((?:[^\)]*\)){1}",
-                                ForegroundColor = ConsoleOutputColor.DarkMagenta
+                                ForegroundColor = ConsoleOutputColor.DarkMagenta,
+                                BackgroundColor = ConsoleOutputColor.Black
                             }
                         }
                     };
-                    nlogConfig.AddRule(Config.LogLevel, LogLevel.Fatal, logconsole);
+                    nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logconsole);
                     logconsole.Layout = "${message}";
                 }
 
-                if (Config.LogToFile)
+                if (myOptions.LogToFile)
                 {
-                    logfile = new FileTarget("logfile") {FileName = Config.LogFilePath};
-                    nlogConfig.AddRule(Config.LogLevel, LogLevel.Fatal, logfile);
+                    logfile = new FileTarget("logfile") { FileName = myOptions.LogFilePath };
+                    nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logfile);
                     logfile.Layout = "${message}";
                 }
 
@@ -91,12 +110,13 @@ namespace Snaffler
 
                 //-------------------------------------------
 
-                if (Config.EnableMirror && (Config.MirrorPath.Length > 4))
+                if (myOptions.Snaffle && (myOptions.SnafflePath.Length > 4))
                 {
-                    Directory.CreateDirectory(Config.MirrorPath);
+                    Directory.CreateDirectory(myOptions.SnafflePath);
                 }
 
-                var thing = Task.Factory.StartNew(() => { controller.Execute(); });
+                controller = new SnaffCon(myOptions);
+                Task thing = Task.Factory.StartNew(() => { controller.Execute(); });
 
                 while (true)
                 {
@@ -112,18 +132,23 @@ namespace Snaffler
 
         private void DumpQueue()
         {
-            while (MqHandle.Q.TryTake(out var message))
+            BlockingMq Mq = BlockingMq.GetMq();
+            while (Mq.Q.TryTake(out SnafflerMessage message))
             {
                 // emergency dump of queue contents to console
                 Console.WriteLine(message.Message);
             }
-
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                Console.ReadKey();
+            }
             Environment.Exit(1);
         }
 
         private void HandleOutput()
         {
-            foreach (var message in MqHandle.Q.GetConsumingEnumerable())
+            BlockingMq Mq = BlockingMq.GetMq();
+            foreach (SnafflerMessage message in Mq.Q.GetConsumingEnumerable())
             {
                 ProcessMessage(message);
             }
@@ -131,7 +156,7 @@ namespace Snaffler
 
         private void ProcessMessage(SnafflerMessage message)
         {
-            var datetime = message.DateTime.ToString("yyyy-MM-dd HH:mm:ss zzz ");
+            string datetime = message.DateTime.ToString("yyyy-MM-dd HH:mm:ss zzz ");
             switch (message.Type)
             {
                 case SnafflerMessageType.Trace:
@@ -144,10 +169,13 @@ namespace Snaffler
                     Logger.Info(datetime + "[Info] " + message.Message);
                     break;
                 case SnafflerMessageType.FileResult:
-                    Logger.Warn(datetime + "[File]" + FileResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[File] " + FileResultLogFromMessage(message));
+                    break;
+                case SnafflerMessageType.DirResult:
+                    Logger.Warn(datetime + "[Dir] " + DirResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.ShareResult:
-                    Logger.Warn(datetime + "[Share]" + ShareResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[Share] " + ShareResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.Error:
                     Logger.Error(datetime + "[Error] " + message.Message);
@@ -156,65 +184,119 @@ namespace Snaffler
                     Logger.Fatal(datetime + "[Fatal] " + message.Message);
                     Environment.Exit(1);
                     break;
+                case SnafflerMessageType.Finish:
+                    Logger.Info("Snaffler out.");
+                    Console.WriteLine("Press any key to exit.");
+                    if (Debugger.IsAttached)
+                    {
+                        Console.ReadKey();
+                    }
+                    Environment.Exit(0);
+                    break;
             }
         }
 
         public string ShareResultLogFromMessage(SnafflerMessage message)
         {
-            var sharePath = message.ShareResult.SharePath;
-            var isadmin = "";
-            if (message.ShareResult.IsAdminShare)
-            {
-                isadmin = "AdminShare";
-            }
+            string sharePath = message.ShareResult.SharePath;
+            string triage = message.ShareResult.Triage.ToString();
+            string shareResultTemplate = "{{{0}}}({1})";
+            return string.Format(shareResultTemplate, triage, sharePath);
+        }
 
-            var shareResultTemplate = "<{0}>({1})";
-            return string.Format(shareResultTemplate, isadmin, sharePath);
+        public string DirResultLogFromMessage(SnafflerMessage message)
+        {
+            string sharePath = message.DirResult.DirPath;
+            string triage = message.DirResult.Triage.ToString();
+            string dirResultTemplate = "{{{0}}}({1})";
+            return string.Format(dirResultTemplate, triage, sharePath);
         }
 
         public string FileResultLogFromMessage(SnafflerMessage message)
         {
-            var matchreason = message.FileResult.WhyMatched.ToString();
-
-            var canread = "";
-            if (message.FileResult.RwStatus.CanRead)
+            try
             {
-                canread = "R";
-            }
+                string matchedclassifier = message.FileResult.MatchedRule.RuleName; //message.FileResult.WhyMatched.ToString();
+                string triageString = message.FileResult.MatchedRule.Triage.ToString();
+                string modifiedStamp = message.FileResult.FileInfo.LastWriteTime.ToString();
 
-            var canwrite = "";
-            if (message.FileResult.RwStatus.CanWrite)
+                string canread = "";
+                if (message.FileResult.RwStatus.CanRead)
+                {
+                    canread = "R";
+                }
+
+                string canwrite = "";
+                if (message.FileResult.RwStatus.CanWrite)
+                {
+                    canwrite = "W";
+                }
+
+                string matchedstring = "";
+
+                long fileSize = message.FileResult.FileInfo.Length;
+                string fileSizeString = BytesToString(fileSize);
+
+                string filepath = message.FileResult.FileInfo.FullName;
+
+                string matchcontext = "";
+                if (message.FileResult.TextResult != null)
+                {
+                    matchedstring = message.FileResult.TextResult.MatchedStrings[0];
+                    matchcontext = message.FileResult.TextResult.MatchContext;
+                }
+
+                string fileResultTemplate = " {{{0}}}<{1}|{2}{3}|{4}|{5}|{6}>({7}) {8}";
+                return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString, modifiedStamp,
+                    filepath, matchcontext);
+            }
+            catch (Exception e)
             {
-                canwrite = "W";
+                Console.WriteLine(e.ToString());
+                Console.WriteLine(message.FileResult.FileInfo.FullName);
+                return "";
             }
-
-            var matchedstring = "";
-
-            var fileSize = message.FileResult.FileInfo.Length;
-            var fileSizeString = BytesToString(fileSize);
-
-            var filepath = message.FileResult.FileInfo.FullName;
-
-            var grepcontext = "";
-            if (message.FileResult.GrepFileResult != null)
+        }
+        private void ParseLogLevelString(string logLevelString)
+        {
+            switch (logLevelString.ToLower())
             {
-                matchedstring = message.FileResult.GrepFileResult.GreppedStrings[0];
-                grepcontext = message.FileResult.GrepFileResult.GrepContext;
+                case "debug":
+                    LogLevel = LogLevel.Debug;
+                    Mq.Degub("Set verbosity level to degub.");
+                    break;
+                case "degub":
+                    LogLevel = LogLevel.Debug;
+                    Mq.Degub("Set verbosity level to degub.");
+                    break;
+                case "trace":
+                    LogLevel = LogLevel.Trace;
+                    Mq.Degub("Set verbosity level to trace.");
+                    break;
+                case "data":
+                    LogLevel = LogLevel.Warn;
+                    Mq.Degub("Set verbosity level to data.");
+                    break;
+                case "info":
+                    LogLevel = LogLevel.Info;
+                    Mq.Degub("Set verbosity level to info.");
+                    break;
+                default:
+                    LogLevel = LogLevel.Info;
+                    Mq.Error("Invalid verbosity level " + logLevelString +
+                             " falling back to default level (info).");
+                    break;
             }
-
-            var fileResultTemplate = "<{0}|{1}{2}|{3}|{4}>({5}) {6}";
-            return string.Format(fileResultTemplate, matchreason, canread, canwrite, matchedstring, fileSizeString,
-                filepath, grepcontext);
         }
 
         private static String BytesToString(long byteCount)
         {
-            string[] suf = {"B", "kB", "MB", "GB", "TB", "PB", "EB"}; //Longs run out around EB
+            string[] suf = { "B", "kB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
             if (byteCount == 0)
                 return "0" + suf[0];
-            var bytes = Math.Abs(byteCount);
-            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            var num = Math.Round(bytes / Math.Pow(1024, place), 1);
+            long bytes = Math.Abs(byteCount);
+            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
             return (Math.Sign(byteCount) * num) + suf[place];
         }
 
@@ -236,37 +318,9 @@ namespace Snaffler
             Console.ResetColor();
         }
 
-        /*
-public void MirrorMessageFile(FileInfo fileInfo)
-{
-    // do the mirror dance
-    // TODO this should 100% be split off into its own task.
-    string mirrored = "";
-    if (message.Mirror && message.FileResult.RWStatus.canRead)
-    {
-
-        if (fileSize < 500000)
-        {
-            string sourcePath = message.FileResult.FileInfo.FullName;
-            // clean it up and normalise it a bit
-            string cleanedPath = Path.GetFullPath(sourcePath.Replace(':', '.').Replace('$', '.'));
-            // make the dir exist
-            Directory.CreateDirectory(Path.GetDirectoryName(Config.MirrorPath + cleanedPath));
-
-            File.Copy(sourcePath, (Path.GetFullPath(Config.MirrorPath + cleanedPath)), true);
-            mirrored = "Mirrored";
-        }
-        else
-        {
-            mirrored = "Skipped";
-        }
-    }
-}
-*/
-
         public void PrintBanner()
         {
-            var barfLines = new[]
+            string[] barfLines = new[]
             {
                 @" .::::::.:::.    :::.  :::.    .-:::::'.-:::::':::    .,:::::: :::::::..   ",
                 @";;;`    ``;;;;,  `;;;  ;;`;;   ;;;'''' ;;;'''' ;;;    ;;;;'''' ;;;;``;;;;  ",
@@ -288,10 +342,10 @@ public void MirrorMessageFile(FileInfo fileInfo)
                 ConsoleColor.White
             };
 
-            var i = 0;
-            foreach (var barfLine in barfLines)
+            int i = 0;
+            foreach (string barfLine in barfLines)
             {
-                var barfOne = barfLine;
+                string barfOne = barfLine;
                 WriteColorLine(barfOne, patternOne[i]);
                 i += 1;
             }

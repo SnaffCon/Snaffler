@@ -31,50 +31,45 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommandLineArgumentsParser, Version=3.0.20.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommandLineArgumentsParser.3.0.20\lib\net40\CommandLineArgumentsParser.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.6.8\lib\net40-client\NLog.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ComputerFind\ActiveDirectory.cs" />
+    <Compile Include="Classifiers\ArchiveClassifier.cs" />
+    <Compile Include="Classifiers\TextClassifier.cs" />
+    <Compile Include="Classifiers\ContentClassifier.cs" />
+    <Compile Include="Classifiers\DirClassifier.cs" />
+    <Compile Include="Classifiers\FileClassifier.cs" />
+    <Compile Include="Classifiers\ShareClassifier.cs" />
+    <Compile Include="ActiveDirectory\ActiveDirectory.cs" />
+    <Compile Include="Concurrency\BlockingMq.cs" />
+    <Compile Include="Concurrency\BlockingTaskScheduler.cs" />
+    <Compile Include="Concurrency\SnafflerMessage.cs" />
+    <Compile Include="Concurrency\SnafflerMessageType.cs" />
     <Compile Include="Concurrency\TaskHandler.cs" />
-    <Compile Include="Config\BlockingMq.cs" />
-    <Compile Include="Config\Config.cs" />
-    <Compile Include="Config\DirSkipMatchConfig.cs" />
-    <Compile Include="Config\ExactExtMatchConfig.cs" />
-    <Compile Include="Config\ExactNameMatchConfig.cs" />
-    <Compile Include="Config\ExtSkipMatchConfig.cs" />
-    <Compile Include="Config\FileScannerConfig.cs" />
-    <Compile Include="Config\GrepMatchConfig.cs" />
-    <Compile Include="Config\OutputConfig.cs" />
-    <Compile Include="Config\PartialNameMatchConfig.cs" />
-    <Compile Include="Config\PartialPathMatchConfig.cs" />
-    <Compile Include="Config\ShareFinderConfig.cs" />
-    <Compile Include="Config\ShareScannerConfig.cs" />
-    <Compile Include="Config\SnafflerMessage.cs" />
+    <Compile Include="Config\ClassifierOptions.cs" />
+    <Compile Include="Config\DefaultRules\FileDiscardRules.cs" />
+    <Compile Include="Config\DefaultRules\FileNameRules.cs" />
+    <Compile Include="Config\Options.cs" />
+    <Compile Include="Classifiers\ClassifierRule.cs" />
+    <Compile Include="Config\DefaultRules\FileContentRules.cs" />
+    <Compile Include="Config\DefaultRules\PathRules.cs" />
+    <Compile Include="Config\DefaultRules\ShareRules.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShareFind\Finder.cs" />
-    <Compile Include="ShareScan\FileScanner.cs" />
-    <Compile Include="ShareScan\TreeWalker.cs" />
+    <Compile Include="ShareFind\ShareFinder.cs" />
+    <Compile Include="FileScan\FileScanner.cs" />
+    <Compile Include="TreeWalk\TreeWalker.cs" />
     <Compile Include="SnaffCon.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="Nett.Coma">
+      <Version>0.15.0</Version>
+    </PackageReference>
+    <PackageReference Include="SharpCompress">
+      <Version>0.24.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

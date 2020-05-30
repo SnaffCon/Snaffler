@@ -3,29 +3,37 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SnaffCore.Concurrency
+namespace SnaffCore.Concurrency2
 {
     // Provides a task scheduler that ensures a maximum concurrency level while 
     // running on top of the thread pool.
+
     public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
     {
         // Indicates whether the current thread is processing work items.
         [ThreadStatic] private static bool _currentThreadIsProcessingItems;
 
         // The list of tasks to be executed 
-        private readonly LinkedList<Task> _tasks = new LinkedList<Task>(); // protected by lock(_tasks)
+        public readonly LinkedList<Task> _tasks = new LinkedList<Task>(); // protected by lock(_tasks)
 
         // The maximum concurrency level allowed by this scheduler. 
         private readonly int _maxDegreeOfParallelism;
 
         // Indicates whether the scheduler is currently processing work items. 
-        private int _delegatesQueuedOrRunning;
+        public int _delegatesQueuedOrRunning;
+
+        public int _totalTasksQueued = 0;
 
         // Creates a new instance with the specified degree of parallelism. 
         public LimitedConcurrencyLevelTaskScheduler(int maxDegreeOfParallelism)
         {
             if (maxDegreeOfParallelism < 1) throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
             _maxDegreeOfParallelism = maxDegreeOfParallelism;
+        }
+
+        public int CurrentTasksQueued()
+        {
+            return _tasks.Count;
         }
 
         // Queues a task to the scheduler. 
@@ -36,6 +44,7 @@ namespace SnaffCore.Concurrency
             lock (_tasks)
             {
                 _tasks.AddLast(task);
+                _totalTasksQueued++;
                 if (_delegatesQueuedOrRunning < _maxDegreeOfParallelism)
                 {
                     ++_delegatesQueuedOrRunning;
@@ -113,7 +122,7 @@ namespace SnaffCore.Concurrency
         // Gets an enumerable of the tasks currently scheduled on this scheduler. 
         protected sealed override IEnumerable<Task> GetScheduledTasks()
         {
-            var lockTaken = false;
+            bool lockTaken = false;
             try
             {
                 Monitor.TryEnter(_tasks, ref lockTaken);

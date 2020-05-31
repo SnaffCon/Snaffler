@@ -34,7 +34,8 @@ namespace SnaffCore.Config
                         "localization\\",
                         "\\AppData\\Local\\Microsoft\\",
                         "\\AppData\\Roaming\\Microsoft\\",
-                        "\\wsuscontent"
+                        "\\wsuscontent",
+                        "\\Application Data\\Microsoft\\CLR Security Config\\"
                     },
             });
         }

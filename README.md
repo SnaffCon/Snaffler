@@ -60,6 +60,29 @@ The key incantations are:
 
 `-z`   Path to a config file that defines all of the above, and much much more! See below for more details. Give it `-z generate` to generate a sample config file called `.\default.toml`.
 
+## What does any of this log output mean?
+
+Hopefully this annotated example will help:
+
+<p align="center">
+  <img src="./log_key.png">
+</p>
+
+This log entry should be read roughly from left to right as:
+
+* at 7:37ish
+* Snaffler found a file it thinks is worth your attention
+* it's rated it "Red", the second most-interesting level
+* it matched a rule named "KeepConfigRegexRed"
+* you can read it, but not modify it
+* the exact regex that was matched is that stuff in the red box
+* it's 208kB
+* it was last modified on January 10th 2020 at quarter-to-four in the afternoon.
+* the file may be found at the path in purple
+
+... and the rest of the line (in grey) is a little snippet of context from the file where the match was.
+
+In this case we've found ASP.NET validationKey and decryptionKey values, which might let us RCE the web app via some deserialisation hackery. Hooray!
 
 ## How does it decide which files are good and which files are boring?
 

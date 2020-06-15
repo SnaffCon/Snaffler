@@ -176,7 +176,8 @@ namespace SnaffCore
                     }
                     catch (Exception e)
                     {
-                        Mq.Trace(e.ToString());
+                        Mq.Error("Exception in ShareFinder task for host " + computer);
+                        Mq.Error(e.ToString());
                     }
                 });
             }
@@ -197,7 +198,8 @@ namespace SnaffCore
                     }
                     catch (Exception e)
                     {
-                        Mq.Trace(e.ToString());
+                        Mq.Error("Exception in TreeWalker task for path " + pathTarget);
+                        Mq.Error(e.ToString());
                     }
                 });
             }

@@ -12,6 +12,7 @@ namespace SnaffCore.TreeWalk
     {
         private BlockingMq Mq { get; set; }
         private BlockingStaticTaskScheduler FileTaskScheduler { get; set; }
+        BlockingStaticTaskScheduler treeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
 
         public TreeWalker(string shareRoot)
         {
@@ -100,6 +101,7 @@ namespace SnaffCore.TreeWalk
                             }
                             catch (Exception e)
                             {
+                                Mq.Error("Exception in FileScanner task for file " + file);
                                 Mq.Trace(e.ToString());
                             }
                         });
@@ -117,7 +119,19 @@ namespace SnaffCore.TreeWalk
                                 // TODO: concurrency uplift: when there is a pooled concurrency queue, just add the dir as a job to the queue
                                 if (dirResult.ScanDir)
                                 {
-                                    dirs.Push(dirStr);
+                                    //dirs.Push(dirStr);
+                                    treeTaskScheduler.New(() =>
+                                    {
+                                        try
+                                        {
+                                            new TreeWalker(dirStr);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Mq.Error("Exception in TreeWalker task for dir " + dirStr);
+                                            Mq.Error(e.ToString());
+                                        }
+                                    });
                                 }
                             }
                             catch (Exception e)

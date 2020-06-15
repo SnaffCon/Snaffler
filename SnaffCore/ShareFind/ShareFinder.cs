@@ -65,7 +65,8 @@ namespace SnaffCore.ShareFind
                                 }
                                 catch (Exception e)
                                 {
-                                    Mq.Trace(e.ToString());
+                                    Mq.Error("Exception in TreeWalker task for share " + shareResult.SharePath);
+                                    Mq.Error(e.ToString());
                                 }
                             });
                         }

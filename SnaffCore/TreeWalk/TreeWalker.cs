@@ -64,7 +64,7 @@ namespace SnaffCore.TreeWalk
                                      {
                                          try
                                          {
-                                             new TreeWalker(dirStr);
+                                             WalkTree(dirStr);
                                          }
                                          catch (Exception e)
                                          {

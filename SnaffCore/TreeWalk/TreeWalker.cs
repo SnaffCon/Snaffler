@@ -2,7 +2,6 @@
 using SnaffCore.Concurrency;
 using SnaffCore.FileScan;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using static SnaffCore.Config.Options;
 
@@ -13,22 +12,15 @@ namespace SnaffCore.TreeWalk
         private BlockingMq Mq { get; set; }
         private BlockingStaticTaskScheduler FileTaskScheduler { get; set; }
         private BlockingStaticTaskScheduler TreeTaskScheduler { get; set; }
+        private FileScanner FileScanner { get; set; }
 
-        public TreeWalker(string shareRoot)
+        public TreeWalker()
         {
             Mq = BlockingMq.GetMq();
 
             FileTaskScheduler = SnaffCon.GetFileTaskScheduler();
-
-            if (shareRoot == null)
-            {
-                Mq.Trace("A null made it into TreeWalker. Wtf.");
-                return;
-            }
-
-            //Mq.Trace("About to start a TreeWalker on share " + shareRoot);
-            WalkTree(shareRoot);
-            //Mq.Trace("Finished TreeWalking share " + shareRoot);
+            TreeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
+            FileScanner = SnaffCon.GetFileScanner();
         }
 
         public void WalkTree(string currentDir)
@@ -46,7 +38,6 @@ namespace SnaffCore.TreeWalk
                  // Create a new treewalker task for each subdir.
                  if (subDirs.Length >= 1)
                  {
-                     TreeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
              
                      foreach (string dirStr in subDirs)
                      {
@@ -109,7 +100,7 @@ namespace SnaffCore.TreeWalk
                      {
                          try
                          {
-                             FileScanner fileScanner = new FileScanner(file);
+                             FileScanner.ScanFile(file);
                          }
                          catch (Exception e)
                          {

@@ -4,6 +4,7 @@ using SnaffCore.FileScan;
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using SnaffCore;
 
 namespace Classifiers
 {
@@ -12,11 +13,12 @@ namespace Classifiers
         // TODO VERY WORK IN PROGRESS
 
         private BlockingMq Mq { get; set; }
+        private FileScanner FileScanner {get; set;}
 
         public ArchiveClassifier(FileInfo fileInfo)
         {
             Mq = BlockingMq.GetMq();
-            ClassifyArchive(fileInfo);
+            FileScanner = SnaffCon.GetFileScanner();
         }
 
         private void ClassifyArchive(FileInfo fileInfo)
@@ -31,7 +33,7 @@ namespace Classifiers
                     {
                         try
                         {
-                            FileScanner fileScanner = new FileScanner(entry.Key);
+                            FileScanner.ScanFile(entry.Key);
                         }
                         catch (Exception e)
                         {

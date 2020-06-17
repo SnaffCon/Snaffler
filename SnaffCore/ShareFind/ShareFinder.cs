@@ -14,10 +14,14 @@ namespace SnaffCore.ShareFind
     public class ShareFinder
     {
         private BlockingMq Mq { get; set; }
+        private BlockingStaticTaskScheduler TreeTaskScheduler { get; set; }
+        private TreeWalker TreeWalker { get; set; }
 
         public ShareFinder()
         {
             Mq = BlockingMq.GetMq();
+            TreeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
+            TreeWalker = SnaffCon.GetTreeWalker();
         }
 
         internal void GetComputerShares(string computer)
@@ -61,7 +65,7 @@ namespace SnaffCore.ShareFind
                             {
                                 try
                                 {
-                                    new TreeWalker(shareResult.SharePath);
+                                    TreeWalker.WalkTree(shareResult.SharePath);
                                 }
                                 catch (Exception e)
                                 {

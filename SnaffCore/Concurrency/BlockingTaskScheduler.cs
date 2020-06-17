@@ -9,7 +9,6 @@ namespace SnaffCore.Concurrency
     public class BlockingStaticTaskScheduler
     {
         // singleton cruft
-        //private static BlockingStaticTaskScheduler _instance;
         private static readonly object syncLock = new object();
 
         //public TaskCounters TaskCounters { get; set; }

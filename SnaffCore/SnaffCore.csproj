@@ -48,7 +48,6 @@
     <Compile Include="Concurrency\BlockingTaskScheduler.cs" />
     <Compile Include="Concurrency\SnafflerMessage.cs" />
     <Compile Include="Concurrency\SnafflerMessageType.cs" />
-    <Compile Include="Concurrency\TaskHandler.cs" />
     <Compile Include="Config\ClassifierOptions.cs" />
     <Compile Include="Config\DefaultRules\FileDiscardRules.cs" />
     <Compile Include="Config\DefaultRules\FileNameRules.cs" />

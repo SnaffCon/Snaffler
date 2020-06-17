@@ -52,8 +52,12 @@ namespace SnaffCore.Concurrency
                 {
                     // check to see how many tasks we have waiting and keep looping if it's too many
                     // single get, it's locked inside the method.
-                    if (Scheduler.GetTaskCounters().CurrentTasksQueued >= _maxBacklog)
-                        continue;
+                    // _maxBacklog = 0 is 'infinite'
+                    if (_maxBacklog != 0)
+                    {
+                        if (Scheduler.GetTaskCounters().CurrentTasksQueued >= _maxBacklog)
+                            continue;
+                    }
 
                     // okay, let's add the thing
                     proceed = true;

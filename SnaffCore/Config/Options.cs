@@ -18,8 +18,8 @@ namespace SnaffCore.Config
         public int TreeThreads { get; set; } = 20;
         public int FileThreads { get; set; } = 50;
         public int MaxFileQueue { get; set; } = 200000;
-        public int MaxTreeQueue { get; set; } = 20000;
-        public int MaxShareQueue { get; set; } = 20000;
+        public int MaxTreeQueue { get; set; } = 0;
+        public int MaxShareQueue { get; set; } = 0;
 
         // Logging Options
         public bool LogToFile { get; set; } = false;

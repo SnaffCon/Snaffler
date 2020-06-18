@@ -249,7 +249,9 @@ namespace SnaffCore
             TaskCounters treeTaskCounters = TreeTaskScheduler.Scheduler.GetTaskCounters();
             TaskCounters fileTaskCounters = FileTaskScheduler.Scheduler.GetTaskCounters();
 
-            StringBuilder updateText = new StringBuilder("Status Update: \r\n");
+            StringBuilder updateText = new StringBuilder();
+            updateText.Append("\r\n" + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + "\r\n");
+            updateText.Append("Status Update: \r\n");
 
             // if all share tasks have finished, reduce max parallelism to 0 and reassign capacity to tree scheduler.
             if (ShareTaskScheduler.Done() && (shareTaskCounters.MaxParallelism >= 1))
@@ -291,23 +293,28 @@ namespace SnaffCore
                 default:
                     break;
             }
-
+            updateText.Append("--------------------------------" + "\r\n");
             updateText.Append("Max ShareFinder Parallelism: " + ShareTaskScheduler.Scheduler._maxDegreeOfParallelism + "\r\n");
             updateText.Append("ShareFinder Tasks Completed: " + shareTaskCounters.CompletedTasks + "\r\n");
             updateText.Append("ShareFinder Tasks Remaining: " + shareTaskCounters.CurrentTasksRemaining + "\r\n");
             updateText.Append("ShareFinder Tasks Running: " + shareTaskCounters.CurrentTasksRunning + "\r\n");
+            updateText.Append("--------------------------------" + "\r\n");
             updateText.Append("Max TreeWalker Parallelism: " + TreeTaskScheduler.Scheduler._maxDegreeOfParallelism + "\r\n");
             updateText.Append("TreeWalker Tasks Completed: " + treeTaskCounters.CompletedTasks + "\r\n");
             updateText.Append("TreeWalker Tasks Remaining: " + treeTaskCounters.CurrentTasksRemaining + "\r\n");
             updateText.Append("TreeWalker Tasks Running: " + treeTaskCounters.CurrentTasksRunning + "\r\n");
+            updateText.Append("--------------------------------" + "\r\n");
             updateText.Append("Max FileScanner Parallelism: " + FileTaskScheduler.Scheduler._maxDegreeOfParallelism + "\r\n");
             updateText.Append("FileScanner Tasks Completed: " + fileTaskCounters.CompletedTasks + "\r\n");
             updateText.Append("FileScanner Tasks Remaining: " + fileTaskCounters.CurrentTasksRemaining + "\r\n");
             updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\r\n");
+            updateText.Append("--------------------------------" + "\r\n");
             updateText.Append(memorynumber + " RAM in use." + "\r\n");
             DateTime now = DateTime.Now;
             TimeSpan runSpan = now.Subtract(StartTime);
             updateText.Append("Been Snafflin' for " + runSpan + " and we ain't done yet..." + "\r\n");
+            updateText.Append("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + "\r\n" + "\r\n");
+
 
             Mq.Info(updateText.ToString());
 

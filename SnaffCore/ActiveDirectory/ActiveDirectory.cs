@@ -169,6 +169,10 @@ namespace SnaffCore.ActiveDirectory
 
                                         string userName = (string)resEnt.Properties["sAMAccountName"][0];
 
+                                        if (userName.Equals("Administrator"){
+                                            continue;
+                                        }
+
                                         // skip computer accounts
                                         if (userName.EndsWith("$"))
                                         {

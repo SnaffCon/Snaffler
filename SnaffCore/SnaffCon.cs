@@ -73,10 +73,11 @@ namespace SnaffCore
         {
             return FileTaskScheduler;
         }
+        public DateTime StartTime { get; set; }
 
         public void Execute()
         {
-            DateTime startTime = DateTime.Now;
+            StartTime = DateTime.Now;
             // This is the main execution thread.
             Timer statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(0.5)
@@ -110,7 +111,7 @@ namespace SnaffCore
 
             StatusUpdate();
             DateTime finished = DateTime.Now;
-            TimeSpan runSpan = finished.Subtract(startTime);
+            TimeSpan runSpan = finished.Subtract(StartTime);
             Mq.Info("Finished at " + finished.ToLocalTime());
             Mq.Info("Snafflin' took " + runSpan);
             Mq.Finish();
@@ -303,7 +304,10 @@ namespace SnaffCore
             updateText.Append("FileScanner Tasks Completed: " + fileTaskCounters.CompletedTasks + "\r\n");
             updateText.Append("FileScanner Tasks Remaining: " + fileTaskCounters.CurrentTasksRemaining + "\r\n");
             updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\r\n");
-            updateText.Append(memorynumber + " RAM in use.");
+            updateText.Append(memorynumber + " RAM in use." + "\r\n");
+            DateTime now = DateTime.Now;
+            TimeSpan runSpan = now.Subtract(StartTime);
+            updateText.Append("Been Snafflin' for " + runSpan + " and we ain't done yet..." + "\r\n");
 
             Mq.Info(updateText.ToString());
 

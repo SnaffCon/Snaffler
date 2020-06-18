@@ -75,6 +75,7 @@ namespace SnaffCore.Concurrency
         public BigInteger CurrentTasksRunning { get; set; }
         public BigInteger CurrentTasksRemaining { get; set; }
         public BigInteger CompletedTasks { get; set; }
+        public int MaxParallelism { get; set; }
     }
 
     public class LimitedConcurrencyLevelTaskScheduler : TaskScheduler
@@ -96,6 +97,7 @@ namespace SnaffCore.Concurrency
                 this._taskCounters.CurrentTasksRunning = _delegatesQueuedOrRunning;
                 this._taskCounters.CurrentTasksRemaining = this._taskCounters.CurrentTasksQueued + this._taskCounters.CurrentTasksRunning;
                 this._taskCounters.CompletedTasks = this._taskCounters.TotalTasksQueued - this._taskCounters.CurrentTasksRemaining;
+                this._taskCounters.MaxParallelism = this._maxDegreeOfParallelism;
             }
         }
 
@@ -106,7 +108,7 @@ namespace SnaffCore.Concurrency
         public readonly LinkedList<Task> _tasks = new LinkedList<Task>();
 
         // The maximum concurrency level allowed by this scheduler. 
-        private readonly int _maxDegreeOfParallelism;
+        public int _maxDegreeOfParallelism;
 
         // Indicates whether the scheduler is currently processing work items. 
         private int _delegatesQueuedOrRunning;
@@ -199,7 +201,7 @@ namespace SnaffCore.Concurrency
         }
 
         // Gets the maximum concurrency level supported by this scheduler. 
-        public sealed override int MaximumConcurrencyLevel => _maxDegreeOfParallelism;
+        public override int MaximumConcurrencyLevel => _maxDegreeOfParallelism;
 
         // Gets an enumerable of the tasks currently scheduled on this scheduler. 
         protected sealed override IEnumerable<Task> GetScheduledTasks()

@@ -13,10 +13,10 @@ namespace SnaffCore.Config
         public bool ScanNetlogon { get; set; } = true;
 
         // Concurrency Options
-        //public int MaxThreads { get; set; } = 30;
-        public int ShareThreads { get; set; } = 30;
-        public int TreeThreads { get; set; } = 20;
-        public int FileThreads { get; set; } = 50;
+        public int MaxThreads { get; set; } = 30;
+        public int ShareThreads { get; set; }
+        public int TreeThreads { get; set; }
+        public int FileThreads { get; set; }
         public int MaxFileQueue { get; set; } = 200000;
         public int MaxTreeQueue { get; set; } = 0;
         public int MaxShareQueue { get; set; } = 0;
@@ -65,6 +65,9 @@ namespace SnaffCore.Config
 
         public Options()
         {
+            ShareThreads = MaxThreads / 2;
+            TreeThreads = MaxThreads / 4;
+            FileThreads = MaxThreads / 4;
             //PrepareClassifiers();
             //BuildDefaultClassifiers();
         }

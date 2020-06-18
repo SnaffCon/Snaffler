@@ -28,7 +28,6 @@ namespace SnaffCore.ShareFind
         {
             // find the shares
             HostShareInfo[] hostShareInfos = GetHostShareInfo(computer);
-            BlockingStaticTaskScheduler treeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
 
             foreach (HostShareInfo hostShareInfo in hostShareInfos)
             {
@@ -61,7 +60,7 @@ namespace SnaffCore.ShareFind
                             Mq.ShareResult(shareResult);
 
                             Mq.Info("Creating a TreeWalker task for " + shareResult.SharePath);
-                            treeTaskScheduler.New(() =>
+                            TreeTaskScheduler.New(() =>
                             {
                                 try
                                 {

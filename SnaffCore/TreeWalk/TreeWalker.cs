@@ -34,64 +34,6 @@ namespace SnaffCore.TreeWalk
              
              try
              {
-                 string[] subDirs = Directory.GetDirectories(currentDir);
-                 // Create a new treewalker task for each subdir.
-                 if (subDirs.Length >= 1)
-                 {
-             
-                     foreach (string dirStr in subDirs)
-                     {
-                         foreach (ClassifierRule classifier in MyOptions.DirClassifiers)
-                         {
-                             try
-                             {
-                                 DirClassifier dirClassifier = new DirClassifier(classifier);
-                                 DirResult dirResult = dirClassifier.ClassifyDir(dirStr);
-             
-                                 if (dirResult.ScanDir)
-                                 {
-                                     //dirs.Push(dirStr);
-                                     TreeTaskScheduler.New(() =>
-                                     {
-                                         try
-                                         {
-                                             WalkTree(dirStr);
-                                         }
-                                         catch (Exception e)
-                                         {
-                                             Mq.Error("Exception in TreeWalker task for dir " + dirStr);
-                                             Mq.Error(e.ToString());
-                                         }
-                                     });
-                                 }
-                             }
-                             catch (Exception e)
-                             {
-                                 Mq.Trace(e.ToString());
-                                 continue;
-                             }
-                         }
-                     }
-                 }
-             }
-             catch (UnauthorizedAccessException)
-             {
-                 //Mq.Trace(e.ToString());
-                 //continue;
-             }
-             catch (DirectoryNotFoundException)
-             {
-                 //Mq.Trace(e.ToString());
-                 //continue;
-             }
-             catch (Exception e)
-             {
-                 Mq.Trace(e.ToString());
-                 //continue;
-             }
-             
-             try
-             {
                  string[] files = Directory.GetFiles(currentDir);
                  // check if we actually like the files
                  foreach (string file in files)
@@ -126,6 +68,62 @@ namespace SnaffCore.TreeWalk
                  //continue;
              }
 
+            try
+            {
+                string[] subDirs = Directory.GetDirectories(currentDir);
+                // Create a new treewalker task for each subdir.
+                if (subDirs.Length >= 1)
+                {
+
+                    foreach (string dirStr in subDirs)
+                    {
+                        foreach (ClassifierRule classifier in MyOptions.DirClassifiers)
+                        {
+                            try
+                            {
+                                DirClassifier dirClassifier = new DirClassifier(classifier);
+                                DirResult dirResult = dirClassifier.ClassifyDir(dirStr);
+
+                                if (dirResult.ScanDir)
+                                {
+                                    TreeTaskScheduler.New(() =>
+                                    {
+                                        try
+                                        {
+                                            WalkTree(dirStr);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Mq.Error("Exception in TreeWalker task for dir " + dirStr);
+                                            Mq.Error(e.ToString());
+                                        }
+                                    });
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Mq.Trace(e.ToString());
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                //Mq.Trace(e.ToString());
+                //continue;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                //Mq.Trace(e.ToString());
+                //continue;
+            }
+            catch (Exception e)
+            {
+                Mq.Trace(e.ToString());
+                //continue;
+            }
         }
     }
 }

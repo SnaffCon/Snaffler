@@ -262,43 +262,25 @@ namespace SnaffCore
                 updateText.Append("ShareScanner queue finished, rebalancing workload." + "\r\n");
             }
 
-            int balance = 1;
-            // if the file queue is maxed out we want more file threads and less tree threads.
-            if (fileTaskCounters.CurrentTasksQueued == MyOptions.MaxFileQueue)
-            {
-                balance = 2;
-                updateText.Append("Max FileScanner queue size reached, rebalancing workload." + "\r\n");
-            }
-
-            // if the file queue is less than 20% full, we want more tree threads and less file threads.
+            // do the rebalancing
             if (fileTaskCounters.CurrentTasksQueued <= (MyOptions.MaxFileQueue / 20))
             {
-                balance = 0;
-                updateText.Append("Insufficient FileScanner queue size, rebalancing workload." + "\r\n");
+                // but only if one side isn't already at minimum.
+                if (FileTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
+                {
+                    updateText.Append("Insufficient FileScanner queue size, rebalancing workload." + "\r\n");
+                    --FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                    ++TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                }
             }
-
-            // do the actual rebalancing
-            switch (balance)
+            if (fileTaskCounters.CurrentTasksQueued == MyOptions.MaxFileQueue)
             {
-                case 0:
-                    // but only if one side isn't already at minimum.
-                    if (FileTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
-                    {
-                        --FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                        ++TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                    }
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    if (TreeTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
-                    {
-                        --TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                        ++FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                    }
-                    break;
-                default:
-                    break;
+                if (TreeTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
+                {
+                    updateText.Append("Max FileScanner queue size reached, rebalancing workload." + "\r\n");
+                    --TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                    ++FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                }
             }
             updateText.Append("--------------------------------" + "\r\n");
             updateText.Append("Max ShareFinder Parallelism: " + ShareTaskScheduler.Scheduler._maxDegreeOfParallelism + "\r\n");

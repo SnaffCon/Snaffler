@@ -169,7 +169,7 @@ namespace SnaffCore.ActiveDirectory
 
                                         string userName = (string)resEnt.Properties["sAMAccountName"][0];
 
-                                        if (userName.Equals("Administrator"){
+                                        if (userName.Equals("Administrator")){
                                             continue;
                                         }
 

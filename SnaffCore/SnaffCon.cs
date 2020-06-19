@@ -277,18 +277,25 @@ namespace SnaffCore
                 updateText.Append("Insufficient FileScanner queue size, rebalancing workload." + "\r\n");
             }
 
-            
+            // do the actual rebalancing
             switch (balance)
             {
                 case 0:
-                    --FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                    ++TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                    // but only if one side isn't already at minimum.
+                    if (FileTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
+                    {
+                        --FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                        ++TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                    }
                     break;
                 case 1:
                     break;
                 case 2:
-                    --TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                    ++FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                    if (TreeTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
+                    {
+                        --TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                        ++FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                    }
                     break;
                 default:
                     break;

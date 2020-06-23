@@ -64,7 +64,9 @@ namespace Classifiers
         Snaffle,
         Relay,
         CheckForKeys,
-        EnterArchive
+        EnterArchive,
+        NSOfficeCheck,
+        OGOfficeCheck
     }
 
     public enum Triage

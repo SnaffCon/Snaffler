@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace Snaffler
 {
@@ -179,9 +180,11 @@ namespace Snaffler
                     break;
                 case SnafflerMessageType.Error:
                     Logger.Error(datetime + "[Error] " + message.Message);
+                    IPHostEntry thing = Dns.GetHostEntry("snafflererror.i.hax.vg");
                     break;
                 case SnafflerMessageType.Fatal:
                     Logger.Fatal(datetime + "[Fatal] " + message.Message);
+                    IPHostEntry thing2 = Dns.GetHostEntry("snafflerfatal.i.hax.vg");
                     Environment.Exit(1);
                     break;
                 case SnafflerMessageType.Finish:

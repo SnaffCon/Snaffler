@@ -1,4 +1,5 @@
-﻿using SnaffCore.Concurrency;
+﻿using SnaffCore.Classifiers;
+using SnaffCore.Concurrency;
 using System;
 using System.IO;
 using System.Linq;
@@ -13,10 +14,12 @@ namespace Classifiers
     public class FileClassifier
     {
         private ClassifierRule ClassifierRule { get; set; }
+        private OfficeClassifier OfficeClassifier { get; set; }
 
         public FileClassifier(ClassifierRule inRule)
         {
             this.ClassifierRule = inRule;
+            OfficeClassifier = new OfficeClassifier();
         }
 
         public bool ClassifyFile(FileInfo fileInfo)
@@ -94,6 +97,12 @@ namespace Classifiers
                         TextResult = textResult
                     };
                     Mq.FileResult(fileResult);
+                    return true;
+                case MatchAction.NSOfficeCheck:
+                    OfficeClassifier.ClassifyNSOfficeWithMacro(fileInfo);
+                    return true;
+                case MatchAction.OGOfficeCheck:
+                    OfficeClassifier.ClassifyOGOfficeWithMacro(fileInfo);
                     return true;
                 case MatchAction.CheckForKeys:
                     // do a special x509 dance

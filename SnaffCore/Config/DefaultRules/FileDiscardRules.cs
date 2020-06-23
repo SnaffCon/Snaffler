@@ -7,6 +7,7 @@ namespace SnaffCore.Config
     {
         private void BuildFileDiscardRules()
         {
+            /*
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
@@ -46,6 +47,7 @@ namespace SnaffCore.Config
                         ".less" // test file created
                     },
                 });
+                */
         }
     }
 }

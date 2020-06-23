@@ -7,6 +7,8 @@ namespace SnaffCore.Config
     {
         private void BuildFileNameRules()
         {
+
+            /*
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {

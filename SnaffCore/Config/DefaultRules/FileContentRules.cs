@@ -7,6 +7,58 @@ namespace SnaffCore.Config
     {
         private void BuildFileContentRules()
         {
+
+            this.ClassifierRules.Add(
+                new ClassifierRule()
+                {
+                    Description = "Files with these extensions are new-school office docs that MIGHT contain macros.",
+                    RuleName = "NSOfficeMacroFileExtRelay",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.NSOfficeCheck,
+                    RelayTarget = "NSOfficeMacroContentSnaffle",
+                    Triage = Triage.Black,
+                    WordList = new List<string>()
+                    {
+                        ".xltm",
+                        ".xlsb",
+                        ".xlsm",
+                        ".docm",
+                        ".dotm",
+                        ".potm",
+                        ".pptm",
+                        ".ppsm",
+                        ".ppam"
+                    },
+                });
+
+            this.ClassifierRules.Add(
+                new ClassifierRule()
+                {
+                    Description = "Files with these extensions are old-school office docs that MIGHT contain macros.",
+                    RuleName = "OGOfficeMacroFileExtRelay",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.OGOfficeCheck,
+                    Triage = Triage.Black,
+                    WordList = new List<string>()
+                    {
+                        ".doc",
+                        ".dot",
+                        ".xla",
+                        ".xls",
+                        ".xlt",
+                        ".pot",
+                        ".pps",
+                        ".ppt",
+                        ".accdb",
+                        ".mdb"
+                    },
+                });
+
+            /*
             // Python
             this.ClassifierRules.Add(new ClassifierRule()
             {
@@ -447,7 +499,7 @@ namespace SnaffCore.Config
                     // TODO LOL
                 }
             });
-            */
+            
 
             this.ClassifierRules.Add(new ClassifierRule()
             {
@@ -566,6 +618,7 @@ namespace SnaffCore.Config
                     },
                 }
             );
+            */
         }
     }
 }

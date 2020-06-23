@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classifiers\ArchiveClassifier.cs" />
+    <Compile Include="Classifiers\OfficeClassifier.cs" />
     <Compile Include="Classifiers\TextClassifier.cs" />
     <Compile Include="Classifiers\ContentClassifier.cs" />
     <Compile Include="Classifiers\DirClassifier.cs" />

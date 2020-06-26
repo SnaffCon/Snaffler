@@ -8,6 +8,7 @@ using Classifiers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SharpCompress.Readers;
 
 namespace SnaffCore.Classifiers
 {
@@ -28,39 +29,61 @@ namespace SnaffCore.Classifiers
         {
             try
             {
-                IArchive archive = ArchiveFactory.Open(fileInfo.FullName);
-                foreach (IArchiveEntry entry in archive.Entries)
+                using (Stream stream = File.OpenRead(fileInfo.FullName))
+                using (var reader = ReaderFactory.Open(stream))
                 {
-                    if (entry.Key == "[Content_Types].xml")
+                    while (reader.MoveToNextEntry())
                     {
-                        try
+                        if (reader.Entry.Key == "[Content_Types].xml")
                         {
-                            MemoryStream stream = new MemoryStream();
-                            entry.WriteTo(stream);
-
-                            byte[] bytes = stream.ToArray();
-
-                            string entryContents = Encoding.ASCII.GetString(bytes);
-
-                            if (entryContents.Contains("vnd.ms-office.vbaProject"))
+                            try
                             {
-                                Mq.FileResult(new FileResult(fileInfo) { 
-                                    MatchedRule = new ClassifierRule() { Triage = Triage.Black, RuleName = "NSOfficeWithMacro"}
-                                });
-                            }
-                            
-                            else
-                            {
-                                Mq.FileResult(new FileResult(fileInfo)
+                                MemoryStream stream2 = new MemoryStream();
+                                using (Stream entryStream = reader.OpenEntryStream())
                                 {
-                                    MatchedRule = new ClassifierRule() { Triage = Triage.Green, RuleName = "NSOfficeNoMacro" }
-                                });
+                                    entryStream.CopyTo(stream2);
+                                }
+
+                                byte[] bytes = stream2.ToArray();
+
+                                string entryContents = Encoding.ASCII.GetString(bytes);
+
+                                if (entryContents.Contains("vnd.ms-office.vbaProject"))
+                                {
+                                    Mq.FileResult(new FileResult(fileInfo)
+                                    {
+                                        MatchedRule = new ClassifierRule()
+                                            {Triage = Triage.Black, RuleName = "NSOfficeWithMacro"}
+                                    });
+                                }
+
+                                else
+                                {
+                                    Mq.FileResult(new FileResult(fileInfo)
+                                    {
+                                        MatchedRule = new ClassifierRule()
+                                            {Triage = Triage.Green, RuleName = "NSOfficeNoMacro"}
+                                    });
+                                }
+
+                                /*
+                                IArchive archive = ArchiveFactory.Open(fileInfo.FullName);
+                                foreach (IArchiveEntry entry in archive.Entries)
+                                {
+                                    if (entry.Key == "[Content_Types].xml")
+                                    {
+                                        try
+                                        {
+
+                                            MemoryStream stream = new MemoryStream();
+                                            */
+
+
                             }
-                            
-                        }
-                        catch (Exception e)
-                        {
-                            Mq.Trace(e.ToString());
+                            catch (Exception e)
+                            {
+                                Mq.Trace(e.ToString());
+                            }
                         }
                     }
                 }
@@ -69,8 +92,12 @@ namespace SnaffCore.Classifiers
             {
                 Mq.FileResult(new FileResult(fileInfo)
                 {
-                    MatchedRule = new ClassifierRule() { Triage = Triage.Black, RuleName = "EncryptedArchive" }
+                    MatchedRule = new ClassifierRule() {Triage = Triage.Black, RuleName = "EncryptedArchive"}
                 });
+            }
+            catch (System.InvalidOperationException e)
+            {
+                Mq.Error("<<" + fileInfo.FullName + ">> " + "looks like it might be encrypted.");
             }
             catch (System.IO.IOException e)
             {
@@ -78,7 +105,7 @@ namespace SnaffCore.Classifiers
             }
             catch (Exception e)
             {
-                Mq.Degub(e.ToString());
+                Mq.Error(e.ToString());
             }
         }
 

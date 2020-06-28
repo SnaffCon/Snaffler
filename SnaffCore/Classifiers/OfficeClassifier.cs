@@ -139,9 +139,24 @@ namespace SnaffCore.Classifiers
                 }
                 
             }
+            catch (CryptographicException)
+            {
+                Mq.FileResult(new FileResult(fileInfo)
+                {
+                    MatchedRule = new ClassifierRule() { Triage = Triage.Black, RuleName = "EncryptedArchive" }
+                });
+            }
+            catch (System.InvalidOperationException e)
+            {
+                Mq.Error("<<" + fileInfo.FullName + ">> " + "looks like it might be encrypted.");
+            }
+            catch (System.IO.IOException e)
+            {
+                Mq.Error("<<" + fileInfo.FullName + ">> " + e.ToString());
+            }
             catch (Exception e)
             {
-                Mq.Degub(e.ToString());
+                Mq.Error(e.ToString());
             }
         }
 

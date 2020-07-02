@@ -10,10 +10,9 @@ namespace SnaffCore.FileScan
     {
         private BlockingMq Mq { get; set; }
 
-        public FileScanner(string file)
+        public FileScanner()
         {
             Mq = BlockingMq.GetMq();
-            ScanFile(file);
         }
         public void ScanFile(string file)
         {

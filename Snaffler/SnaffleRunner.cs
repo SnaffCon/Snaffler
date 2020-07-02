@@ -126,7 +126,7 @@ namespace Snaffler
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Mq.Error(e.ToString());
                 DumpQueue();
             }
         }
@@ -235,14 +235,14 @@ namespace Snaffler
                     canwrite = "W";
                 }
 
-                string matchedstring = "";
-
                 long fileSize = message.FileResult.FileInfo.Length;
                 string fileSizeString = BytesToString(fileSize);
 
                 string filepath = message.FileResult.FileInfo.FullName;
 
+                string matchedstring = "";
                 string matchcontext = "";
+
                 if (message.FileResult.TextResult != null)
                 {
                     matchedstring = message.FileResult.TextResult.MatchedStrings[0];
@@ -255,9 +255,9 @@ namespace Snaffler
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
-                Console.WriteLine(message.FileResult.FileInfo.FullName);
-                return "";
+                Mq.Error(e.ToString());
+                Mq.Error(message.FileResult.FileInfo.FullName);
+                return "Error, see error log entry for details.";
             }
         }
         private void ParseLogLevelString(string logLevelString)

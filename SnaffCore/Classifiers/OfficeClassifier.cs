@@ -82,7 +82,7 @@ namespace SnaffCore.Classifiers
                             }
                             catch (Exception e)
                             {
-                                Mq.Trace(e.ToString());
+                                Mq.Error("<<" + fileInfo.FullName + ">> " + e.ToString());
                             }
                         }
                     }
@@ -97,7 +97,7 @@ namespace SnaffCore.Classifiers
             }
             catch (System.InvalidOperationException e)
             {
-                Mq.Error("<<" + fileInfo.FullName + ">> " + "looks like it might be encrypted.");
+                Mq.Error("<<" + fileInfo.FullName + ">> " + "looks like it might be encrypted. " + e.ToString());
             }
             catch (System.IO.IOException e)
             {
@@ -105,7 +105,7 @@ namespace SnaffCore.Classifiers
             }
             catch (Exception e)
             {
-                Mq.Error(e.ToString());
+                Mq.Error("<<" + fileInfo.FullName + ">> " + e.ToString());
             }
         }
 
@@ -148,7 +148,7 @@ namespace SnaffCore.Classifiers
             }
             catch (System.InvalidOperationException e)
             {
-                Mq.Error("<<" + fileInfo.FullName + ">> " + "looks like it might be encrypted.");
+                Mq.Error("<<" + fileInfo.FullName + ">> " + "looks like it might be encrypted. " + e.ToString());
             }
             catch (System.IO.IOException e)
             {
@@ -156,7 +156,7 @@ namespace SnaffCore.Classifiers
             }
             catch (Exception e)
             {
-                Mq.Error(e.ToString());
+                Mq.Error("<<" + fileInfo.FullName + ">> " + e.ToString());
             }
         }
 

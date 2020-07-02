@@ -120,7 +120,10 @@ namespace SnaffCore.ActiveDirectory
                                 if (resEnt.Properties["dNSHostName"].Count > 0)
                                 {
                                     string computerName = (string)resEnt.Properties["dNSHostName"][0];
-                                    domainComputers.Add(computerName);
+                                    if (computerName.StartsWith("L-") || computerName.StartsWith("D-"))
+                                    {
+                                        domainComputers.Add(computerName);
+                                    }
                                 }
                             }
                         }

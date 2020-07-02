@@ -4,6 +4,7 @@ using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using SnaffCore.ShareFind;
 using SnaffCore.TreeWalk;
+using SnaffCore.FileScan;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,6 +26,10 @@ namespace SnaffCore
         private static BlockingStaticTaskScheduler ShareTaskScheduler;
         private static BlockingStaticTaskScheduler TreeTaskScheduler;
         private static BlockingStaticTaskScheduler FileTaskScheduler;
+        
+        private static ShareFinder ShareFinder;
+        private static TreeWalker TreeWalker;
+        private static FileScanner FileScanner;
 
         public SnaffCon(Options options)
         {
@@ -38,8 +43,24 @@ namespace SnaffCore
             ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, MyOptions.MaxShareQueue);
             TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, MyOptions.MaxTreeQueue);
             FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, MyOptions.MaxFileQueue);
+
+            FileScanner = new FileScanner();
+            TreeWalker = new TreeWalker();
+            ShareFinder = new ShareFinder();
         }
 
+        public static ShareFinder GetShareFinder()
+        {
+            return ShareFinder;
+        }
+        public static TreeWalker GetTreeWalker()
+        {
+            return TreeWalker;
+        }
+        public static FileScanner GetFileScanner()
+        {
+            return FileScanner;
+        }
         public static BlockingStaticTaskScheduler GetShareTaskScheduler()
         {
             return ShareTaskScheduler;
@@ -176,7 +197,8 @@ namespace SnaffCore
                     }
                     catch (Exception e)
                     {
-                        Mq.Trace(e.ToString());
+                        Mq.Error("Exception in ShareFinder task for host " + computer);
+                        Mq.Error(e.ToString());
                     }
                 });
             }
@@ -193,11 +215,12 @@ namespace SnaffCore
                 {
                     try
                     {
-                        TreeWalker treeWalker = new TreeWalker(pathTarget);
+                        TreeWalker.WalkTree(pathTarget);
                     }
                     catch (Exception e)
                     {
-                        Mq.Trace(e.ToString());
+                        Mq.Error("Exception in TreeWalker task for path " + pathTarget);
+                        Mq.Error(e.ToString());
                     }
                 });
             }

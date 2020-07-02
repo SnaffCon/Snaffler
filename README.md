@@ -1,5 +1,7 @@
 # Snaffler 
 
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T6T31VEVJ)
+
 ![A dictionary definition of "snaffle".](./snaffler.png)
 
 ## What is it for? 

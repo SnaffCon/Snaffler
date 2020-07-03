@@ -164,10 +164,9 @@ namespace Snaffler
                 if (computerTargetArg.Parsed)
                 {
                     Mq.Degub("Disabled finding computers.");
-                    Mq.Degub("File to parse for target is " + computerTargetArg.Value);
+                    Mq.Degub("File to parse for targets is " + computerTargetArg.Value);
                     // read file for targets
                     string[] computers = File.ReadAllLines(computerTargetArg.Value);
-                    Mq.Degub("First hostname is " + computers[0]);
                     parsedConfig.ComputerTargets = computers;
                 }
 

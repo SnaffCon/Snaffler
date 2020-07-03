@@ -4,6 +4,7 @@ using NLog;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace Snaffler
@@ -55,6 +56,8 @@ namespace Snaffler
             ValueArgument<long> snaffleSizeArg = new ValueArgument<long>('l', "snafflesize", "Maximum size of file to snaffle, in bytes. Defaults to 10MB.");
             //var fileHuntArg = new SwitchArgument('f', "filehuntoff",
             //    "Disables file discovery, will only perform computer and share discovery.", false);
+            ValueArgument<string> computerTargetArg = new ValueArgument<string>('q', "computertarget",
+                "Disables computer discovery, requires a path to a file in which hostnames or IPs are provided.");
             ValueArgument<string> dirTargetArg = new ValueArgument<string>('i', "dirtarget",
                 "Disables computer and share discovery, requires a path to a directory in which to perform file discovery.");
             ValueArgument<string> domainArg = new ValueArgument<string>('d', "domain",
@@ -67,7 +70,7 @@ namespace Snaffler
                 "How many bytes of context either side of found strings in files to show, e.g. -j 200");
             SwitchArgument domainUserArg = new SwitchArgument('u', "domainusers", "Makes Snaffler grab a list of interesting-looking accounts from the domain and uses them in searches.", false);
 
-            // list of letters i haven't used yet: abefgknpqwxy
+            // list of letters i haven't used yet: abefgknpwxy
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
@@ -76,6 +79,7 @@ namespace Snaffler
             parser.Arguments.Add(stdOutArg);
             parser.Arguments.Add(snaffleArg);
             parser.Arguments.Add(snaffleSizeArg);
+            parser.Arguments.Add(computerTargetArg);
             parser.Arguments.Add(dirTargetArg);
             parser.Arguments.Add(domainArg);
             parser.Arguments.Add(verboseArg);
@@ -155,6 +159,16 @@ namespace Snaffler
                 {
                     parsedConfig.DomainUserRules = true;
                     Mq.Degub("Enabled use of domain user accounts in rules.");
+                }
+
+                if (computerTargetArg.Parsed)
+                {
+                    Mq.Degub("Disabled finding computers.");
+                    Mq.Degub("File to parse for target is " + computerTargetArg.Value);
+                    // read file for targets
+                    string[] computers = File.ReadAllLines(computerTargetArg.Value);
+                    Mq.Degub("First hostname is " + computers[0]);
+                    parsedConfig.ComputerTargets = computers;
                 }
 
                 if (dirTargetArg.Parsed)

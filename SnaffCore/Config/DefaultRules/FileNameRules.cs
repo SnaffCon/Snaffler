@@ -162,6 +162,11 @@ namespace SnaffCore.Config
                         "accounts.xlsx",
                         "confCons.xml",
                         "SqlStudio.bin",
+                        "secrets.txt",
+                        "secrets.doc",
+                        "secrets.xls",
+                        "secrets.docx",
+                        "secrets.xlsx",
                         "unattend.xml", // test file created
                         ".netrc", // test file created
                         "_netrc", // test file created

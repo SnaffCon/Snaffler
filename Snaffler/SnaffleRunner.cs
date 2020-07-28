@@ -16,6 +16,11 @@ namespace Snaffler
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private BlockingMq Mq { get; set; }
         private LogLevel LogLevel { get; set; }
+        private Options Options { get; set; }
+
+        private string fileResultTemplate { get; set; }
+        private string shareResultTemplate { get; set; }
+        private string dirResultTemplate { get; set; }
 
         public void Run(string[] args)
         {
@@ -23,12 +28,22 @@ namespace Snaffler
             BlockingMq.MakeMq();
             Mq = BlockingMq.GetMq();
             SnaffCon controller = null;
-            Options myOptions;
-
             try
             {
-                myOptions = Config.Parse(args);
+                Options = Config.Parse(args);
 
+                if (Options.LogTSV)
+                {
+                    fileResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6}" + Options.Separator + "{7}" + Options.Separator + "{8}";
+                    shareResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
+                    dirResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
+                }
+                else
+                {
+                    fileResultTemplate = "{{{0}}}<{1}|{2}{3}|{4}|{5}|{6}>({7}) {8}";
+                    shareResultTemplate = "{{{0}}}({1})";
+                    dirResultTemplate = "{{{0}}}({1})";
+                }
                 //------------------------------------------
                 // set up new fangled logging
                 //------------------------------------------
@@ -37,10 +52,10 @@ namespace Snaffler
                 ColoredConsoleTarget logconsole = null;
                 FileTarget logfile = null;
 
-                ParseLogLevelString(myOptions.LogLevelString);
+                ParseLogLevelString(Options.LogLevelString);
 
                 // Targets where to log to: File and Console
-                if (myOptions.LogToConsole)
+                if (Options.LogToConsole)
                 {
                     logconsole = new ColoredConsoleTarget("logconsole")
                     {
@@ -98,9 +113,9 @@ namespace Snaffler
                     logconsole.Layout = "${message}";
                 }
 
-                if (myOptions.LogToFile)
+                if (Options.LogToFile)
                 {
-                    logfile = new FileTarget("logfile") { FileName = myOptions.LogFilePath };
+                    logfile = new FileTarget("logfile") { FileName = Options.LogFilePath };
                     nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logfile);
                     logfile.Layout = "${message}";
                 }
@@ -110,12 +125,12 @@ namespace Snaffler
 
                 //-------------------------------------------
 
-                if (myOptions.Snaffle && (myOptions.SnafflePath.Length > 4))
+                if (Options.Snaffle && (Options.SnafflePath.Length > 4))
                 {
-                    Directory.CreateDirectory(myOptions.SnafflePath);
+                    Directory.CreateDirectory(Options.SnafflePath);
                 }
 
-                controller = new SnaffCon(myOptions);
+                controller = new SnaffCon(Options);
                 Task thing = Task.Factory.StartNew(() => { controller.Execute(); });
 
                 while (true)
@@ -156,32 +171,33 @@ namespace Snaffler
 
         private void ProcessMessage(SnafflerMessage message)
         {
-            string datetime = message.DateTime.ToString("yyyy-MM-dd HH:mm:ss zzz ");
+            
+            string datetime = message.DateTime.ToString("yyyy-MM-dd" + Options.Separator + "HH:mm:ss" + Options.Separator + "zzz" + Options.Separator);
             switch (message.Type)
             {
                 case SnafflerMessageType.Trace:
-                    Logger.Trace(datetime + "[Trace] " + message.Message);
+                    Logger.Trace(datetime + "[Trace]" + Options.Separator + message.Message);
                     break;
                 case SnafflerMessageType.Degub:
-                    Logger.Debug(datetime + "[Degub] " + message.Message);
+                    Logger.Debug(datetime + "[Degub]" + Options.Separator + message.Message);
                     break;
                 case SnafflerMessageType.Info:
-                    Logger.Info(datetime + "[Info] " + message.Message);
+                    Logger.Info(datetime + "[Info]" + Options.Separator + message.Message);
                     break;
                 case SnafflerMessageType.FileResult:
-                    Logger.Warn(datetime + "[File] " + FileResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[File]" + Options.Separator + FileResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.DirResult:
-                    Logger.Warn(datetime + "[Dir] " + DirResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[Dir]" + Options.Separator + DirResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.ShareResult:
-                    Logger.Warn(datetime + "[Share] " + ShareResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[Share]" + Options.Separator + ShareResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.Error:
-                    Logger.Error(datetime + "[Error] " + message.Message);
+                    Logger.Error(datetime + "[Error]" + Options.Separator + message.Message);
                     break;
                 case SnafflerMessageType.Fatal:
-                    Logger.Fatal(datetime + "[Fatal] " + message.Message);
+                    Logger.Fatal(datetime + "[Fatal]" + Options.Separator + message.Message);
                     Environment.Exit(1);
                     break;
                 case SnafflerMessageType.Finish:
@@ -200,7 +216,6 @@ namespace Snaffler
         {
             string sharePath = message.ShareResult.SharePath;
             string triage = message.ShareResult.Triage.ToString();
-            string shareResultTemplate = "{{{0}}}({1})";
             return string.Format(shareResultTemplate, triage, sharePath);
         }
 
@@ -208,7 +223,6 @@ namespace Snaffler
         {
             string sharePath = message.DirResult.DirPath;
             string triage = message.DirResult.Triage.ToString();
-            string dirResultTemplate = "{{{0}}}({1})";
             return string.Format(dirResultTemplate, triage, sharePath);
         }
 
@@ -216,7 +230,7 @@ namespace Snaffler
         {
             try
             {
-                string matchedclassifier = message.FileResult.MatchedRule.RuleName; //message.FileResult.WhyMatched.ToString();
+                string matchedclassifier = message.FileResult.MatchedRule.RuleName;
                 string triageString = message.FileResult.MatchedRule.Triage.ToString();
                 string modifiedStamp = message.FileResult.FileInfo.LastWriteTime.ToString();
 
@@ -246,7 +260,6 @@ namespace Snaffler
                     matchcontext = message.FileResult.TextResult.MatchContext;
                 }
 
-                string fileResultTemplate = " {{{0}}}<{1}|{2}{3}|{4}|{5}|{6}>({7}) {8}";
                 return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString, modifiedStamp,
                     filepath, matchcontext);
             }

@@ -145,6 +145,28 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
+                        "passwords.txt",
+                        "pass.txt",
+                        "accounts.txt",
+                        "passwords.doc",
+                        "pass.doc",
+                        "accounts.doc",
+                        "passwords.xls",
+                        "pass.xls",
+                        "accounts.xls",
+                        "passwords.docx",
+                        "pass.docx",
+                        "accounts.docx",
+                        "passwords.xlsx",
+                        "pass.xlsx",
+                        "accounts.xlsx",
+                        "confCons.xml",
+                        "SqlStudio.bin",
+                        "secrets.txt",
+                        "secrets.doc",
+                        "secrets.xls",
+                        "secrets.docx",
+                        "secrets.xlsx",
                         "unattend.xml", // test file created
                         ".netrc", // test file created
                         "_netrc", // test file created

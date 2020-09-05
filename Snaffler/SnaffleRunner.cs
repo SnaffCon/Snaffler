@@ -18,26 +18,47 @@ namespace Snaffler
         private LogLevel LogLevel { get; set; }
         private Options Options { get; set; }
 
+        private string _hostString;
+
         private string fileResultTemplate { get; set; }
         private string shareResultTemplate { get; set; }
         private string dirResultTemplate { get; set; }
 
+        private string hostString()
+        {
+            if (string.IsNullOrWhiteSpace(_hostString))
+            {
+                _hostString = "[" + System.Security.Principal.WindowsIdentity.GetCurrent().Name + "@" + System.Net.Dns.GetHostName() + "]";
+            }
+
+            return _hostString;
+        }
+
         public void Run(string[] args)
         {
+            // prime the hoststring lazy instantiator
+            hostString();
+            // print the thing
             PrintBanner();
+            // set up the message queue for operation
             BlockingMq.MakeMq();
+            // get a handle to the message queue singleton
             Mq = BlockingMq.GetMq();
+            // prime the UI handler
             SnaffCon controller = null;
             try
             {
+                // parse cli opts in
                 Options = Config.Parse(args);
 
+                // set up the  TSV output if the flag is set
                 if (Options.LogTSV)
                 {
                     fileResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6}" + Options.Separator + "{7}" + Options.Separator + "{8}";
                     shareResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
                     dirResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
                 }
+                // otherwise just do the normal thing
                 else
                 {
                     fileResultTemplate = "{{{0}}}<{1}|{2}{3}|{4}|{5}|{6}>({7}) {8}";
@@ -171,8 +192,7 @@ namespace Snaffler
 
         private void ProcessMessage(SnafflerMessage message)
         {
-            
-            string datetime = message.DateTime.ToString("yyyy-MM-dd" + Options.Separator + "HH:mm:ss" + Options.Separator + "zzz" + Options.Separator);
+            string datetime = hostString() + " " + message.DateTime.ToString("yyyy-MM-dd" + Options.Separator + "HH:mm:ss" + Options.Separator + "zzz" + Options.Separator);
             switch (message.Type)
             {
                 case SnafflerMessageType.Trace:

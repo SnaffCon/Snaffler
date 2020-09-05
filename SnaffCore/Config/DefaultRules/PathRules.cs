@@ -31,6 +31,8 @@ namespace SnaffCore.Config
                         "vendor\\bundle",
                         "vendor\\cache",
                         "locale\\",
+                        "chocolatey\\helpers",
+                        "sources\\sxs",
                         "localization\\",
                         "\\AppData\\Local\\Microsoft\\",
                         "\\AppData\\Roaming\\Microsoft\\",

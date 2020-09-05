@@ -49,6 +49,7 @@ namespace SnaffCore.Config
                     MatchLocation = MatchLoc.FileName,
                     WordListType = MatchListType.Exact,
                     MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Black,
                     WordList = new List<string>()
                     {
                         // these are file names that we always want to keep if it's an exact match.
@@ -63,7 +64,11 @@ namespace SnaffCore.Config
                         "running-config.cfg", // test file created
                         "startup-config.cfg", // test file created
                         "running-config", // test file created
-                        "startup-config" // test file created
+                        "startup-config", // test file created
+                        "MEMORY.DMP",
+                        "hiberfil.sys",
+                        "lsass.dmp",
+                        "lsass.exe.dmp"
                     },
                 }
                 );
@@ -127,7 +132,8 @@ namespace SnaffCore.Config
                         // db backups
                         ".mdf", // test file created
                         ".sdf", // test file created
-                        ".sqldump" // test file created
+                        ".sqldump", // test file created
+                        "dmp"
                     },
                 }
                 );

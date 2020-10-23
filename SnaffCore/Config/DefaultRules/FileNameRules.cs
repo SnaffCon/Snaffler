@@ -57,6 +57,9 @@ namespace SnaffCore.Config
                         "id_dsa", // test file created
                         "id_ecdsa", // test file created
                         "id_ed25519", // test file created
+                        "key3.db", // Firefox/Thunderbird password database
+                        "key4.db", // Firefox/Thunderbird password database
+                        "Login Data", // Chrome password database
                         "NTDS.DIT", // test file created
                         "shadow", // test file created
                         "pwd.db", // test file created

@@ -44,7 +44,7 @@ namespace SnaffCore
             TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, MyOptions.MaxTreeQueue);
             FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, MyOptions.MaxFileQueue);
 
-            FileScanner = new FileScanner();
+            FileScanner = new FileScanner(MyOptions.InterestLevel);
             TreeWalker = new TreeWalker();
             ShareFinder = new ShareFinder();
         }

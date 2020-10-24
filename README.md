@@ -50,6 +50,8 @@ The key incantations are:
 
 `-l`   Maximum size of files (in bytes) to Snaffle. Defaults to 10000000, which is *about* 10MB.
 
+`-b`   Interest level to report from 0 to 3. `0` will report all matches, `3` will report critical matches only.
+
 `-i`   Disables computer and share discovery, requires a path to a directory in which to perform file discovery.
 
 `-d`   Domain to search for computers to search for shares on to search for files in. Easy.

@@ -9,9 +9,11 @@ namespace SnaffCore.FileScan
     public class FileScanner
     {
         private BlockingMq Mq { get; set; }
+        private int InterestLevel { get; set; }
 
-        public FileScanner()
+        public FileScanner(int level)
         {
+            InterestLevel = level;
             Mq = BlockingMq.GetMq();
         }
         public void ScanFile(string file)
@@ -22,6 +24,14 @@ namespace SnaffCore.FileScan
                 // send the file to all the classifiers.
                 foreach (ClassifierRule classifier in MyOptions.FileClassifiers)
                 {
+                    // Don't send file to classifier if interest level is not high enough
+                    if ((classifier.Triage == Triage.Red && InterestLevel > 2) ||
+                        (classifier.Triage == Triage.Yellow && InterestLevel > 1) ||
+                        (classifier.Triage == Triage.Green && InterestLevel > 0)
+                        )
+                    {
+                        continue;
+                    }
                     FileClassifier fileClassifier = new FileClassifier(classifier);
                     if (fileClassifier.ClassifyFile(fileInfo))
                     {

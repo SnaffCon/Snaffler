@@ -421,7 +421,7 @@ namespace SnaffCore.Config
                 Description = "Files with these extensions will be searched for Firefox/Thunderbird backups related strings.",
                 RuleName = "browerContentByName",
                 EnumerationScope = EnumerationScope.FileEnumeration,
-                MatchLocation = MatchLoc.FileExtension,
+                MatchLocation = MatchLoc.FileName,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
                 RelayTarget = "KeepFFRegexRed",

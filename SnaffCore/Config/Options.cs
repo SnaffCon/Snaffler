@@ -35,7 +35,6 @@ namespace SnaffCore.Config
         public string TargetDc { get; set; }
 
         // FileScanner Options
-        public int InterestLevel { get; set; } = 0;
         public bool DomainUserRules { get; set; } = false;
         public List<string> DomainUserMatchStrings = new List<string>()
         {

@@ -52,7 +52,6 @@ namespace Snaffler
                 false);
             ValueArgument<string> snaffleArg = new ValueArgument<string>('m', "snaffle",
                 "Enables and assigns an output dir for Snaffler to automatically snaffle a copy of any found files.");
-            ValueArgument<int> interesetLevel = new ValueArgument<int>('b', "interest", "Interest level to report (0-3)");
             ValueArgument<long> snaffleSizeArg = new ValueArgument<long>('l', "snafflesize", "Maximum size of file to snaffle, in bytes. Defaults to 10MB.");
             //var fileHuntArg = new SwitchArgument('f', "filehuntoff",
             //    "Disables file discovery, will only perform computer and share discovery.", false);
@@ -69,7 +68,7 @@ namespace Snaffler
             SwitchArgument domainUserArg = new SwitchArgument('u', "domainusers", "Makes Snaffler grab a list of interesting-looking accounts from the domain and uses them in searches.", false);
             SwitchArgument tsvArg = new SwitchArgument('y', "tsv", "Makes Snaffler output as tsv.", false);
 
-            // list of letters i haven't used yet: aefgknpqwx
+            // list of letters i haven't used yet: abefgknpqwx
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
@@ -78,7 +77,6 @@ namespace Snaffler
             parser.Arguments.Add(stdOutArg);
             parser.Arguments.Add(snaffleArg);
             parser.Arguments.Add(snaffleSizeArg);
-            parser.Arguments.Add(interesetLevel);
             parser.Arguments.Add(dirTargetArg);
             parser.Arguments.Add(domainArg);
             parser.Arguments.Add(verboseArg);
@@ -190,12 +188,6 @@ namespace Snaffler
                 if (snaffleSizeArg.Parsed)
                 {
                     parsedConfig.MaxSizeToSnaffle = snaffleSizeArg.Value;
-                }
-
-                if (interesetLevel.Parsed)
-                {
-                    parsedConfig.InterestLevel = interesetLevel.Value;
-                    Mq.Degub("Requested interest level: " + parsedConfig.InterestLevel);
                 }
 
                 // how many bytes 

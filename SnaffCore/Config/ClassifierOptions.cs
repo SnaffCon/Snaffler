@@ -1,4 +1,5 @@
 ﻿using Classifiers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -80,6 +81,9 @@ namespace SnaffCore.Config
             }
 
             // sort everything into enumeration scopes
+            ClassifierRules = (from classifier in ClassifierRules
+                              where IsInterest(classifier)
+                              select classifier).ToList();
             ShareClassifiers = (from classifier in ClassifierRules
                                 where classifier.EnumerationScope == EnumerationScope.ShareEnumeration
                                 select classifier).ToList();
@@ -92,6 +96,29 @@ namespace SnaffCore.Config
             ContentsClassifiers = (from classifier in ClassifierRules
                                    where classifier.EnumerationScope == EnumerationScope.ContentsEnumeration
                                    select classifier).ToList();
+        }
+
+        private bool IsInterest(ClassifierRule classifier)
+        {
+            /*
+             * Keep all discard & archive parsing rules.
+             * Else, if rule (or child rule, recursive) interest level is lower than provided (0 default), then discard
+             */
+            if (!String.IsNullOrEmpty(classifier.RelayTarget))
+            {
+                return IsInterest(ClassifierRules.First(thing => thing.RuleName == classifier.RelayTarget));
+            }
+            return !(
+                (
+                    classifier.MatchAction == MatchAction.Snaffle ||
+                    classifier.MatchAction == MatchAction.CheckForKeys
+                ) &&
+                (
+                    (classifier.Triage == Triage.Red && InterestLevel > 2) ||
+                    (classifier.Triage == Triage.Yellow && InterestLevel > 1) ||
+                    (classifier.Triage == Triage.Green && InterestLevel > 0)
+                )
+            );
         }
 
         public void BuildDefaultClassifiers()

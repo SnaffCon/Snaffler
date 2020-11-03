@@ -415,6 +415,36 @@ namespace SnaffCore.Config
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
             });
+            // Firefox/Thunderbird backups
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                Description = "Files with these extensions will be searched for Firefox/Thunderbird backups related strings.",
+                RuleName = "browerContentByName",
+                EnumerationScope = EnumerationScope.FileEnumeration,
+                MatchLocation = MatchLoc.FileName,
+                WordListType = MatchListType.Exact,
+                MatchAction = MatchAction.Relay,
+                RelayTarget = "KeepFFRegexRed",
+                WordList = new List<string>()
+                {
+                    // Firefox/Thunderbird
+                    "logins.json"
+                },
+            });
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                Description = "Files with contents matching these regexes are very interesting.",
+                RuleName = "KeepFFRegexRed",
+                EnumerationScope = EnumerationScope.ContentsEnumeration,
+                MatchLocation = MatchLoc.FileContentAsString,
+                WordListType = MatchListType.Regex,
+                MatchAction = MatchAction.Snaffle,
+                Triage = Triage.Red,
+                WordList = new List<string>()
+                {
+                    "\"encryptedPassword\":\"[A-Za-z0-9+/=]+\""
+                }
+            });
 
             // vbscript etc
             /*

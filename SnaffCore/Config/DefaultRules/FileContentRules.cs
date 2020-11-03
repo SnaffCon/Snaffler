@@ -478,7 +478,8 @@ namespace SnaffCore.Config
                     ".log",
                     ".sqlite",
                     ".sqlite3",
-                    ".fdb"
+                    ".fdb",
+                    ""
                 },
             });
 
@@ -510,6 +511,7 @@ namespace SnaffCore.Config
                     // network device config
                     "NVRAM config last updated",
                     "enable password .",
+                    "simple-bind authenticated encrypt",
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()

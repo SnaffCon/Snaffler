@@ -36,6 +36,7 @@ namespace SnaffCore.Config
                         "\\ADMIN$"
                     },
             });
+            /*
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 RuleName = "KeepShareRed",
@@ -50,6 +51,7 @@ namespace SnaffCore.Config
                         "\\Users",
                     },
             });
+            */
         }
 
         /*

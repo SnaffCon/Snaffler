@@ -223,6 +223,9 @@ namespace SnaffCore.Config
                         ".bashrc", // test file created
                         ".profile", // test file created
                         ".zshrc", // test file created
+                        "key3.db", // Firefox/Thunderbird password database
+                        "key4.db", // Firefox/Thunderbird password database
+                        "Login Data", // Chrome password database
                     },
                 }
                 );

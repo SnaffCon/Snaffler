@@ -350,7 +350,8 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // cmd.exe
-                    ".bat"
+                    ".bat",
+                    ".cmd"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -365,7 +366,12 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // cmd
-                    "net user ",
+                    // password variable in bat file
+                    "passwo?r?d[[:space:]]*=[[:space:]]*[\\\'\\\"][^\\\'\\\"].....*",
+                    // creation of scheduled tasks with password
+                    "schtasks.*(/rp[[:space:]]|/p[[:space:]])*",
+                    // looking for net use or net user commands since these can contain credentials
+                    "net user? ",
                     "psexec .{0-100} -p "
                 }
             });

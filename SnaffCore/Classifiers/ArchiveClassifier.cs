@@ -20,7 +20,6 @@ namespace Classifiers
             Mq = BlockingMq.GetMq();
             FileScanner = SnaffCon.GetFileScanner();
         }
-
         private void ClassifyArchive(FileInfo fileInfo)
         {
             // look inside archives for files we like.

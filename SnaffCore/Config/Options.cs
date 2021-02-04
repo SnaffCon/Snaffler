@@ -53,7 +53,7 @@ namespace SnaffCore.Config
         };
 
         // this sets the maximum size of file to look inside.
-        public long MaxSizeToGrep { get; set; } = 1000000;
+        public long MaxSizeToGrep { get; set; } = 10000000;
 
         // these enable or disable automated downloading of files that match the criteria
         public bool Snaffle { get; set; } = false;

@@ -1,7 +1,9 @@
 ﻿using SnaffCore.Concurrency;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using Toxy;
 using static SnaffCore.Config.Options;
 
 namespace Classifiers
@@ -40,8 +42,21 @@ namespace Classifiers
                         case MatchLoc.FileContentAsString:
                             try
                             {
-                                string fileString = File.ReadAllText(fileInfo.FullName);
+                                string fileString;
+                                // if it's an office doc or a PDF or something, parse it to a string first i guess?
+                                List<string> parsedExtensions = new List<string>()
+                                {
+                                    ".doc",".docx",".xls",".xlsx",".eml",".msg",".pdf",".ppt",".rtf"
+                                };
 
+                                if (parsedExtensions.Contains(fileInfo.Extension))
+                                {
+                                    fileString = ParseFileToString(fileInfo);
+                                }
+                                else
+                                {
+                                    fileString = File.ReadAllText(fileInfo.FullName);
+                                }
                                 TextClassifier textClassifier = new TextClassifier(ClassifierRule);
                                 TextResult textResult = textClassifier.TextMatch(fileString);
                                 if (textResult != null)
@@ -51,6 +66,7 @@ namespace Classifiers
                                         MatchedRule = ClassifierRule,
                                         TextResult = textResult
                                     };
+
                                     Mq.FileResult(fileResult);
                                 }
                             }
@@ -152,6 +168,16 @@ namespace Classifiers
                 }
             }
         }
+
+        public string ParseFileToString(FileInfo fileInfo)
+        {
+            ParserContext context = new ParserContext(fileInfo.FullName);
+            ITextParser parser = ParserFactory.CreateText(context);
+
+                string doc = parser.Parse();
+            return doc;
+        }
+
         public bool ByteMatch(byte[] fileBytes)
         {
             // TODO

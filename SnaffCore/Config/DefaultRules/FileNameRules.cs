@@ -5,8 +5,10 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
+     
         private void BuildFileNameRules()
         {
+            /*
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
@@ -199,7 +201,7 @@ namespace SnaffCore.Config
                 }
                 );
 
-            /*
+            
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 RuleOrder = 12,
@@ -223,5 +225,6 @@ namespace SnaffCore.Config
             */
 
         }
+    
     }
 }

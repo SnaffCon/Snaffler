@@ -7,6 +7,45 @@ namespace SnaffCore.Config
     {
         private void BuildFileContentRules()
         {
+
+            // TEST RULE for doc parsing
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                Description = "Files with these extensions will be parsed as part of a test.",
+                RuleName = "DocParseTest",
+                EnumerationScope = EnumerationScope.FileEnumeration,
+                MatchLocation = MatchLoc.FileExtension,
+                WordListType = MatchListType.Exact,
+                MatchAction = MatchAction.Relay,
+                RelayTarget = "KeepDocRegexGreen",
+                WordList = new List<string>()
+                {
+                    ".doc",".docx",".xls",".xlsx",".eml",".msg",".pdf",".ppt",".rtf"
+                },
+            });
+
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                Description = "Files with contents matching these regexen are kind of interesting for purposes of this test.",
+                RuleName = "KeepDocRegexGreen",
+                EnumerationScope = EnumerationScope.ContentsEnumeration,
+                MatchLocation = MatchLoc.FileContentAsString,
+                WordListType = MatchListType.Regex,
+                MatchAction = MatchAction.Snaffle,
+                Triage = Triage.Green,
+                WordList = new List<string>()
+                {
+                    "password",
+                    "prepared",
+                    "security"
+                }
+            });
+
+
+
+
+            /*
+
             // Python
             this.ClassifierRules.Add(new ClassifierRule()
             {
@@ -449,6 +488,7 @@ namespace SnaffCore.Config
             });
             */
 
+            /*
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be subjected to a generic search for keys and such.",
@@ -566,6 +606,7 @@ namespace SnaffCore.Config
                     },
                 }
             );
+            */
         }
     }
 }

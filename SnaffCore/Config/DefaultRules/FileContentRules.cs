@@ -7,7 +7,7 @@ namespace SnaffCore.Config
     {
         private void BuildFileContentRules()
         {
-
+            /*
             // TEST RULE for doc parsing
             this.ClassifierRules.Add(new ClassifierRule()
             {
@@ -41,10 +41,10 @@ namespace SnaffCore.Config
                 }
             });
 
+            */
 
 
-
-            /*
+            
 
             // Python
             this.ClassifierRules.Add(new ClassifierRule()
@@ -488,7 +488,7 @@ namespace SnaffCore.Config
             });
             */
 
-            /*
+            
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be subjected to a generic search for keys and such.",
@@ -585,7 +585,6 @@ namespace SnaffCore.Config
                 },
             });
 
-  // dsa | ecdsa | ed25519 | rsa]
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
@@ -606,7 +605,6 @@ namespace SnaffCore.Config
                     },
                 }
             );
-            */
         }
     }
 }

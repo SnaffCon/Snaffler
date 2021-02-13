@@ -3,8 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using Toxy;
 using static SnaffCore.Config.Options;
+
+#if ULTRASNAFFLER
+using Toxy;
+#endif
 
 namespace Classifiers
 {
@@ -43,10 +46,12 @@ namespace Classifiers
                             try
                             {
                                 string fileString;
+
+#if ULTRASNAFFLER
                                 // if it's an office doc or a PDF or something, parse it to a string first i guess?
                                 List<string> parsedExtensions = new List<string>()
                                 {
-                                    ".doc",".docx",".xls",".xlsx",".eml",".msg",".pdf",".ppt",".rtf"
+                                    ".doc",".docx",".xls",".xlsx",".eml",".msg",".pdf",".ppt",".pptx",".rtf",".docm",".xlsm",".pptm",".dot",".dotx",".dotm",".xlt",".xlsm",".xltm"
                                 };
 
                                 if (parsedExtensions.Contains(fileInfo.Extension))
@@ -57,6 +62,9 @@ namespace Classifiers
                                 {
                                     fileString = File.ReadAllText(fileInfo.FullName);
                                 }
+#else
+                                fileString = File.ReadAllText(fileInfo.FullName);
+#endif
                                 TextClassifier textClassifier = new TextClassifier(ClassifierRule);
                                 TextResult textResult = textClassifier.TextMatch(fileString);
                                 if (textResult != null)
@@ -169,6 +177,7 @@ namespace Classifiers
             }
         }
 
+#if ULTRASNAFFLER
         public string ParseFileToString(FileInfo fileInfo)
         {
             ParserContext context = new ParserContext(fileInfo.FullName);
@@ -177,6 +186,7 @@ namespace Classifiers
                 string doc = parser.Parse();
             return doc;
         }
+#endif
 
         public bool ByteMatch(byte[] fileBytes)
         {

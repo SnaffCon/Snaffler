@@ -1,4 +1,6 @@
-﻿using SharpCompress.Archives;
+﻿#if ULTRASNAFFLER
+using SharpCompress.Archives;
+
 using SnaffCore.Concurrency;
 using SnaffCore.FileScan;
 using System;
@@ -14,6 +16,7 @@ namespace Classifiers
 
         private BlockingMq Mq { get; set; }
         private FileScanner FileScanner {get; set;}
+
 
         public ArchiveClassifier(FileInfo fileInfo)
         {
@@ -55,3 +58,4 @@ namespace Classifiers
         }
     }
 }
+#endif

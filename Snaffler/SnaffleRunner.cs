@@ -55,7 +55,7 @@ namespace Snaffler
                 if (Options.LogTSV)
                 {
                     // treat all as strings except LastWriteTime {6}
-                    fileResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6:u}" + Options.Separator + "{7}" + Options.Separator + "{8:u}";
+                    fileResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6:u}" + Options.Separator + "{7}" + Options.Separator + "{8}";
                     shareResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
                     dirResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
                 }

@@ -54,14 +54,16 @@ namespace Snaffler
                 // set up the  TSV output if the flag is set
                 if (Options.LogTSV)
                 {
-                    fileResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6}" + Options.Separator + "{7}" + Options.Separator + "{8}";
+                    // treat all as strings except LastWriteTime {6}
+                    fileResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6:u}" + Options.Separator + "{7}" + Options.Separator + "{8:u}";
                     shareResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
                     dirResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
                 }
                 // otherwise just do the normal thing
                 else
                 {
-                    fileResultTemplate = "{{{0}}}<{1}|{2}{3}|{4}|{5}|{6}>({7}) {8}";
+                    // treat all as strings except LastWriteTime {6}
+                    fileResultTemplate = "{{{0}}}<{1}|{2}{3}|{4}|{5}|{6:u}>({7}) {8}";
                     shareResultTemplate = "{{{0}}}({1})";
                     dirResultTemplate = "{{{0}}}({1})";
                 }
@@ -192,7 +194,9 @@ namespace Snaffler
 
         private void ProcessMessage(SnafflerMessage message)
         {
-            string datetime = hostString() + " " + message.DateTime.ToString("yyyy-MM-dd" + Options.Separator + "HH:mm:ss" + Options.Separator + "zzz" + Options.Separator);
+            //  standardized time formatting
+            string datetime =  String.Format("{1}{0}{2:u}{0}",  Options.Separator,hostString(), message.DateTime);
+
             switch (message.Type)
             {
                 case SnafflerMessageType.Trace:
@@ -252,7 +256,7 @@ namespace Snaffler
             {
                 string matchedclassifier = message.FileResult.MatchedRule.RuleName;
                 string triageString = message.FileResult.MatchedRule.Triage.ToString();
-                string modifiedStamp = message.FileResult.FileInfo.LastWriteTime.ToString();
+                DateTime modifiedStamp = message.FileResult.FileInfo.LastWriteTime.ToUniversalTime();
 
                 string canread = "";
                 if (message.FileResult.RwStatus.CanRead)

@@ -213,13 +213,6 @@ namespace Snaffler
                     Mq.Degub("Mirroring matched files to path " + parsedConfig.SnafflePath);
                 }
 
-                if (!parsedConfig.LogToConsole && !parsedConfig.LogToFile)
-                {
-                    Mq.Error(
-                        "\nYou didn't enable output to file or to the console so you won't see any results or debugs or anything. Your l0ss.");
-                    throw new ArgumentException("Pointless argument combination.");
-                }
-
                 if (configFileArg.Parsed)
                 {
                     if (configFileArg.Value.Equals("generate"))
@@ -228,6 +221,13 @@ namespace Snaffler
                         Mq.Info("Wrote default config values to .\\default.toml");
                         Mq.Terminate();
                     }
+                }
+
+                if (!parsedConfig.LogToConsole && !parsedConfig.LogToFile)
+                {
+                    Mq.Error(
+                        "\nYou didn't enable output to file or to the console so you won't see any results or debugs or anything. Your l0ss.");
+                    throw new ArgumentException("Pointless argument combination.");
                 }
 
                 parsedConfig.PrepareClassifiers();

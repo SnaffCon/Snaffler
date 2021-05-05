@@ -20,7 +20,8 @@ namespace SnaffCore
 {
     public class SnaffCon
     {
-        private bool AllTasksComplete { get; set; } = false;
+        private readonly EventWaitHandle waitHandle = new AutoResetEvent(false);
+
         private BlockingMq Mq { get; set; }
 
         private static BlockingStaticTaskScheduler ShareTaskScheduler;
@@ -106,7 +107,7 @@ namespace SnaffCore
                 Mq.Error("OctoParrot says: AWK! I SHOULDN'T BE!");
             }
 
-            SpinWait.SpinUntil(() => AllTasksComplete);
+            waitHandle.WaitOne();
 
             StatusUpdate();
             DateTime finished = DateTime.Now;
@@ -266,7 +267,7 @@ namespace SnaffCore
 
             if (FileTaskScheduler.Done() && ShareTaskScheduler.Done() && TreeTaskScheduler.Done())
             {
-                AllTasksComplete = true;
+                waitHandle.Set();
             }
             //}
         }

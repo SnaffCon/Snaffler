@@ -217,9 +217,13 @@ namespace Snaffler
                 {
                     if (configFileArg.Value.Equals("generate"))
                     {
+                        parsedConfig.LogToConsole = stdOutArg.Parsed;
+                        Mq.Degub("Enabled logging to stdout.");
                         Toml.WriteFile(parsedConfig, ".\\default.toml", settings);
                         Mq.Info("Wrote default config values to .\\default.toml");
                         Mq.Terminate();
+                        parsedConfig.LogToConsole = true;
+                        Mq.Degub("Enabled logging to stdout.");
                     }
                 }
 

@@ -1,0 +1,30 @@
+ScanSysvol = true
+ScanNetlogon = true
+ShareThreads = 30
+TreeThreads = 20
+FileThreads = 50
+MaxFileQueue = 200000
+MaxTreeQueue = 0
+MaxShareQueue = 0
+LogToFile = false
+LogTSV = false
+Separator = 32
+LogToConsole = false
+LogLevelString = "info"
+ShareFinderEnabled = true
+DomainUserRules = false
+MaxSizeToGrep = 1000000
+Snaffle = false
+MaxSizeToSnaffle = 10000000
+MatchContextBytes = 200
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepFilenameRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with these file name patterns are very interesting in German companies."
+MatchLocation = "FileName"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["(Kenn|Pass)w[oö]rte?r?", "Schlüssel", "Zug[aä]ng[es]?", "T[oü]r[ -]?Code", "PINs?\\.", "Kont(o|en)", "Logindaten", "Anmeld(edaten|ung)"]
+Triage = "Red"

@@ -252,30 +252,6 @@ namespace SnaffCore.Config
                     },
             });
             */
-
-            this.ClassifierRules.Add(
-                new ClassifierRule()
-                {
-                    Description = "Files with these file name patterns are very interesting in German companies.",
-                    RuleName = "KeepFilenameRegexRed",
-                    EnumerationScope = EnumerationScope.FileEnumeration,
-                    MatchLocation = MatchLoc.FileName,
-                    WordListType = MatchListType.Regex,
-                    MatchAction = MatchAction.Snaffle,
-                    Triage = Triage.Red,
-                    WordList = new List<string>()
-                    {
-                        "(Kenn|Pass)w[oö]rte?r?", // Test file created
-                        "Schlüssel", // Test file created
-                        "Zug[aä]ng[es]?", // Test file created
-                        "T[oü]r[ -]?Code", // Test file created
-                        "PINs?\\.", // Test file created
-                        "Kont(o|en)", // Test file created
-                        "Logindaten", // Test file created
-                        "Anmeld(edaten|ung)", // Test file created
-                    },
-                }
-                );
         }
     }
 }

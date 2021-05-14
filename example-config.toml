@@ -47,14 +47,15 @@ ScanSysvol = true # enables scanning of the domain SYSVOL share. Will only scan 
 ScanNetlogon = true # enables scanning of the domain NETLOGON share. Will only scan it once even if multiple domain controllers are scanned.
 #######################################
 QueryDomainForUsers = true # whether to fetch a list of domain users, filter out highly privileged ones and accounts that seem to be service accounts, and add them to one or more rules.
-# DomainUsersToMatch = ["svc-sqlserver", "domainadmin"] # if you don't want to do QueryDomainForUsers you can set the values manually here. If QueryDomainForUsers is true it will overwrite whatever you put in here.
-# DomainUsersWordlistRules = ["KeepConfigRegexRed"] # Which rule(s) to add the usernames to.
+DomainUsersToMatch = ["svc-sqlserver", "domainadmin"] # if you don't want to do QueryDomainForUsers you can set the values manually here. If QueryDomainForUsers is true it will overwrite whatever you put in here.
+DomainUsersWordlistRules = ["KeepConfigRegexRed"] # Which rule(s) to add the usernames to.n
 ####################################### 
 MaxSizeToGrep = 1000000 # the maximum size file in bytes that we should look inside. Reducing this number will reduce memory usage and substantially speed things up, but will potentially skip a lot of interesting stuff
 MatchContextBytes = 200 # how many bytes of 'context' to show on either side of a match inside a file.
 
 ## Rules
 # These define what we're going to actually look for. See README.md for details.
+
 [[ClassifierRules]]
 EnumerationScope = "ShareEnumeration"
 RuleName = "DiscardShareEndsWith"
@@ -63,7 +64,8 @@ Description = "Skips scanning inside shares ending with these words."
 MatchLocation = "ShareName"
 WordListType = "EndsWith"
 WordList = ["\\print$", "\\ipc$"]
-Triage = "Black"
+
+
 [[ClassifierRules]]
 EnumerationScope = "ShareEnumeration"
 RuleName = "KeepCDollaShare"
@@ -73,6 +75,8 @@ MatchLocation = "ShareName"
 WordListType = "EndsWith"
 WordList = ["\\C$"]
 Triage = "Black"
+
+
 [[ClassifierRules]]
 EnumerationScope = "DirectoryEnumeration"
 RuleName = "DiscardFilepathContains"
@@ -82,6 +86,8 @@ MatchLocation = "FilePath"
 WordListType = "Contains"
 WordList = ["winsxs", "syswow64", "system32", "systemapps", "servicing\\packages", "Microsoft.NET\\Framework", "ADMIN$\\immersivecontrolpanel", "windows\\immersivecontrolpanel", "ADMIN$\\diagnostics", "windows\\diagnostics", "ADMIN$\\debug", "windows\\debug", "node_modules", "vendor\\bundle", "vendor\\cache", "locale\\", "localization\\", "\\AppData\\Local\\Microsoft\\", "\\AppData\\Roaming\\Microsoft\\", "\\wsuscontent"]
 Triage = "Black"
+
+
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
 RuleName = "DiscardExtExact"
@@ -90,7 +96,8 @@ Description = "Skip any further scanning for files with these extensions."
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 WordList = [".bmp", ".eps", ".gif", ".ico", ".jfi", ".jfif", ".jif", ".jpe", ".jpeg", ".jpg", ".png", ".psd", ".svg", ".tif", ".tiff", ".webp", ".xcf", ".ttf", ".otf", ".lock", ".css", ".less"]
-Triage = "Black"
+
+
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
 RuleName = "KeepExtExactBlack"
@@ -100,6 +107,9 @@ MatchLocation = "FileExtension"
 WordListType = "Exact"
 WordList = [".kdbx", ".kdb", ".ppk", ".vmdk", ".vhdx", ".ova", ".ovf", ".psafe3", ".cscfg", ".kwallet", ".tblk", ".ovpn"]
 Triage = "Black"
+
+
+
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
 RuleName = "KeepFilenameExactBlack"
@@ -109,6 +119,10 @@ MatchLocation = "FileName"
 WordListType = "Exact"
 WordList = ["id_rsa", "id_dsa", "NTDS.DIT", "shadow", "pwd.db", "passwd", "running-config.cfg", "startup-config.cfg", "running-config", "startup-config"]
 Triage = "Black"
+
+
+
+
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
 RuleName = "KeepPathContainsBlack"
@@ -136,6 +150,7 @@ MatchLocation = "FileName"
 WordListType = "Exact"
 WordList = ["unattend.xml", ".netrc", "_netrc", ".htpasswd", "otr.private_key", ".secret_token.rb", "carrierwave.rb", "database.yml", "omniauth.rb", "settings.py", ".agilekeychain", ".keychain", "jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml", "credentials.xml", "LocalSettings.php", "Favorites.plist", "knife.rb", "proxy.config", "proftpdpasswd", "robomongo.json", "filezilla.xml", "recentservers.xml", "terraform.tfvars", ".exports", ".functions", ".extra", ".bash_history", ".zsh_history", ".sh_history", "zhistory", ".mysql_history", ".psql_history", ".pgpass", ".irb_history", ".dbeaver-data-sources.xml", ".s3vfg", "sftp-config.json", "config.inc", "config.php", "keystore", "keyring", ".tugboat", ".git-credentials", ".gitconfig", ".dockercfg", ".npmrc", ".env", ".bashrc", ".profile", ".zshrc"]
 Triage = "Red"
+
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
 RuleName = "PyContentByExt"
@@ -326,6 +341,7 @@ MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 WordList = []
 Triage = "Red"
+
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
 RuleName = "ConfigContentByExt"
@@ -336,6 +352,8 @@ MatchLocation = "FileExtension"
 WordListType = "Exact"
 WordList = [".yaml", ".yml", ".toml", ".xml", ".json", ".config", ".ini", ".inf", ".cnf", ".conf", ".properties", ".env", ".dist", ".txt", ".sql", ".log", ".sqlite", ".sqlite3", ".fdb"]
 Triage = "Black"
+
+
 [[ClassifierRules]]
 EnumerationScope = "ContentsEnumeration"
 RuleName = "KeepConfigRegexRed"
@@ -344,6 +362,8 @@ Description = "A description of what a rule does."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 WordList = ["[Ss][Qq][Ll][CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[CC][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[Vv][Aa][Ll][Ii][Dd][Aa][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[Dd][Ee][Cc][Rr][Yy][Pp][Tt][Ii][Oo][Nn][Kk][Ee][Yy][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "[Pp][Aa][Ss][Ss][Ww][Oo]?[Rr]?[Dd][[:space:]]*=[[:space:]]*[\\'\\\"][^\\'\\\"].....*", "CREATE (USER|LOGIN) .{0,100} (IDENTIFIED BY|WITH PASSWORD)", "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", "[Aa][Ww][Ss][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.]?[Aa][Pp][Ii][_\\-\\.]?[Kk][Ee][Yy]", "[_\\-\\.][Oo][Aa][Uu][Tt][Hh][[:space:]]*=", "(client_secret|CLIENT_SECRET)", "[Ss][Ee][Cc][Rr][Ee][Tt][_\\-\\.]?([Kk][Ee][Yy])?[[:space:]]*=", "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", "(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}", "NVRAM config last updated", "enable password ."]
+
+
 Triage = "Red"
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
@@ -359,11 +379,12 @@ Triage = "Black"
 EnumerationScope = "ContentsEnumeration"
 RuleName = "KeepCertRegexRed"
 MatchAction = "Snaffle"
-Description = "A description of what a rule does."
+Description = "Text-based check for private keys."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 WordList = ["-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----"]
 Triage = "Red"
+
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
 RuleName = "KeepCertContainsPrivKeyRed"

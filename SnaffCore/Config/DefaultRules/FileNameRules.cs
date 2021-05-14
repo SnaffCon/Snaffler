@@ -8,7 +8,7 @@ namespace SnaffCore.Config
      
         private void BuildFileNameRules()
         {
-            /*
+            
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
@@ -204,7 +204,6 @@ namespace SnaffCore.Config
             
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 12,
                 RuleName = "KeepNameContainsGreen",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileName,
@@ -222,7 +221,6 @@ namespace SnaffCore.Config
                         "cyberark",
                     },
             });
-            */
 
         }
     

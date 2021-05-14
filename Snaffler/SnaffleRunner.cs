@@ -285,6 +285,8 @@ namespace Snaffler
                     fileSizeString = BytesToString(fileSize);
                 }
 
+                string filepath = message.FileResult.FileInfo.FullName;
+
                 string matchcontext = "";
                 if (message.FileResult.TextResult != null)
                 {

@@ -37,6 +37,14 @@ namespace SnaffCore.Config
                         // vpn profiles
                         "\\.tblk", // test file created
                         "\\.ovpn", // test file created
+                        // full disk backups
+                        "\\.bkf",
+                        "\\.v2i",
+                        "\\.gho",
+                        "\\.vbk",
+                        "\\.tib",
+                        "\\.tibx",
+                        "\\.mtf"
                     },
                 });
 
@@ -85,12 +93,13 @@ namespace SnaffCore.Config
                     Triage = Triage.Black,
                     WordList = new List<string>()
                 {
-                        "\\.ssh\\", // test file created
-                        "\\.purple\\accounts.xml", // test file created
-                        "\\.aws\\", // test file created
-                        "\\.gem\\credentials", // test file created
-                        "doctl\\config.yaml", // test file created
-                        "config\\hub"  // test file created
+                        "\\.ssh\\\\", // test file created
+                        "\\.purple\\\\accounts.xml", // test file created
+                        "\\.aws\\\\", // test file created
+                        "\\.gem\\\\credentials", // test file created
+                        "doctl\\\\config.yaml", // test file created
+                        "config\\\\hub",  // test file created
+                        "control\\customsettings\\.ini"
                 },
                 }
             );
@@ -133,8 +142,10 @@ namespace SnaffCore.Config
                         "\\.mdf", // test file created
                         "\\.sdf", // test file created
                         "\\.sqldump", // test file created
-                        "dmp"
-                    },
+                        "\\.bak",
+                        // mem dumps
+                        "\\.dmp"
+                     },
                 }
                 );
 
@@ -230,10 +241,9 @@ namespace SnaffCore.Config
                 }
                 );
 
-            /*
+            
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                RuleOrder = 12,
                 RuleName = "KeepNameContainsGreen",
                 EnumerationScope = EnumerationScope.FileEnumeration,
                 MatchLocation = MatchLoc.FileName,
@@ -244,14 +254,13 @@ namespace SnaffCore.Config
                     {
                         //magic words
                         "passw",
-                        "as-built",
-                        "handover",
+                        //"as built",
+                        //"handover",
                         "secret",
                         "thycotic",
                         "cyberark",
                     },
             });
-            */
 
         }
     }

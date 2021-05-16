@@ -18,25 +18,7 @@ namespace Classifiers
         {
             BlockingMq Mq = BlockingMq.GetMq();
 
-            // first time we hit sysvol, toggle the flag and keep going. every other time, bail out.
-            if (share.ToLower().EndsWith("sysvol"))
-            {
-                if (MyOptions.ScanSysvol == false)
-                {
-                    return true;
-                }
-                MyOptions.ScanSysvol = false;
-            };
-            // same for netlogon
-            if (share.ToLower().EndsWith("netlogon"))
-            {
-                if (MyOptions.ScanNetlogon == false)
-                {
-                    return true;
-                }
-                MyOptions.ScanNetlogon = false;
-            }
-            // check if it matches
+            // check if the share has a matching classifier
             TextClassifier textClassifier = new TextClassifier(ClassifierRule);
             TextResult textResult = textClassifier.TextMatch(share);
             if (textResult != null)

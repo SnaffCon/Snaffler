@@ -518,6 +518,8 @@ namespace SnaffCore.Config
             });
             */
 
+            
+             
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be subjected to a generic search for keys and such.",

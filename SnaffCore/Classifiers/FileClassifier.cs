@@ -94,7 +94,8 @@ namespace Classifiers
                         TextResult = textResult
                     };
                     Mq.FileResult(fileResult);
-                    return true;
+                    return false;
+                    //return true;
                 case MatchAction.CheckForKeys:
                     // do a special x509 dance
                     if (x509PrivKeyMatch(fileInfo))
@@ -108,7 +109,6 @@ namespace Classifiers
                     return true;
                 case MatchAction.Relay:
                     // bounce it on to the next ClassifierRule
-                    // TODO concurrency uplift make this a new task on the poolq
                     try
                     {
                         ClassifierRule nextRule =
@@ -146,7 +146,7 @@ namespace Classifiers
                     // do a special looking inside archive files dance using
                     // https://github.com/adamhathcock/sharpcompress
                     // TODO FUUUUUCK
-                    throw new NotImplementedException("Haven't implemented walking dir structures inside archives. Prob needs pool queue.");
+                    throw new NotImplementedException("Haven't implemented walking dir structures inside archives.");
                 default:
                     Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                     return false;

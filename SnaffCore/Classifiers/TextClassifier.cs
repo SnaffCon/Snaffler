@@ -19,78 +19,10 @@ namespace Classifiers
         // Methods for classification
         internal TextResult TextMatch(string input)
         {
-            /*
-            // generic match checking
-            switch (ClassifierRule.WordListType)
-            {
-                
-                case MatchListType.Contains:
-                 
-                    foreach (string matchString in ClassifierRule.WordList)
-                    {
-                        int index = input.IndexOf(matchString, StringComparison.OrdinalIgnoreCase);
-                        if ( index >= 0)
-                        //if (input.ToLower().Contains(matchString.ToLower()))
-                        {
-                            return new TextResult()
-                            {
-                                MatchedStrings = new List<string>(){matchString},
-                                MatchContext = GetContext(input, matchString)
-                            };
-                        }
-                    }
-
-                    break;
-                case MatchListType.EndsWith:
-                    foreach (string matchString in ClassifierRule.WordList)
-                    {
-                        if (input.EndsWith(matchString, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return new TextResult()
-                            {
-                                MatchedStrings = new List<string>() {matchString},
-                                MatchContext = GetContext(input, matchString)
-                            };
-                        }
-                    }
-
-                    break;
-                case MatchListType.Exact:
-                    foreach (string matchString in ClassifierRule.WordList)
-                    {
-                        if (input.Equals(matchString, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return new TextResult()
-                            {
-                                MatchedStrings = new List<string>() { matchString },
-                                MatchContext = GetContext(input, matchString)
-                            };
-                        }
-                    }
-
-                    break;
-                case MatchListType.StartsWith:
-                    foreach (string matchString in ClassifierRule.WordList)
-                    {
-                        if (input.StartsWith(matchString, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return new TextResult()
-                            {
-                                MatchedStrings = new List<string>() { matchString },
-                                MatchContext = GetContext(input, matchString)
-                            };
-                        }
-                    }
-
-                    break;
-                case MatchListType.Regex: 
-                */
             foreach (Regex regex in ClassifierRule.Regexes)
             {
                 try
                 {
-                    //Regex regex = new Regex(matchString);
-
                     if (regex.IsMatch(input))
                     {
                         return new TextResult()
@@ -105,13 +37,6 @@ namespace Classifiers
                     Mq.Error(e.ToString());
                 }
             }
-            /*
-            break;
-        default:
-            return null;
-
-    }
-    */
             return null;
         }
         internal string GetContext(string original, string matchString)

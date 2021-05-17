@@ -1,4 +1,4 @@
-﻿using Classifiers;
+using Classifiers;
 using SnaffCore.ActiveDirectory;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
@@ -74,11 +74,10 @@ namespace SnaffCore
         {
             return FileTaskScheduler;
         }
-        public DateTime StartTime { get; set; }
 
         public void Execute()
         {
-            StartTime = DateTime.Now;
+            DateTime startTime = DateTime.Now;
             // This is the main execution thread.
             Timer statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(0.5)
@@ -112,7 +111,7 @@ namespace SnaffCore
 
             StatusUpdate();
             DateTime finished = DateTime.Now;
-            TimeSpan runSpan = finished.Subtract(StartTime);
+            TimeSpan runSpan = finished.Subtract(startTime);
             Mq.Info("Finished at " + finished.ToLocalTime());
             Mq.Info("Snafflin' took " + runSpan);
             Mq.Finish();
@@ -238,6 +237,8 @@ namespace SnaffCore
 
         private void StatusUpdate()
         {
+            //lock (StatusObjectLocker)
+            //{
             // get memory usage for status update
             string memorynumber;
             using (Process proc = Process.GetCurrentProcess())
@@ -250,61 +251,17 @@ namespace SnaffCore
             TaskCounters treeTaskCounters = TreeTaskScheduler.Scheduler.GetTaskCounters();
             TaskCounters fileTaskCounters = FileTaskScheduler.Scheduler.GetTaskCounters();
 
-            StringBuilder updateText = new StringBuilder();
-            updateText.Append("\r\n" + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + "\r\n");
-            updateText.Append("Status Update: \r\n");
-
-            // if all share tasks have finished, reduce max parallelism to 0 and reassign capacity to tree scheduler.
-            if (ShareTaskScheduler.Done() && (shareTaskCounters.MaxParallelism >= 1))
-            {
-                int transferVal = ShareTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                ShareTaskScheduler.Scheduler._maxDegreeOfParallelism = 0;
-                TreeTaskScheduler.Scheduler._maxDegreeOfParallelism = TreeTaskScheduler.Scheduler._maxDegreeOfParallelism + transferVal;
-                updateText.Append("ShareScanner queue finished, rebalancing workload." + "\r\n");
-            }
-
-            // do the rebalancing
-            if (fileTaskCounters.CurrentTasksQueued <= (MyOptions.MaxFileQueue / 20))
-            {
-                // but only if one side isn't already at minimum.
-                if (FileTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
-                {
-                    updateText.Append("Insufficient FileScanner queue size, rebalancing workload." + "\r\n");
-                    --FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                    ++TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                }
-            }
-            if (fileTaskCounters.CurrentTasksQueued == MyOptions.MaxFileQueue)
-            {
-                if (TreeTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
-                {
-                    updateText.Append("Max FileScanner queue size reached, rebalancing workload." + "\r\n");
-                    --TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                    ++FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
-                }
-            }
-            updateText.Append("--------------------------------" + "\r\n");
-            updateText.Append("Max ShareFinder Parallelism: " + ShareTaskScheduler.Scheduler._maxDegreeOfParallelism + "\r\n");
-            updateText.Append("ShareFinder Tasks Completed: " + shareTaskCounters.CompletedTasks + "\r\n");
-            updateText.Append("ShareFinder Tasks Remaining: " + shareTaskCounters.CurrentTasksRemaining + "\r\n");
-            updateText.Append("ShareFinder Tasks Running: " + shareTaskCounters.CurrentTasksRunning + "\r\n");
-            updateText.Append("--------------------------------" + "\r\n");
-            updateText.Append("Max TreeWalker Parallelism: " + TreeTaskScheduler.Scheduler._maxDegreeOfParallelism + "\r\n");
-            updateText.Append("TreeWalker Tasks Completed: " + treeTaskCounters.CompletedTasks + "\r\n");
-            updateText.Append("TreeWalker Tasks Remaining: " + treeTaskCounters.CurrentTasksRemaining + "\r\n");
-            updateText.Append("TreeWalker Tasks Running: " + treeTaskCounters.CurrentTasksRunning + "\r\n");
-            updateText.Append("--------------------------------" + "\r\n");
-            updateText.Append("Max FileScanner Parallelism: " + FileTaskScheduler.Scheduler._maxDegreeOfParallelism + "\r\n");
-            updateText.Append("FileScanner Tasks Completed: " + fileTaskCounters.CompletedTasks + "\r\n");
-            updateText.Append("FileScanner Tasks Remaining: " + fileTaskCounters.CurrentTasksRemaining + "\r\n");
-            updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\r\n");
-            updateText.Append("--------------------------------" + "\r\n");
-            updateText.Append(memorynumber + " RAM in use." + "\r\n");
-            DateTime now = DateTime.Now;
-            TimeSpan runSpan = now.Subtract(StartTime);
-            updateText.Append("Been Snafflin' for " + runSpan + " and we ain't done yet..." + "\r\n");
-            updateText.Append("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + "\r\n" + "\r\n");
-
+            StringBuilder updateText = new StringBuilder("Status Update: \n");
+            updateText.Append("ShareFinder Tasks Completed: " + shareTaskCounters.CompletedTasks + "\n");
+            updateText.Append("ShareFinder Tasks Remaining: " + shareTaskCounters.CurrentTasksRemaining + "\n");
+            updateText.Append("ShareFinder Tasks Running: " + shareTaskCounters.CurrentTasksRunning + "\n");
+            updateText.Append("TreeWalker Tasks Completed: " + treeTaskCounters.CompletedTasks + "\n");
+            updateText.Append("TreeWalker Tasks Remaining: " + treeTaskCounters.CurrentTasksRemaining + "\n");
+            updateText.Append("TreeWalker Tasks Running: " + treeTaskCounters.CurrentTasksRunning + "\n");
+            updateText.Append("FileScanner Tasks Completed: " + fileTaskCounters.CompletedTasks + "\n");
+            updateText.Append("FileScanner Tasks Remaining: " + fileTaskCounters.CurrentTasksRemaining + "\n");
+            updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\n");
+            updateText.Append(memorynumber + " RAM in use.");
 
             Mq.Info(updateText.ToString());
 
@@ -312,6 +269,7 @@ namespace SnaffCore
             {
                 waitHandle.Set();
             }
+            //}
         }
 
         private static String BytesToString(long byteCount)

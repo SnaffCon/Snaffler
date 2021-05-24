@@ -20,7 +20,7 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // python
-                    "\\.py"
+                    ".py"
                 },
             });
 
@@ -65,12 +65,12 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // php
-                    "\\.php",
-                    "\\.phtml",
-                    "\\.inc",
-                    "\\.php3",
-                    "\\.php5",
-                    "\\.php7"
+                    ".php",
+                    ".phtml",
+                    ".inc",
+                    ".php3",
+                    ".php5",
+                    ".php7"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -117,13 +117,13 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // asp.net
-                    "\\.aspx",
-                    "\\.ashx",
-                    "\\.asmx",
-                    "\\.asp",
-                    "\\.cshtml",
-                    "\\.cs",
-                    "\\.ascx"
+                    ".aspx",
+                    ".ashx",
+                    ".asmx",
+                    ".asp",
+                    ".cshtml",
+                    ".cs",
+                    ".ascx"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -167,11 +167,11 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // java
-                    "\\.jsp",
-                    "\\.do",
-                    "\\.java",
+                    ".jsp",
+                    ".do",
+                    ".java",
                     // coldfusion
-                    "\\.cfm",
+                    ".cfm",
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -214,7 +214,7 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // ruby
-                    "\\.rb"
+                    ".rb"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -258,7 +258,7 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // perl
-                    "\\.pl"
+                    ".pl"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -302,9 +302,9 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // powershell
-                    "\\.psd1",
-                    "\\.psm1",
-                    "\\.ps1",
+                    ".psd1",
+                    ".psm1",
+                    ".ps1",
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -345,8 +345,8 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // cmd.exe
-                    "\\.bat",
-                    "\\.cmd"
+                    ".bat",
+                    ".cmd"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -385,9 +385,9 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // bash, sh, zsh, etc
-                    "\\.sh",
-                    "\\.rc",
-                    "\\.profile"
+                    ".sh",
+                    ".rc",
+                    ".profile"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -430,7 +430,7 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // Firefox/Thunderbird
-                    "logins\\.json"
+                    "logins.json"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -492,25 +492,25 @@ namespace SnaffCore.Config
                 RelayTarget = "KeepConfigRegexRed",
                 WordList = new List<string>()
                 {
-                    "\\.yaml",
-                    "\\.yml",
-                    "\\.toml",
-                    "\\.xml",
-                    "\\.json",
-                    "\\.config",
-                    "\\.ini",
-                    "\\.inf",
-                    "\\.cnf",
-                    "\\.conf",
-                    "\\.properties",
-                    "\\.env",
-                    "\\.dist",
-                    "\\.txt",
-                    "\\.sql",
-                    "\\.log",
-                    "\\.sqlite",
-                    "\\.sqlite3",
-                    "\\.fdb"
+                    ".yaml",
+                    ".yml",
+                    ".toml",
+                    ".xml",
+                    ".json",
+                    ".config",
+                    ".ini",
+                    ".inf",
+                    ".cnf",
+                    ".conf",
+                    ".properties",
+                    ".env",
+                    ".dist",
+                    ".txt",
+                    ".sql",
+                    ".log",
+                    ".sqlite",
+                    ".sqlite3",
+                    ".fdb"
                 },
             });
 
@@ -560,7 +560,7 @@ namespace SnaffCore.Config
                     "_dsa", // test file created
                     "_ed25519", // test file created
                     "_ecdsa", // test file created
-                    "\\.pem",
+                    ".pem",
                 },
             });
 
@@ -591,11 +591,11 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
-                        "\\.der",   // test file created
-                        "\\.pfx",
-                        "\\.pk12",
-                        "\\.p12",
-                        "\\.pkcs12",
+                        ".der",   // test file created
+                        ".pfx",
+                        ".pk12",
+                        ".p12",
+                        ".pkcs12",
                     },
                 }
             );

@@ -17,8 +17,8 @@ namespace SnaffCore.Config
                 WordListType = MatchListType.EndsWith,
                 WordList = new List<string>()
                     {
-                        "\\print$",
-                        "\\ipc$"
+                        @"\\{2}print\$",
+                        @"\\{2}ipc\$"
                     },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -32,8 +32,8 @@ namespace SnaffCore.Config
                 Triage = Triage.Black,
                 WordList = new List<string>()
                     {
-                        "\\C$",
-                        "\\ADMIN$"
+                        @"\\{2}C\$",
+                        @"\\{2}ADMIN\$"
                     },
             });
             /*

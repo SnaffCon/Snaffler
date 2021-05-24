@@ -40,7 +40,7 @@ namespace Classifiers
                             };
                             Mq.ShareResult(shareResult);
                         }
-                        return true;
+                        return false;
                     default:
                         Mq.Error("You've got a misconfigured share ClassifierRule named " + ClassifierRule.RuleName + ".");
                         return false;

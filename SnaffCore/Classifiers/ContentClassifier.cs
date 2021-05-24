@@ -38,73 +38,40 @@ namespace Classifiers
                             }
                             return;
                         case MatchLoc.FileContentAsString:
-                            try
-                            {
-                                string fileString = File.ReadAllText(fileInfo.FullName);
+                            string fileString = File.ReadAllText(fileInfo.FullName);
 
-                                TextClassifier textClassifier = new TextClassifier(ClassifierRule);
-                                TextResult textResult = textClassifier.TextMatch(fileString);
-                                if (textResult != null)
+                            TextClassifier textClassifier = new TextClassifier(ClassifierRule);
+                            TextResult textResult = textClassifier.TextMatch(fileString);
+                            if (textResult != null)
+                            {
+                                fileResult = new FileResult(fileInfo)
                                 {
-                                    fileResult = new FileResult(fileInfo)
-                                    {
-                                        MatchedRule = ClassifierRule,
-                                        TextResult = textResult
-                                    };
-                                    Mq.FileResult(fileResult);
-                                }
-                            }
-                            catch (UnauthorizedAccessException)
-                            {
-                                return;
-                            }
-                            catch (IOException)
-                            {
-                                return;
+                                    MatchedRule = ClassifierRule,
+                                    TextResult = textResult
+                                };
+                                Mq.FileResult(fileResult);
                             }
                             return;
                         case MatchLoc.FileLength:
-                            try
+                            bool lengthResult = SizeMatch(fileInfo);
+                            if (lengthResult)
                             {
-                                bool lengthResult = SizeMatch(fileInfo);
-                                if (lengthResult)
+                                fileResult = new FileResult(fileInfo)
                                 {
-                                    fileResult = new FileResult(fileInfo)
-                                    {
-                                        MatchedRule = ClassifierRule
-                                    };
-                                    Mq.FileResult(fileResult);
-                                }
-                            }
-                            catch (UnauthorizedAccessException)
-                            {
-                                return;
-                            }
-                            catch (IOException)
-                            {
-                                return;
+                                    MatchedRule = ClassifierRule
+                                };
+                                Mq.FileResult(fileResult);
                             }
                             return;
                         case MatchLoc.FileMD5:
-                            try
+                            bool Md5Result = MD5Match(fileInfo);
+                            if (Md5Result)
                             {
-                                bool Md5Result = MD5Match(fileInfo);
-                                if (Md5Result)
+                                fileResult = new FileResult(fileInfo)
                                 {
-                                    fileResult = new FileResult(fileInfo)
-                                    {
-                                        MatchedRule = ClassifierRule
-                                    };
-                                    Mq.FileResult(fileResult);
-                                }
-                            }
-                            catch (UnauthorizedAccessException)
-                            {
-                                return;
-                            }
-                            catch (IOException)
-                            {
-                                return;
+                                    MatchedRule = ClassifierRule
+                                };
+                                Mq.FileResult(fileResult);
                             }
                             return;
                         default:
@@ -116,6 +83,16 @@ namespace Classifiers
                 {
                     Mq.Trace("The following file was bigger than the MaxSizeToGrep config parameter:" + fileInfo.FullName);
                 }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Mq.Error($"Not authorized to access file: {fileInfo.FullName}");
+                return;
+            }
+            catch (IOException e)
+            {
+                Mq.Error($"IO Exception on file: {fileInfo.FullName}. {e.Message}");
+                return;
             }
             catch (Exception e)
             {
@@ -142,6 +119,7 @@ namespace Classifiers
             }
             return false;
         }
+
         protected string GetMD5HashFromFile(string fileName)
         {
             using (var md5 = MD5.Create())
@@ -152,6 +130,7 @@ namespace Classifiers
                 }
             }
         }
+
         public bool ByteMatch(byte[] fileBytes)
         {
             // TODO

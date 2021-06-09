@@ -32,7 +32,6 @@ namespace Classifiers
                         dirResult.ScanDir = false;
                         return dirResult;
                     case MatchAction.Snaffle:
-                        dirResult.ScanDir = false;
                         dirResult.Triage = ClassifierRule.Triage;
                         Mq.DirResult(dirResult);
                         return dirResult;

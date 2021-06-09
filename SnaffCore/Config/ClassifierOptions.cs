@@ -37,40 +37,33 @@ namespace SnaffCore.Config
                         break;
                     case MatchListType.Contains:
                         classifierRule.Regexes = new List<Regex>();
-                        foreach (string word in classifierRule.WordList)
+                        foreach (string pattern in classifierRule.WordList)
                         {
-                            string pattern = Regex.Escape(word);
                             classifierRule.Regexes.Add(new Regex(pattern,
                                 RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
                         }
 
                         break;
                     case MatchListType.EndsWith:
-                        foreach (string word in classifierRule.WordList)
+                        foreach (string pattern in classifierRule.WordList)
                         {
-                            string pattern = Regex.Escape(word);
-                            pattern = pattern + "$";
-                            classifierRule.Regexes.Add(new Regex(pattern,
+                            classifierRule.Regexes.Add(new Regex(pattern + "$",
                                 RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
                         }
 
                         break;
                     case MatchListType.StartsWith:
-                        foreach (string word in classifierRule.WordList)
+                        foreach (string pattern in classifierRule.WordList)
                         {
-                            string pattern = Regex.Escape(word);
-                            pattern = "^" + pattern;
-                            classifierRule.Regexes.Add(new Regex(pattern,
+                            classifierRule.Regexes.Add(new Regex("^" + pattern,
                                 RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
                         }
 
                         break;
                     case MatchListType.Exact:
-                        foreach (string word in classifierRule.WordList)
+                        foreach (string pattern in classifierRule.WordList)
                         {
-                            string pattern = Regex.Escape(word);
-                            pattern = "^" + pattern + "$";
-                            classifierRule.Regexes.Add(new Regex(pattern,
+                            classifierRule.Regexes.Add(new Regex("^" + pattern + "$",
                                 RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
                         }
 

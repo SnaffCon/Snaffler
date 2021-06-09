@@ -20,7 +20,7 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // python
-                    ".py"
+                    "\\.py"
                 },
             });
 
@@ -41,12 +41,12 @@ namespace SnaffCore.Config
                     // generic tokens etc, same for most languages.
                     "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
                     "aws[_\\-\\.]?key", // aws mnagic
-                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    //"[_\\-\\.]oauth\\s*=", // oauth stuff
-                    //"client_secret", // fun
+                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    "[_\\-\\.]oauth\\s*=", // oauth stuff
+                    "client_secret", // fun
                     "secret[_\\-\\.]?(key)?\\s*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
@@ -65,12 +65,12 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // php
-                    ".php",
-                    ".phtml",
-                    ".inc",
-                    ".php3",
-                    ".php5",
-                    ".php7"
+                    "\\.php",
+                    "\\.phtml",
+                    "\\.inc",
+                    "\\.php3",
+                    "\\.php5",
+                    "\\.php7"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -93,11 +93,11 @@ namespace SnaffCore.Config
                     // generic tokens etc, same for most languages.
                     "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
                     "aws[_\\-\\.]?key", // aws mnagic
-                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    //"[_\\-\\.]oauth\\s*=", // oauth stuff
+                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    "[_\\-\\.]oauth\\s*=", // oauth stuff
                     "client_secret", // fun
                     "secret[_\\-\\.]?(key)?\\s*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
@@ -117,13 +117,13 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // asp.net
-                    ".aspx",
-                    ".ashx",
-                    ".asmx",
-                    ".asp",
-                    ".cshtml",
-                    ".cs",
-                    ".ascx"
+                    "\\.aspx",
+                    "\\.ashx",
+                    "\\.asmx",
+                    "\\.asp",
+                    "\\.cshtml",
+                    "\\.cs",
+                    "\\.ascx"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -143,12 +143,12 @@ namespace SnaffCore.Config
                     "decryptionkey\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
                     "aws[_\\-\\.]?key", // aws mnagic
-                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    //"[_\\-\\.]oauth\\s*=", // oauth stuff
-                    //"client_secret", // fun
+                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    "[_\\-\\.]oauth\\s*=", // oauth stuff
+                    "client_secret", // fun
                     "secret[_\\-\\.]?(key)?\\s*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
@@ -167,11 +167,11 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // java
-                    ".jsp",
-                    ".do",
-                    ".java",
+                    "\\.jsp",
+                    "\\.do",
+                    "\\.java",
                     // coldfusion
-                    ".cfm",
+                    "\\.cfm",
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -190,11 +190,11 @@ namespace SnaffCore.Config
                     // generic tokens etc, same for most languages.
                     "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    //"aws[_\\-\\.]?key", // aws mnagic
-                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    //"[_\\-\\.]oauth\\s*=", // oauth stuff
+                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    "aws[_\\-\\.]?key", // aws mnagic
+                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    "[_\\-\\.]oauth\\s*=", // oauth stuff
                     "client_secret", // fun
                     "secret[_\\-\\.]?(key)?\\s*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
@@ -214,7 +214,7 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // ruby
-                    ".rb"
+                    "\\.rb"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -229,15 +229,15 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // ruby
-                    //"DBI\\.connect\\(",
+                    "DBI\\.connect\\(",
                     // generic tokens etc, same for most languages.
-                    "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
+                    "passwo",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
                     "aws[_\\-\\.]?key", // aws mnagic
-                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    //"[_\\-\\.]oauth\\s*=", // oauth stuff
+                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    "[_\\-\\.]oauth\\s*=", // oauth stuff
                     "client_secret", // fun
                     "secret[_\\-\\.]?(key)?\\s*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
@@ -258,7 +258,7 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // perl
-                    ".pl"
+                    "\\.pl"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -277,13 +277,13 @@ namespace SnaffCore.Config
                     // generic tokens etc, same for most languages.
                     "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    //"aws[_\\-\\.]?key", // aws mnagic
-                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    //"[_\\-\\.]oauth\\s*=", // oauth stuff
-                    //"client_secret", // fun
-                    //"secret[_\\-\\.]?(key)?\\s*=",
+                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    "aws[_\\-\\.]?key", // aws mnagic
+                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    "[_\\-\\.]oauth\\s*=", // oauth stuff
+                    "client_secret", // fun
+                    "secret[_\\-\\.]?(key)?\\s*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -302,9 +302,9 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // powershell
-                    ".psd1",
-                    ".psm1",
-                    ".ps1",
+                    "\\.psd1",
+                    "\\.psm1",
+                    "\\.ps1",
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -327,6 +327,13 @@ namespace SnaffCore.Config
                     // generic tokens etc, same for most languages.
                     "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "CREATE (USER|LOGIN) .{0,00} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
+                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    "aws[_\\-\\.]?key", // aws mnagic
+                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    "[_\\-\\.]oauth\\s*=", // oauth stuff
+                    "client_secret", // fun
+                    "secret[_\\-\\.]?(key)?\\s*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -345,8 +352,8 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // cmd.exe
-                    ".bat",
-                    ".cmd"
+                    "\\.bat",
+                    "\\.cmd"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -366,7 +373,7 @@ namespace SnaffCore.Config
                     // creation of scheduled tasks with password
                     "schtasks.{1,300}(/rp\\s|/p\\s)",
                     // looking for net use or net user commands since these can contain credentials
-                    "net user ",
+                    "net user? ",
                     "psexec .{0,100} -p ",
                     "net use .{0,300} /user:"
                 }
@@ -385,9 +392,9 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // bash, sh, zsh, etc
-                    ".sh",
-                    ".rc",
-                    ".profile"
+                    "\\.sh",
+                    "\\.rc",
+                    "\\.profile"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -406,13 +413,13 @@ namespace SnaffCore.Config
                     // generic tokens etc, same for most languages.
                     "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
-                    //"aws[_\\-\\.]?key", // aws mnagic
-                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    //"[_\\-\\.]oauth\\s*=", // oauth stuff
-                    //"client_secret", // fun
-                    //"secret[_\\-\\.]?(key)?\\s*=",
+                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    "aws[_\\-\\.]?key", // aws mnagic
+                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    "[_\\-\\.]oauth\\s*=", // oauth stuff
+                    "client_secret", // fun
+                    "secret[_\\-\\.]?(key)?\\s*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
                 }
@@ -430,7 +437,7 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // Firefox/Thunderbird
-                    "logins.json"
+                    "logins\\.json"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -449,8 +456,7 @@ namespace SnaffCore.Config
             });
 
             // vbscript etc
-            /*
-            this.ClassifierRules.Add(new ClassifierRule()
+            /*this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with these extensions will be searched for VBScript related strings.",
                 RuleName = "vbsContentByExt",
@@ -492,25 +498,25 @@ namespace SnaffCore.Config
                 RelayTarget = "KeepConfigRegexRed",
                 WordList = new List<string>()
                 {
-                    ".yaml",
-                    ".yml",
-                    ".toml",
-                    ".xml",
-                    ".json",
-                    ".config",
-                    ".ini",
-                    ".inf",
-                    ".cnf",
-                    ".conf",
-                    ".properties",
-                    ".env",
-                    ".dist",
-                    ".txt",
-                    ".sql",
-                    ".log",
-                    ".sqlite",
-                    ".sqlite3",
-                    ".fdb"
+                    "\\.yaml",
+                    "\\.yml",
+                    "\\.toml",
+                    "\\.xml",
+                    "\\.json",
+                    "\\.config",
+                    "\\.ini",
+                    "\\.inf",
+                    "\\.cnf",
+                    "\\.conf",
+                    "\\.properties",
+                    "\\.env",
+                    "\\.dist",
+                    "\\.txt",
+                    "\\.sql",
+                    "\\.log",
+                    "\\.sqlite",
+                    "\\.sqlite3",
+                    "\\.fdb"
                 },
             });
 
@@ -530,12 +536,12 @@ namespace SnaffCore.Config
                     "decryptionkey\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
-                    //"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
-                    //"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
+                    "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
+                    "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook
                     "aws[_\\-\\.]?key", // aws mnagic
-                    //"[_\\-\\.]?api[_\\-\\.]?key", // stuff
-                    //"[_\\-\\.]oauth\\s*=", // oauth stuff
-                    //"client_secret", // fun
+                    "[_\\-\\.]?api[_\\-\\.]?key", // stuff
+                    "[_\\-\\.]oauth\\s*=", // oauth stuff
+                    "client_secret", // fun
                     "secret[_\\-\\.]?(key)?\\s*=",
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----",
                     "(\\s|\\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\\'|\\\"|$)", // aws access key
@@ -560,7 +566,7 @@ namespace SnaffCore.Config
                     "_dsa", // test file created
                     "_ed25519", // test file created
                     "_ecdsa", // test file created
-                    ".pem",
+                    "\\.pem",
                 },
             });
 
@@ -591,11 +597,11 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
-                        ".der",   // test file created
-                        ".pfx",
-                        ".pk12",
-                        ".p12",
-                        ".pkcs12",
+                        "\\.der",   // test file created
+                        "\\.pfx",
+                        "\\.pk12",
+                        "\\.p12",
+                        "\\.pkcs12",
                     },
                 }
             );

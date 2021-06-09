@@ -222,6 +222,10 @@ namespace Snaffler
                     break;
                 case SnafflerMessageType.Fatal:
                     Logger.Fatal(datetime + "[Fatal]" + Options.Separator + message.Message);
+                    if (Debugger.IsAttached)
+                    {
+                        Console.ReadKey();
+                    }
                     Environment.Exit(1);
                     break;
                 case SnafflerMessageType.Finish:

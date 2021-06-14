@@ -54,10 +54,9 @@ namespace Snaffler
                 // set up the  TSV output if the flag is set
                 if (Options.LogTSV)
                 {
-                    // treat all as strings except LastWriteTime {6}
-                    fileResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6:u}" + Options.Separator + "{7}" + Options.Separator + "{8}";
-                    shareResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
-                    dirResultTemplate = Options.Separator + "{0}" + Options.Separator + "{1}";
+                    fileResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6:u}" + Options.Separator + "{7}" + Options.Separator + "{8}";
+                    shareResultTemplate = "{0}" + Options.Separator + "{1}";
+                    dirResultTemplate = "{0}" + Options.Separator + "{1}";
                 }
                 // otherwise just do the normal thing
                 else
@@ -277,7 +276,18 @@ namespace Snaffler
                 string matchedstring = "";
 
                 long fileSize = message.FileResult.FileInfo.Length;
-                string fileSizeString = BytesToString(fileSize);
+
+                string fileSizeString;
+
+                // TSV output will probably be machine-consumed.  Don't pretty it up.
+                if (Options.LogTSV)
+                {
+                    fileSizeString = fileSize.ToString();
+                }
+                else
+                {
+                    fileSizeString = BytesToString(fileSize);
+                }
 
                 string filepath = message.FileResult.FileInfo.FullName;
 

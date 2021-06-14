@@ -1,4 +1,4 @@
-﻿using Classifiers;
+using Classifiers;
 using SnaffCore.ActiveDirectory;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;

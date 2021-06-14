@@ -5,8 +5,10 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
+     
         private void BuildFileNameRules()
         {
+         
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
@@ -270,8 +272,8 @@ namespace SnaffCore.Config
                     {
                         //magic words
                         "passw",
-                        "as-built",
-                        "handover",
+                        //"as built",
+                        //"handover",
                         "secret",
                         "thycotic",
                         "cyberark",

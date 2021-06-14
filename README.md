@@ -105,6 +105,8 @@ Each L.A.I.M. magic file finding method does stuff like:
 
 Snaffler uses a system of 'classifiers', which allow the end-user (you) to define (relatively) simple rules that can be combined and strung together and mangled however you see fit. It comes with a set of default classifiers, which you can see by either looking at the code or by having a look at the config file created by `-z generate`, so the best place to start with making your own is to edit those.
 
+The defaults don't have any rules that will look inside Office docs and PDFs, but you can see some examples in SnaffCore/DefaultRules/FileContentRules.cs that have been commented out. Just uncomment those before you compile and edit the regexen to suit your requirements. *Be warned, this is a lot slower than looking inside good old fashioned text files, and a typical environment will have an absolute mountain of low-value Office docs and PDFs.*
+
 Here's some annotated examples that will hopefully help to explain things better. If this seems very hard, you can just use our rules and they'll probably find you some good stuff.
 
 This is an example of a rule that will make Snaffler ignore all files and subdirectories below a dir with a certain name.
@@ -204,12 +206,11 @@ hopefully you get the idea...
 
 ## This sucks, do you have plans to make it suck less?
 
-Very much so.
+No it doesn't, you suck.
 
-Next step on the roadmap is a bunch of extra concurrency magic to make everything even more fasterer.
+Also, yes we do.
 
 We're also going to: 
- - Add parsing of MS Word and Excel documents.
  - Add parsing of archive files, ideally treating them as just another dir to walk through looking for goodies.
  - Keep refining the rules and regexen. **More words for the wordlists! `string[]`s for the `string` throne!**
 

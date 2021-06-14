@@ -1,8 +1,13 @@
 ﻿using SnaffCore.Concurrency;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using static SnaffCore.Config.Options;
+
+#if ULTRASNAFFLER
+using Toxy;
+#endif
 
 namespace Classifiers
 {
@@ -38,18 +43,48 @@ namespace Classifiers
                             }
                             return;
                         case MatchLoc.FileContentAsString:
-                            string fileString = File.ReadAllText(fileInfo.FullName);
-
-                            TextClassifier textClassifier = new TextClassifier(ClassifierRule);
-                            TextResult textResult = textClassifier.TextMatch(fileString);
-                            if (textResult != null)
+                            try
                             {
-                                fileResult = new FileResult(fileInfo)
+                                string fileString;
+
+#if ULTRASNAFFLER
+                                // if it's an office doc or a PDF or something, parse it to a string first i guess?
+                                List<string> parsedExtensions = new List<string>()
                                 {
-                                    MatchedRule = ClassifierRule,
-                                    TextResult = textResult
+                                    ".doc",".docx",".xls",".xlsx",".eml",".msg",".pdf",".ppt",".pptx",".rtf",".docm",".xlsm",".pptm",".dot",".dotx",".dotm",".xlt",".xlsm",".xltm"
                                 };
-                                Mq.FileResult(fileResult);
+
+                                if (parsedExtensions.Contains(fileInfo.Extension))
+                                {
+                                    fileString = ParseFileToString(fileInfo);
+                                }
+                                else
+                                {
+                                    fileString = File.ReadAllText(fileInfo.FullName);
+                                }
+#else
+                                fileString = File.ReadAllText(fileInfo.FullName);
+#endif
+                                TextClassifier textClassifier = new TextClassifier(ClassifierRule);
+                                TextResult textResult = textClassifier.TextMatch(fileString);
+                                if (textResult != null)
+                                {
+                                    fileResult = new FileResult(fileInfo)
+                                    {
+                                        MatchedRule = ClassifierRule,
+                                        TextResult = textResult
+                                    };
+
+                                    Mq.FileResult(fileResult);
+                                }
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                                return;
+                            }
+                            catch (IOException)
+                            {
+                                return;
                             }
                             return;
                         case MatchLoc.FileLength:
@@ -130,6 +165,17 @@ namespace Classifiers
                 }
             }
         }
+
+#if ULTRASNAFFLER
+        public string ParseFileToString(FileInfo fileInfo)
+        {
+            ParserContext context = new ParserContext(fileInfo.FullName);
+            ITextParser parser = ParserFactory.CreateText(context);
+
+                string doc = parser.Parse();
+            return doc;
+        }
+#endif
 
         public bool ByteMatch(byte[] fileBytes)
         {

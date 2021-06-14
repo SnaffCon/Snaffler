@@ -277,7 +277,6 @@ namespace SnaffCore.Config
                         "cyberark",
                     },
             });
-
         }
     }
 }

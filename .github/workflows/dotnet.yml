@@ -1,0 +1,30 @@
+name: Publish
+
+on: [push]
+
+jobs:
+
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+      name: Checkout Code
+
+    - name: Setup MSBuild Path
+      uses: warrenbuckley/Setup-MSBuild@v1
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.2
+
+    - name: Restore NuGet Packages
+      run: nuget restore Snaffler.sln
+
+    - name: Build and Publish Web App
+      run: msbuild Snaffler.sln /p:Configuration=Release
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "Snaffler.exe"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

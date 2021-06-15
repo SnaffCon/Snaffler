@@ -26,6 +26,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: "Snaffler.exe"
+        files: ".\\bin\\Release\\Snaffler.exe"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

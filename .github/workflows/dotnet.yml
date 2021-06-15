@@ -22,9 +22,9 @@ jobs:
     - name: Build and Publish Web App
       run: msbuild Snaffler.sln /p:Configuration=Release
 
-      - name: Publish
-        uses: softprops/action-gh-release@v1
-        with:
-          files: "Snaffler.exe"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "Snaffler.exe"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

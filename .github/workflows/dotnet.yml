@@ -1,4 +1,4 @@
-name: Publish
+name: BuildAndRelease
 
 on: [push]
 
@@ -21,12 +21,6 @@ jobs:
 
     - name: Build
       run: msbuild Snaffler.sln /p:Configuration=Release
-
-    - name: Debug
-      run: pwd
-    
-    - name: Debug2
-      run: get-childitem -recurse
 
     - name: Release
       uses: softprops/action-gh-release@v1

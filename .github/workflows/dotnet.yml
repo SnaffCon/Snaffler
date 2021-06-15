@@ -19,10 +19,10 @@ jobs:
     - name: Restore NuGet Packages
       run: nuget restore Snaffler.sln
 
-    - name: Build and Publish Web App
+    - name: Build
       run: msbuild Snaffler.sln /p:Configuration=Release
 
-    - name: Publish
+    - name: Release
       uses: softprops/action-gh-release@v1
       with:
         files: "Snaffler.exe"

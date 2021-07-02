@@ -119,15 +119,9 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
-                        "\\.jks", // test file created
                         // rdp
                         "\\.rdp", // test file created
                         "\\.rdg", // test file created
-                        // bitlocker recovery keys
-                        "\\.bek", // test file created
-                        // tpm backups
-                        "\\.tpm", // test file created
-                        "\\.fve", // test file created
                         // packet capture
                         "\\.pcap", // test file created
                         "\\.cap", // test file created
@@ -135,15 +129,6 @@ namespace SnaffCore.Config
                         "\\.key", // test file created
                         "\\.keypair", // test file created
                         "\\.keychain", // test file created
-                        // disk image
-                        "\\.wim", // test file created
-                        // virtual machines
-                        "\\.ova", // test file created
-                        "\\.ovf", // test file created
-                        // db backups
-                        "\\.mdf", // test file created
-                        "\\.sdf", // test file created
-                        "\\.sqldump", // test file created
                         "\\.dmp"
                     },
                 });
@@ -160,11 +145,28 @@ namespace SnaffCore.Config
                 Triage = Triage.Yellow,
                 WordList = new List<string>()
                 {
+                        "\\.jks", // test file created
+                        "\\.mdf", // test file created
+                        "\\.sdf", // test file created
+                        // disk image
+                        "\\.wim", // test file created
+                        // virtual machines
+                        "\\.ova", // test file created
+                        "\\.ovf", // test file created
+                        // db backups
+                        "\\.sqldump", // test file created
+                        // bitlocker recovery keys
+                      //  "\\.bek", // test file created
+                        // tpm backups
+                      //  "\\.tpm", // test file created
+                      //  "\\.fve", // test file created
+                  /*
                         "\\.ps1",
                         "\\.bat",
                         "\\.sh",
                         "\\.pl",
                         "\\.rb"
+                        */
                 },
             });
 

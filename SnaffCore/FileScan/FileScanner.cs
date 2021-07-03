@@ -9,6 +9,7 @@ namespace SnaffCore.FileScan
     public class FileScanner
     {
         private BlockingMq Mq { get; set; }
+        private int InterestLevel { get; set; }
 
         public FileScanner()
         {

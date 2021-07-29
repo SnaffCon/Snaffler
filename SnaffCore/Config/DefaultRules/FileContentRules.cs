@@ -358,7 +358,7 @@ namespace SnaffCore.Config
                     // PS
                     "net user ",
                     "psexec .{0,100} -p ",
-                    "net use .{0,300} /user:"
+                    "net use .{0,300} /user:",
                     "-SecureString",
                     "-AsPlainText",
                     "\\[Net.NetworkCredential\\]::new\\(",

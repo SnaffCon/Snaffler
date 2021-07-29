@@ -358,6 +358,7 @@ namespace SnaffCore.Config
                     // PS
                     "net user ",
                     "psexec .{0,100} -p ",
+                    "net use .{0,300} /user:",
                     "-SecureString",
                     "-AsPlainText",
                     "\\[Net.NetworkCredential\\]::new\\(",
@@ -410,7 +411,7 @@ namespace SnaffCore.Config
                     // creation of scheduled tasks with password
                     "schtasks.{1,300}(/rp\\s|/p\\s)",
                     // looking for net use or net user commands since these can contain credentials
-                    "net user? ",
+                    "net user ",
                     "psexec .{0,100} -p ",
                     "net use .{0,300} /user:"
                 }

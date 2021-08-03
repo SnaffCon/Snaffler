@@ -268,7 +268,7 @@ namespace SnaffCore.Config
                     // ruby
                     "DBI\\.connect\\(",
                     // generic tokens etc, same for most languages.
-                    "passwo",
+                    "passwo?r?d\\s*=\\s*[\\\'\\\"][^\\\'\\\"]....",
                     "CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", // sql creds
                     "(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", //Slack Token
                     "https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", //Slack Webhook

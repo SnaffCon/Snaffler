@@ -604,8 +604,7 @@ namespace SnaffCore.Config
                     "_rsa", // test file created
                     "_dsa", // test file created
                     "_ed25519", // test file created
-                    "_ecdsa", // test file created
-                    "\\.pem",
+                    "_ecdsa" // test file created
                 },
             });
 
@@ -623,7 +622,35 @@ namespace SnaffCore.Config
                 },
             });
 
-  // dsa | ecdsa | ed25519 | rsa]
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                Description = "Files ending like this will be grepped for private keys.",
+                RuleName = "CertContentByEndingYellow",
+                EnumerationScope = EnumerationScope.FileEnumeration,
+                MatchLocation = MatchLoc.FileExtension,
+                WordListType = MatchListType.Exact,
+                MatchAction = MatchAction.Relay,
+                RelayTarget = "KeepCertRegexRed",
+                WordList = new List<string>()
+                {
+                    "\\.pem",
+                },
+            });
+
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                RuleName = "KeepCertRegexYellow",
+                EnumerationScope = EnumerationScope.ContentsEnumeration,
+                MatchLocation = MatchLoc.FileContentAsString,
+                WordListType = MatchListType.Regex,
+                MatchAction = MatchAction.Snaffle,
+                Triage = Triage.Yellow,
+                WordList = new List<string>()
+                {
+                    "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----"
+                },
+            });
+
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {

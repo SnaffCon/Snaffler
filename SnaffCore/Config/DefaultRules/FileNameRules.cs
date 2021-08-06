@@ -5,10 +5,10 @@ namespace SnaffCore.Config
 {
     public partial class Options
     {
-     
+
         private void BuildFileNameRules()
         {
-         
+
             this.ClassifierRules.Add(
                 new ClassifierRule()
                 {
@@ -78,7 +78,9 @@ namespace SnaffCore.Config
                         "MEMORY\\.DMP",
                         "hiberfil\\.sys",
                         "lsass\\.dmp",
-                        "lsass\\.exe\\.dmp"
+                        "lsass\\.exe\\.dmp",
+                        "Psmapp\\.cred",
+                        "psmgw\\.cred"
                     },
                 }
                 );
@@ -119,17 +121,11 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
-                        // rdp
-                        "\\.rdp", // test file created
-                        "\\.rdg", // test file created
-                        // packet capture
-                        "\\.pcap", // test file created
-                        "\\.cap", // test file created
-                        // misc key material
-                        "\\.key", // test file created
-                        "\\.keypair", // test file created
-                        "\\.keychain", // test file created
-                        "\\.dmp"
+                        // bak
+                        "\\.bak",
+                        "\\.cred",
+                        // db backups
+                        "\\.sqldump", // test file created
                     },
                 });
 
@@ -145,6 +141,17 @@ namespace SnaffCore.Config
                 Triage = Triage.Yellow,
                 WordList = new List<string>()
                 {
+                        // rdp
+                        "\\.rdp", // test file created
+                        "\\.rdg", // test file created
+                        // packet capture
+                        "\\.pcap", // test file created
+                        "\\.cap", // test file created
+                        // misc key material
+                        "\\.key", // test file created
+                        "\\.keypair", // test file created
+                        "\\.keychain", // test file created
+                        "\\.dmp",
                         "\\.jks", // test file created
                         "\\.mdf", // test file created
                         "\\.sdf", // test file created
@@ -152,21 +159,12 @@ namespace SnaffCore.Config
                         "\\.wim", // test file created
                         // virtual machines
                         "\\.ova", // test file created
-                        "\\.ovf", // test file created
-                        // db backups
-                        "\\.sqldump", // test file created
+                        "\\.ovf" // test file created
                         // bitlocker recovery keys
                       //  "\\.bek", // test file created
                         // tpm backups
                       //  "\\.tpm", // test file created
                       //  "\\.fve", // test file created
-                  /*
-                        "\\.ps1",
-                        "\\.bat",
-                        "\\.sh",
-                        "\\.pl",
-                        "\\.rb"
-                        */
                 },
             });
 
@@ -261,7 +259,7 @@ namespace SnaffCore.Config
                 }
                 );
 
-            
+
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 RuleName = "KeepNameContainsGreen",

@@ -141,8 +141,6 @@ namespace SnaffCore.Config
                 Triage = Triage.Yellow,
                 WordList = new List<string>()
                 {
-                        // rdp
-                        "\\.rdp", // test file created
                         "\\.rdg", // test file created
                         // packet capture
                         "\\.pcap", // test file created
@@ -202,7 +200,6 @@ namespace SnaffCore.Config
                         "secrets\\.xls",
                         "secrets\\.docx",
                         "secrets\\.xlsx",
-                        "unattend\\.xml", // test file created
                         "\\.netrc", // test file created
                         "_netrc", // test file created
                         "\\.htpasswd", // test file created

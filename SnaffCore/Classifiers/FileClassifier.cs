@@ -297,14 +297,17 @@ namespace Classifiers
 
         public static RwStatus CanRw(FileInfo fileInfo)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
+
             try
             {
                 RwStatus rwStatus = new RwStatus { CanWrite = CanIWrite(fileInfo), CanRead = CanIRead(fileInfo) };
                 return rwStatus;
             }
-            catch
+            catch (Exception e)
             {
-                return null;
+                Mq.Error(e.ToString());
+                return new RwStatus { CanWrite = false, CanRead = false }; ;
             }
         }
 
@@ -377,6 +380,4 @@ namespace Classifiers
             return writeRight;
         }
     }
-
-
 }

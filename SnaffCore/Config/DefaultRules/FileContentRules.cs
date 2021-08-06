@@ -494,26 +494,25 @@ namespace SnaffCore.Config
             });
 
             // vbscript etc
-            /*
+            
             this.ClassifierRules.Add(new ClassifierRule()
             {
-                Description = "Files with these extensions will be searched for VBScript related strings.",
-                RuleName = "vbsContentByExt",
+                Description = "Look inside unattend.xml files for actual values.",
+                RuleName = "Unattend.xml",
                 EnumerationScope = EnumerationScope.FileEnumeration,
-                MatchLocation = MatchLoc.FileExtension,
+                MatchLocation = MatchLoc.FileName,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepVbsRegexRed",
+                RelayTarget = "KeepUnattendXmlRegexRed",
                 WordList = new List<string>()
                 {
-                    "\\.vbs",
-                    "\\.wsf"
+                    "unattend\\.xml"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepVbsRegexRed",
+                RuleName = "KeepUnattendXmlRegexRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,
@@ -521,10 +520,38 @@ namespace SnaffCore.Config
                 Triage = Triage.Red,
                 WordList = new List<string>()
                 {
-                    // TODO LOL
+                    "(?s)<AdministratorPassword>.{0,30}<Value>.*<\\/Value>"
                 }
             });
-            */
+
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                Description = "Look inside unattend.xml files for actual values.",
+                RuleName = "RDPFile",
+                EnumerationScope = EnumerationScope.FileEnumeration,
+                MatchLocation = MatchLoc.FileExtension,
+                WordListType = MatchListType.Exact,
+                MatchAction = MatchAction.Relay,
+                RelayTarget = "KeepRdpPasswordRed",
+                WordList = new List<string>()
+                {
+                    "\\.rdp"
+                },
+            });
+            this.ClassifierRules.Add(new ClassifierRule()
+            {
+                Description = "Files with contents matching these regexen are very interesting.",
+                RuleName = "KeepUnattendXmlRegexRed",
+                EnumerationScope = EnumerationScope.ContentsEnumeration,
+                MatchLocation = MatchLoc.FileContentAsString,
+                WordListType = MatchListType.Regex,
+                MatchAction = MatchAction.Snaffle,
+                Triage = Triage.Red,
+                WordList = new List<string>()
+                {
+                    "password 51:b"
+                }
+            });
 
             this.ClassifierRules.Add(new ClassifierRule()
             {

@@ -506,7 +506,8 @@ namespace SnaffCore.Config
                 RelayTarget = "KeepUnattendXmlRegexRed",
                 WordList = new List<string>()
                 {
-                    "unattend\\.xml"
+                    "unattend\\.xml",
+                    "Autounattend\\.xml"
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -520,7 +521,8 @@ namespace SnaffCore.Config
                 Triage = Triage.Red,
                 WordList = new List<string>()
                 {
-                    "(?s)<AdministratorPassword>.{0,30}<Value>.*<\\/Value>"
+                    "(?s)<AdministratorPassword>.{0,30}<Value>.*<\\/Value>",
+                    "(?s)<AutoLogon>.{0,30}<Value>.*<\\/Value>"
                 }
             });
 
@@ -541,7 +543,7 @@ namespace SnaffCore.Config
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files with contents matching these regexen are very interesting.",
-                RuleName = "KeepUnattendXmlRegexRed",
+                RuleName = "KeepRdpPasswordRed",
                 EnumerationScope = EnumerationScope.ContentsEnumeration,
                 MatchLocation = MatchLoc.FileContentAsString,
                 WordListType = MatchListType.Regex,

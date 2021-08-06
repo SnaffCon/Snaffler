@@ -170,7 +170,7 @@ namespace SnaffCore
                         {
                             string pattern = "( |'|\")" + Regex.Escape(user) + "( |'|\")";
                             Regex regex = new Regex(pattern,
-                                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                                RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.CultureInvariant);
                             configClassifierRule.Regexes.Add(regex);
                         }
                     }

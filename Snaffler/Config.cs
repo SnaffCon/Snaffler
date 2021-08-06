@@ -50,6 +50,7 @@ namespace Snaffler
             SwitchArgument stdOutArg = new SwitchArgument('s', "stdout",
                 "Enables outputting results to stdout as soon as they're found. You probably want this if you're not using -o.",
                 false);
+            ValueArgument<int> interestLevel = new ValueArgument<int>('b', "interest", "Interest level to report (0-3)");
             ValueArgument<string> snaffleArg = new ValueArgument<string>('m', "snaffle",
                 "Enables and assigns an output dir for Snaffler to automatically snaffle a copy of any found files.");
             ValueArgument<long> snaffleSizeArg = new ValueArgument<long>('l', "snafflesize", "Maximum size of file to snaffle, in bytes. Defaults to 10MB.");
@@ -69,7 +70,7 @@ namespace Snaffler
             
             SwitchArgument tsvArg = new SwitchArgument('y', "tsv", "Makes Snaffler output as tsv.", false);
 
-            // list of letters i haven't used yet: abefgknpqwx
+            // list of letters i haven't used yet: aefgknpqwx
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
@@ -79,6 +80,7 @@ namespace Snaffler
             parser.Arguments.Add(snaffleArg);
             parser.Arguments.Add(snaffleSizeArg);
             parser.Arguments.Add(dirTargetArg);
+            parser.Arguments.Add(interestLevel);
             parser.Arguments.Add(domainArg);
             parser.Arguments.Add(verboseArg);
             parser.Arguments.Add(domainControllerArg);
@@ -189,6 +191,12 @@ namespace Snaffler
                 if (snaffleSizeArg.Parsed)
                 {
                     parsedConfig.MaxSizeToSnaffle = snaffleSizeArg.Value;
+                }
+
+                if (interestLevel.Parsed)
+                {
+                    parsedConfig.InterestLevel = interestLevel.Value;
+                    Mq.Degub("Requested interest level: " + parsedConfig.InterestLevel);
                 }
 
                 // how many bytes 

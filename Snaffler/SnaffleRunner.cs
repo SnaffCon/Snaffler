@@ -63,7 +63,7 @@ namespace Snaffler
                 {
                     // treat all as strings except LastWriteTime {6}
                     fileResultTemplate = "{{{0}}}<{1}|{2}{3}|{4}|{5}|{6:u}>({7}) {8}";
-                    shareResultTemplate = "{{{0}}}({1})";
+                    shareResultTemplate = "{{{0}}}({1}) {2}";
                     dirResultTemplate = "{{{0}}}({1})";
                 }
                 //------------------------------------------
@@ -243,7 +243,8 @@ namespace Snaffler
         {
             string sharePath = message.ShareResult.SharePath;
             string triage = message.ShareResult.Triage.ToString();
-            return string.Format(shareResultTemplate, triage, sharePath);
+            string shareComment = message.ShareResult.ShareComment;
+            return string.Format(shareResultTemplate, triage, sharePath, shareComment);
         }
 
         public string DirResultLogFromMessage(SnafflerMessage message)

@@ -65,6 +65,7 @@ namespace SnaffCore.ShareFind
                                 ShareClassifier shareClassifier = new ShareClassifier(classifier);
                                 if (shareClassifier.ClassifyShare(shareName))
                                 {
+                                    // in this instance 'matched' means 'don't send to treewalker'.
                                     matched = true;
                                     break;
                                 }
@@ -81,11 +82,12 @@ namespace SnaffCore.ShareFind
                             ShareResult shareResult = new ShareResult()
                             {
                                 Listable = true,
-                                SharePath = shareName
+                                SharePath = shareName,
+                                ShareComment = hostShareInfo.shi1_remark.ToString()
                             };
                             Mq.ShareResult(shareResult);
 
-                            Mq.Info("Creating a TreeWalker task for " + shareResult.SharePath);
+                            Mq.Trace("Creating a TreeWalker task for " + shareResult.SharePath);
                             TreeTaskScheduler.New(() =>
                             {
                                 try

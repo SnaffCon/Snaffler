@@ -184,11 +184,11 @@ namespace SnaffCore
 
         private void ShareDiscovery(string[] computerTargets)
         {
-            Mq.Info("Starting to find readable shares.");
+            Mq.Info("Starting to look for readable shares...");
             foreach (string computer in computerTargets)
             {
                 // ShareFinder Task Creation - this kicks off the rest of the flow
-                Mq.Info("Creating a sharefinder task for " + computer);
+                Mq.Trace("Creating a sharefinder task for " + computer);
                 ShareTaskScheduler.New(() =>
                 {
                     try

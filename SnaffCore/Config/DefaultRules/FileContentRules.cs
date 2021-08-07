@@ -650,7 +650,7 @@ namespace SnaffCore.Config
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----"
                 },
             });
-
+            /*
             this.ClassifierRules.Add(new ClassifierRule()
             {
                 Description = "Files ending like this will be grepped for private keys.",
@@ -679,6 +679,7 @@ namespace SnaffCore.Config
                     "-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----"
                 },
             });
+            */
 
             this.ClassifierRules.Add(
                 new ClassifierRule()
@@ -692,6 +693,7 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
+                        "\\.pem",
                         "\\.der",   // test file created
                         "\\.pfx",
                         "\\.pk12",

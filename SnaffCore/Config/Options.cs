@@ -37,6 +37,30 @@ namespace SnaffCore.Config
 
         // FileScanner Options
         public bool DomainUserRules { get; set; } = false;
+
+        // passwords to try on certs that require one
+        public List<string> CertPasswords = new List<string>()
+        {
+            //found in various online tutorials etc
+            "",
+            "password",
+            "mimikatz",
+            "1234",
+            "abcd",
+            "secret",
+            "MyPassword",
+            "myPassword",
+            "MyClearTextPassword",
+            "ThePasswordToKeyonPFXFile",
+            "P@ssw0rd",
+            "testpassword",
+            "@OurPassword1",
+            "@de08nt2128",
+            "changeme",
+            "changeit"
+
+        };
+
         public List<string> DomainUserMatchStrings = new List<string>()
         {
             "sql",

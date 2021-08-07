@@ -1,5 +1,6 @@
 ﻿using SnaffCore.Concurrency;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
@@ -98,11 +99,20 @@ namespace Classifiers
                     //return true;
                 case MatchAction.CheckForKeys:
                     // do a special x509 dance
-                    if (x509PrivKeyMatch(fileInfo))
+                    List<string> x509MatchReason = x509Match(fileInfo);
+                    if (x509MatchReason.Count >= 0)
                     {
+                        // if there were any matchreasons, cat them together...
+                        string matchContext = String.Join(",", x509MatchReason);
+                        // and sling the results on the queue
                         fileResult = new FileResult(fileInfo)
                         {
-                            MatchedRule = ClassifierRule
+                            MatchedRule = ClassifierRule,
+                            TextResult = new TextResult()
+                            {
+                                MatchContext = matchContext,
+                                MatchedStrings = new List<string>() { "" }
+                            }
                         };
                         Mq.FileResult(fileResult);
                     }
@@ -161,19 +171,102 @@ namespace Classifiers
             return false;
         }
 
-        public bool x509PrivKeyMatch(FileInfo fileInfo)
+        public List<string> x509Match(FileInfo fileInfo)
         {
+            BlockingMq Mq = BlockingMq.GetMq();
+
+            List<string> matchReasons = new List<string>();
+            X509Certificate2 parsedCert = null;
+            bool nopwrequired = false;
             try
             {
-                X509Certificate2 parsedCert = new X509Certificate2(fileInfo.FullName);
-                if (parsedCert.HasPrivateKey) return true;
+                // try to parse it, it'll throw if it needs a password
+                parsedCert = new X509Certificate2(fileInfo.FullName);
+                // if it parses we know we didn't need a password
+                nopwrequired = true;
             }
-            catch (CryptographicException)
+            catch (CryptographicException e)
             {
-                return false;
+                // if it doesn't parse that almost certainly means we need a password
+                Mq.Trace(e.ToString());
+
+                // build the list of passwords to try including the filename
+                List<string> passwords = MyOptions.CertPasswords;
+                passwords.Add(Path.GetFileNameWithoutExtension(fileInfo.Name));
+
+                // try each of our very obvious passwords
+                foreach (string password in MyOptions.CertPasswords)
+                {
+                    try
+                    {
+                        parsedCert = new X509Certificate2(fileInfo.FullName, password);
+                        if (password == "")
+                        {
+                            matchReasons.Add("PasswordBlank");
+                        }
+                        else
+                        {
+                            matchReasons.Add("PasswordCracked: " + password);
+                        }
+                    }
+                    catch (CryptographicException ee)
+                    {
+                        Mq.Trace("Password " + password + " invalid for cert file " + fileInfo.FullName + " " + ee.ToString());
+                    }
+                }
+                if (matchReasons.Count == 0) 
+                {
+                    matchReasons.Add("HasPassword");
+                    matchReasons.Add("LookNearbyFor.txtFiles");
+                }
+            }
+            catch (Exception e)
+            {
+                Mq.Error("Unhandled exception parsing cert: " + fileInfo.FullName + " " + e.ToString());
             }
 
-            return false;
+            if (parsedCert != null)
+            {
+                // check if it includes a private key, if not, who cares?
+                if (parsedCert.HasPrivateKey)
+                {
+                    matchReasons.Add("HasPrivateKey");
+
+                    if (nopwrequired) { matchReasons.Add("NoPasswordRequired"); }
+
+                    matchReasons.Add("Subject:" + parsedCert.Subject);
+
+                    // take a look at the extensions
+                    X509ExtensionCollection extensions = parsedCert.Extensions;
+
+                    // this feels dumb but whatever
+                    foreach (X509Extension extension in extensions)
+                    {
+                        if (extension.GetType() == typeof(X509EnhancedKeyUsageExtension))
+                        {
+                            List<string> ekus = new List<string>();
+
+                            X509EnhancedKeyUsageExtension ekuExtension = (X509EnhancedKeyUsageExtension)extension;
+                            foreach (Oid eku in ekuExtension.EnhancedKeyUsages)
+                            {
+                                ekus.Add(eku.FriendlyName);
+                            }
+                            // include the EKUs in the info we're passing to the user
+                            string ekustring = String.Join("|", ekus);
+                            matchReasons.Add(ekustring);
+                        };
+                        if (extension.Oid.FriendlyName == "Subject Alternative Name")
+                        {
+                            matchReasons.Add("FIGURE OUT HOW TO PARSE SANS");
+                        }
+                    }
+
+                    matchReasons.Add("Expiry:" + parsedCert.GetExpirationDateString());
+                    matchReasons.Add("Issuer:" + parsedCert.Issuer);
+                }
+            }
+
+            return matchReasons;
         }
     }
 

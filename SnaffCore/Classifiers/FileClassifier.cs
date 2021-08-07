@@ -1,4 +1,5 @@
-﻿using SnaffCore.Concurrency;
+﻿using SnaffCore.Classifiers;
+using SnaffCore.Concurrency;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -171,17 +172,68 @@ namespace Classifiers
             return false;
         }
 
+        public X509Certificate2 parseCert(string certPath, string password = null)
+        {
+            BlockingMq Mq = BlockingMq.GetMq();
+            // IT TURNS OUT THAT new X509Certificate2() actually writes a file to a temp path and if you
+            // don't manage it yourself it hits 65,000 temp files and hangs.
+            var tempfile = Path.Combine(Path.GetTempPath(), "Snaff-" + Guid.NewGuid());
+            File.Copy(certPath, tempfile);
+            X509Certificate2 parsedCert = null;
+
+            try
+            {
+                if (Path.GetExtension(certPath) == ".pem")
+                {
+                    string pemstring = File.ReadAllText(tempfile);
+                    byte[] certBuffer = Helpers.GetBytesFromPEM(pemstring, PemStringType.Certificate);
+                    byte[] keyBuffer = Helpers.GetBytesFromPEM(pemstring, PemStringType.RsaPrivateKey);
+
+                    if (certBuffer != null)
+                    {
+                        parsedCert = new X509Certificate2(certBuffer);
+                        if (keyBuffer != null)
+                        {
+                            RSACryptoServiceProvider prov = Crypto.DecodeRsaPrivateKey(keyBuffer);
+                            parsedCert.PrivateKey = prov;
+                        }
+                    }
+                    else
+                    {
+                        Mq.Error("Failure parsing " + certPath);
+                    }
+                }
+                else
+                {
+                    parsedCert = new X509Certificate2(tempfile, password);
+                }
+            }
+            catch (Exception e)
+            {
+                File.Delete(tempfile);
+                throw e;
+            }
+
+            File.Delete(tempfile);
+
+            return parsedCert;
+        }
+
         public List<string> x509Match(FileInfo fileInfo)
         {
             BlockingMq Mq = BlockingMq.GetMq();
-
+            string certPath = fileInfo.FullName;
             List<string> matchReasons = new List<string>();
             X509Certificate2 parsedCert = null;
             bool nopwrequired = false;
+
+            // TODO - handle if there is no private key, strip out unnecessary stuff from Certificate.cs, make work with pfx style stuff below
+
             try
             {
                 // try to parse it, it'll throw if it needs a password
-                parsedCert = new X509Certificate2(fileInfo.FullName);
+                parsedCert = parseCert(certPath);
+                
                 // if it parses we know we didn't need a password
                 nopwrequired = true;
             }
@@ -199,7 +251,7 @@ namespace Classifiers
                 {
                     try
                     {
-                        parsedCert = new X509Certificate2(fileInfo.FullName, password);
+                        parsedCert = parseCert(certPath, password);
                         if (password == "")
                         {
                             matchReasons.Add("PasswordBlank");
@@ -472,5 +524,8 @@ namespace Classifiers
 
             return writeRight;
         }
+
+
+
     }
 }

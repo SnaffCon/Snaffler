@@ -57,7 +57,8 @@ namespace SnaffCore.Config
             "@OurPassword1",
             "@de08nt2128",
             "changeme",
-            "changeit"
+            "changeit",
+            "SolarWinds.R0cks"
 
         };
 

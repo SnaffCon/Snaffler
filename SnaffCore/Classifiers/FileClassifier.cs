@@ -8,6 +8,7 @@ using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
+using System.Text;
 using static SnaffCore.Config.Options;
 
 namespace Classifiers
@@ -294,6 +295,19 @@ namespace Classifiers
                     // this feels dumb but whatever
                     foreach (X509Extension extension in extensions)
                     {
+                        AsnEncodedData asndata = new AsnEncodedData(extension.Oid, extension.RawData);
+                        string asndataString = asndata.Format(false);
+                        if (extension.Oid.FriendlyName == "Basic Constraints")
+                        {
+                            if (asndataString.Contains("Subject Type=CA"))
+                            {
+                                matchReasons.Add("IsCACert");
+                            }
+                        }
+                        if (extension.GetType() == typeof(X509KeyUsageExtension))
+                        {
+                            matchReasons.Add((extension as X509KeyUsageExtension).KeyUsages.ToString());
+                        }
                         if (extension.GetType() == typeof(X509EnhancedKeyUsageExtension))
                         {
                             List<string> ekus = new List<string>();
@@ -309,7 +323,9 @@ namespace Classifiers
                         };
                         if (extension.Oid.FriendlyName == "Subject Alternative Name")
                         {
-                            matchReasons.Add("FIGURE OUT HOW TO PARSE SANS");
+                            byte[] sanbytes = extension.RawData;
+                            string san = Encoding.UTF8.GetString(sanbytes, 0, sanbytes.Length);
+                            matchReasons.Add(asndataString);
                         }
                     }
 

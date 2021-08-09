@@ -4,12 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using static SnaffCore.Config.Options;
+using SnaffCore.Classifiers.EffectiveAccess;
 
 namespace Classifiers
 {
@@ -342,98 +345,7 @@ namespace Classifiers
     {
         public bool CanRead { get; set; }
         public bool CanWrite { get; set; }
-    }
-
-    public class CurrentUserSecurity
-    {
-        private readonly WindowsPrincipal _currentPrincipal;
-        private readonly WindowsIdentity _currentUser;
-
-        public CurrentUserSecurity()
-        {
-            _currentUser = WindowsIdentity.GetCurrent();
-            _currentPrincipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-        }
-
-        public bool HasAccess(DirectoryInfo directory, FileSystemRights right)
-        {
-            try
-            {
-                // Get the collection of authorization rules that apply to the directory.
-                AuthorizationRuleCollection acl = directory.GetAccessControl()
-                    .GetAccessRules(true, true, typeof(SecurityIdentifier));
-                return HasFileOrDirectoryAccess(right, acl);
-            }
-
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-        }
-
-        public bool HasAccess(FileInfo file, FileSystemRights right)
-        {
-            try
-            {
-                // Get the collection of authorization rules that apply to the file.
-                AuthorizationRuleCollection acl = file.GetAccessControl()
-                    .GetAccessRules(true, true, typeof(SecurityIdentifier));
-
-                return HasFileOrDirectoryAccess(right, acl);
-            }
-
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-        }
-
-        public bool HasFileOrDirectoryAccess(FileSystemRights right,
-            AuthorizationRuleCollection acl)
-        {
-            bool allow = false;
-            bool inheritedAllow = false;
-            bool inheritedDeny = false;
-
-            for (int i = 0; i < acl.Count; i++)
-            {
-                FileSystemAccessRule currentRule = (FileSystemAccessRule)acl[i];
-                // If the current rule applies to the current user.
-                if (_currentUser.User.Equals(currentRule.IdentityReference) ||
-                    _currentPrincipal.IsInRole(
-                        (SecurityIdentifier)currentRule.IdentityReference))
-                {
-                    if (currentRule.AccessControlType.Equals(AccessControlType.Deny))
-                    {
-                        if ((currentRule.FileSystemRights & right) == right)
-                        {
-                            if (currentRule.IsInherited)
-                                inheritedDeny = true;
-                            else
-                                // Non inherited "deny" takes overall precedence.
-                                return false;
-                        }
-                    }
-                    else if (currentRule.AccessControlType
-                        .Equals(AccessControlType.Allow))
-                    {
-                        if ((currentRule.FileSystemRights & right) == right)
-                        {
-                            if (currentRule.IsInherited)
-                                inheritedAllow = true;
-                            else
-                                allow = true;
-                        }
-                    }
-                }
-            }
-
-            if (allow)
-                // Non inherited "allow" takes precedence over inherited rules.
-                return true;
-
-            return inheritedAllow && !inheritedDeny;
-        }
+        public bool CanModify { get; set; }
     }
 
     public class FileResult
@@ -445,7 +357,9 @@ namespace Classifiers
 
         public FileResult(FileInfo fileInfo)
         {
+
             this.RwStatus = CanRw(fileInfo);
+            // nasty debug
             this.FileInfo = fileInfo;
             if (MyOptions.Snaffle)
             {
@@ -453,22 +367,6 @@ namespace Classifiers
                 {
                     SnaffleFile(fileInfo, MyOptions.SnafflePath);
                 }
-            }
-        }
-
-        public static RwStatus CanRw(FileInfo fileInfo)
-        {
-            BlockingMq Mq = BlockingMq.GetMq();
-
-            try
-            {
-                RwStatus rwStatus = new RwStatus { CanWrite = CanIWrite(fileInfo), CanRead = CanIRead(fileInfo) };
-                return rwStatus;
-            }
-            catch (Exception e)
-            {
-                Mq.Error(e.ToString());
-                return new RwStatus { CanWrite = false, CanRead = false }; ;
             }
         }
 
@@ -485,63 +383,56 @@ namespace Classifiers
             File.Copy(sourcePath, (Path.Combine(snafflePath, cleanedPath)), true);
         }
 
-        public static bool CanIRead(FileInfo fileInfo)
+
+        public static RwStatus CanRw(FileInfo fileInfo)
         {
-            // this will return true if file read perm is available.
-            CurrentUserSecurity currentUserSecurity = new CurrentUserSecurity();
+            BlockingMq Mq = BlockingMq.GetMq();
 
-            FileSystemRights[] fsRights =
+            try
             {
-                FileSystemRights.Read,
-                FileSystemRights.ReadAndExecute,
-                FileSystemRights.ReadData
-            };
+                RwStatus rwStatus = new RwStatus { CanWrite = false, CanRead = false, CanModify = false };
+                EffectivePermissions effPerms = new EffectivePermissions();
+                string dir = fileInfo.DirectoryName;
 
-            bool readRight = false;
-            foreach (FileSystemRights fsRight in fsRights)
-                try
+                // we hard code this otherwise it tries to do some madness where it uses RPC with a share server to check file access, then fails if you're not admin on that host.
+                string hostname = "localhost";
+
+                string whoami = WindowsIdentity.GetCurrent().Name;
+
+                string[] accessStrings = effPerms.GetEffectivePermissions(whoami, fileInfo.FullName, false, hostname);
+
+                string[] readRights = new string[] { "Read", "ReadAndExecute", "ReadData", "ListDirectory" };
+                string[] writeRights = new string[] { "Write", "Modify", "FullControl", "TakeOwnership", "ChangePermissions", "AppendData", "WriteData", "CreateFiles", "CreateDirectories" };
+                string[] modifyRights = new string[] { "Modify", "FullControl", "TakeOwnership", "ChangePermissions" };
+
+                foreach (string access in accessStrings)
                 {
-                    if (currentUserSecurity.HasAccess(fileInfo, fsRight)) readRight = true;
+                    if (access == "FullControl")
+                    {
+                        rwStatus.CanModify = true;
+                        rwStatus.CanRead = true;
+                        rwStatus.CanWrite = true;
+                    }
+                    if (readRights.Contains(access)){
+                        rwStatus.CanRead = true;
+                    }
+                    if (writeRights.Contains(access))
+                    {
+                        rwStatus.CanWrite = true;
+                    }
+                    if (modifyRights.Contains(access))
+                    {
+                        rwStatus.CanModify = true;
+                    }
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    return false;
-                }
 
-            return readRight;
-        }
-
-        public static bool CanIWrite(FileInfo fileInfo)
-        {
-            // this will return true if write or modify or take ownership or any of those other good perms are available.
-            CurrentUserSecurity currentUserSecurity = new CurrentUserSecurity();
-
-            FileSystemRights[] fsRights =
+                return rwStatus;
+            }
+            catch (Exception e)
             {
-                FileSystemRights.Write,
-                FileSystemRights.Modify,
-                FileSystemRights.FullControl,
-                FileSystemRights.TakeOwnership,
-                FileSystemRights.ChangePermissions,
-                FileSystemRights.AppendData,
-                FileSystemRights.WriteData
-            };
-
-            bool writeRight = false;
-            foreach (FileSystemRights fsRight in fsRights)
-                try
-                {
-                    if (currentUserSecurity.HasAccess(fileInfo, fsRight)) writeRight = true;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return false;
-                }
-
-            return writeRight;
+                Mq.Error(e.ToString());
+                return new RwStatus { CanWrite = false, CanRead = false }; ;
+            }
         }
-
-
-
     }
 }

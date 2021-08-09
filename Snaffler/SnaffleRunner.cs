@@ -62,7 +62,7 @@ namespace Snaffler
                 else
                 {
                     // treat all as strings except LastWriteTime {6}
-                    fileResultTemplate = "{{{0}}}<{1}|{2}{3}|{4}|{5}|{6:u}>({7}) {8}";
+                    fileResultTemplate = "{{{0}}}<{1}|{2}{3}{4}|{5}|{6}|{7:u}>({8}) {9}";
                     shareResultTemplate = "{{{0}}}({1}) {2}";
                     dirResultTemplate = "{{{0}}}({1})";
                 }
@@ -274,6 +274,12 @@ namespace Snaffler
                     canwrite = "W";
                 }
 
+                string canmodify = "";
+                if (message.FileResult.RwStatus.CanModify)
+                {
+                    canmodify = "M";
+                }
+
                 string matchedstring = "";
 
                 long fileSize = message.FileResult.FileInfo.Length;
@@ -299,7 +305,7 @@ namespace Snaffler
                     matchcontext = message.FileResult.TextResult.MatchContext;
                 }
 
-                return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString, modifiedStamp,
+                return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, canmodify, matchedstring, fileSizeString, modifiedStamp,
                     filepath, matchcontext);
             }
             catch (Exception e)

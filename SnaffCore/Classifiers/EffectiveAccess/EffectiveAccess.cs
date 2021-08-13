@@ -27,25 +27,16 @@ namespace SnaffCore.Classifiers.EffectiveAccess
             public bool CanModify { get; set; }
         }
 
-        public static RwStatus CanRw(FileInfo fileInfo)
+       public static RwStatus CanRw(FileSystemInfo filesysInfo)
         {
             try
             {
                 RwStatus rwStatus = new RwStatus { CanWrite = false, CanRead = false, CanModify = false };
                 EffectivePermissions effPerms = new EffectivePermissions();
-                string dir = fileInfo.DirectoryName;
-                string hostname = "localhost";
-                /*
-                if (dir.StartsWith("\\\\"))
-                {
-                    hostname = dir.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-                }
-                */
 
                 string whoami = WindowsIdentity.GetCurrent().Name;
 
-                string[] accessStrings = effPerms.GetEffectivePermissions(whoami, fileInfo.FullName, false, hostname);
-
+                string[] accessStrings = effPerms.GetEffectivePermissions(filesysInfo, whoami);
 
                 string[] readRights = new string[] { "Read", "ReadAndExecute", "ReadData", "ListDirectory" };
                 string[] writeRights = new string[] { "Write", "Modify", "FullControl", "TakeOwnership", "ChangePermissions", "AppendData", "WriteData", "CreateFiles", "CreateDirectories" };
@@ -81,20 +72,22 @@ namespace SnaffCore.Classifiers.EffectiveAccess
             }
         }
 
-        public string[] GetEffectivePermissions(string username, string path, bool isDirectory, string servername)
+        public string[] GetEffectivePermissions(FileSystemInfo filesysInfo, string username)
         {
             EffectiveAccessInfo effectiveAccessInfo;
 
+            string servername = "localhost";
+
             IdentityReference2 idRef2 = new IdentityReference2(username);
 
-            if (isDirectory)
+            if (filesysInfo.GetType() == typeof(DirectoryInfo))
             {
-                Alphaleonis.Win32.Filesystem.DirectoryInfo item = new Alphaleonis.Win32.Filesystem.DirectoryInfo(path); 
+                Alphaleonis.Win32.Filesystem.DirectoryInfo item = new Alphaleonis.Win32.Filesystem.DirectoryInfo(filesysInfo.FullName);
                 effectiveAccessInfo = EffectiveAccess.GetEffectiveAccess(item, idRef2, servername);
             }
             else
             {
-                Alphaleonis.Win32.Filesystem.FileInfo item = new Alphaleonis.Win32.Filesystem.FileInfo(path);
+                Alphaleonis.Win32.Filesystem.FileInfo item = new Alphaleonis.Win32.Filesystem.FileInfo(filesysInfo.FullName);
                 effectiveAccessInfo = EffectiveAccess.GetEffectiveAccess(item, idRef2, servername);
             }
 

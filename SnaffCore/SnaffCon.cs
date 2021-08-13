@@ -123,6 +123,7 @@ namespace SnaffCore
             // We do this single threaded cos it's fast and not easily divisible.
             AdData adData = new ActiveDirectory.AdData();
             List<string> targetComputers = adData.GetDomainComputers();
+
             if (targetComputers == null)
             {
                 Mq.Error(

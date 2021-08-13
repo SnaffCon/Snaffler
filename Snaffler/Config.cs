@@ -69,8 +69,9 @@ namespace Snaffler
             SwitchArgument domainUserArg = new SwitchArgument('u', "domainusers", "Makes Snaffler grab a list of interesting-looking accounts from the domain and uses them in searches.", false);
             
             SwitchArgument tsvArg = new SwitchArgument('y', "tsv", "Makes Snaffler output as tsv.", false);
+            SwitchArgument dfsArg = new SwitchArgument('f', "dfs", "Limits Snaffler to finding file shares via DFS, for \"OPSEC\" reasons.", false);
 
-            // list of letters i haven't used yet: aefgknpqwx
+            // list of letters i haven't used yet: aegknpqwx
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
@@ -88,6 +89,7 @@ namespace Snaffler
             parser.Arguments.Add(grepContextArg);
             parser.Arguments.Add(domainUserArg);
             parser.Arguments.Add(tsvArg);
+            parser.Arguments.Add(dfsArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -130,6 +132,11 @@ namespace Snaffler
                     parsedConfig.LogToFile = true;
                     parsedConfig.LogFilePath = outFileArg.Value;
                     Mq.Degub("Logging to file at " + parsedConfig.LogFilePath);
+                }
+
+                if (dfsArg.Parsed)
+                {
+                    parsedConfig.DfsOnly = true;
                 }
 
                 if (tsvArg.Parsed)

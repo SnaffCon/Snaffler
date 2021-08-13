@@ -399,7 +399,7 @@ namespace Classifiers
 
                 string whoami = WindowsIdentity.GetCurrent().Name;
 
-                string[] accessStrings = effPerms.GetEffectivePermissions(whoami, fileInfo.FullName, false, hostname);
+                string[] accessStrings = effPerms.GetEffectivePermissions(fileInfo, whoami);
 
                 string[] readRights = new string[] { "Read", "ReadAndExecute", "ReadData", "ListDirectory" };
                 string[] writeRights = new string[] { "Write", "Modify", "FullControl", "TakeOwnership", "ChangePermissions", "AppendData", "WriteData", "CreateFiles", "CreateDirectories" };

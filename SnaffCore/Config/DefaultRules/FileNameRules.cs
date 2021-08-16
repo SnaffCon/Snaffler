@@ -97,12 +97,12 @@ namespace SnaffCore.Config
                     Triage = Triage.Black,
                     WordList = new List<string>()
                 {
-                        "\\.ssh\\\\", // test file created
-                        "\\.purple\\\\accounts.xml", // test file created
-                        "\\.aws\\\\", // test file created
-                        "\\.gem\\\\credentials", // test file created
-                        "doctl\\\\config.yaml", // test file created
-                        "config\\\\hub",  // test file created
+                        "\\.ssh\\", // test file created
+                        "\\.purple\\accounts.xml", // test file created
+                        "\\.aws\\", // test file created
+                        "\\.gem\\credentials", // test file created
+                        "doctl\\config.yaml", // test file created
+                        "config\\hub",  // test file created
                         "control\\customsettings.ini"
                 },
                 }

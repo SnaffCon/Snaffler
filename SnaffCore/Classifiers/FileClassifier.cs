@@ -98,7 +98,6 @@ namespace Classifiers
                     };
                     Mq.FileResult(fileResult);
                     return false;
-                    //return true;
                 case MatchAction.CheckForKeys:
                     // do a special x509 dance
                     List<string> x509MatchReason = x509Match(fileInfo);
@@ -118,7 +117,7 @@ namespace Classifiers
                         };
                         Mq.FileResult(fileResult);
                     }
-                    return true;
+                    return false;
                 case MatchAction.Relay:
                     // bounce it on to the next ClassifierRule
                     try
@@ -130,13 +129,13 @@ namespace Classifiers
                         {
                             ContentClassifier nextContentClassifier = new ContentClassifier(nextRule);
                             nextContentClassifier.ClassifyContent(fileInfo);
-                            return true;
+                            return false;
                         }
                         else if (nextRule.EnumerationScope == EnumerationScope.FileEnumeration)
                         {
                             FileClassifier nextFileClassifier = new FileClassifier(nextRule);
                             nextFileClassifier.ClassifyFile(fileInfo);
-                            return true;
+                            return false;
                         }
                         else
                         {

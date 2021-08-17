@@ -17,12 +17,13 @@ namespace SnaffCore.Config
                 WordListType = MatchListType.Contains,
                 WordList = new List<string>()
                     {
-                        // these are directory names that make us skip a dir instantly when building a tree.
+                        // these are directory names that make us skip a dir instantly when walking a tree.
                         "winsxs",
                         "syswow64",
                         "system32",
                         "systemapps",
-                        "servicing\\\\packages",
+                        "windows\\\\servicing",
+                        "\\\\servicing\\\\",
                         "Microsoft.NET\\\\Framework",
                         "windows\\\\immersivecontrolpanel",
                         "windows\\\\diagnostics",

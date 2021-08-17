@@ -67,10 +67,10 @@ namespace Snaffler
             ValueArgument<int> grepContextArg = new ValueArgument<int>('j', "grepcontext",
                 "How many bytes of context either side of found strings in files to show, e.g. -j 200");
             SwitchArgument domainUserArg = new SwitchArgument('u', "domainusers", "Makes Snaffler grab a list of interesting-looking accounts from the domain and uses them in searches.", false);
-            
+            ValueArgument<int> maxThreadsArg = new ValueArgument<int>('a', "maxthreads", "How many threads to be snaffling with. Any less than 4 and you're gonna have a bad time.");
             SwitchArgument tsvArg = new SwitchArgument('y', "tsv", "Makes Snaffler output as tsv.", false);
 
-            // list of letters i haven't used yet: aefgknpqwx
+            // list of letters i haven't used yet: efgknpqwx
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
@@ -88,6 +88,7 @@ namespace Snaffler
             parser.Arguments.Add(grepContextArg);
             parser.Arguments.Add(domainUserArg);
             parser.Arguments.Add(tsvArg);
+            parser.Arguments.Add(maxThreadsArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -132,10 +133,22 @@ namespace Snaffler
                     Mq.Degub("Logging to file at " + parsedConfig.LogFilePath);
                 }
 
+                if (maxThreadsArg.Parsed)
+                {
+                    parsedConfig.MaxThreads = maxThreadsArg.Value;
+                }
+
+                parsedConfig.ShareThreads = parsedConfig.MaxThreads / 3;
+                parsedConfig.FileThreads = parsedConfig.MaxThreads / 3;
+                parsedConfig.TreeThreads = parsedConfig.MaxThreads / 3;
+
                 if (tsvArg.Parsed)
                 {
                     parsedConfig.LogTSV = true;
-                    parsedConfig.Separator = '\t';
+                    if (parsedConfig.Separator == ' ')
+                    {
+                        parsedConfig.Separator = '\t';
+                    }
                 }
 
                 // Set loglevel.

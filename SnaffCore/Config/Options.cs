@@ -26,7 +26,7 @@ namespace SnaffCore.Config
         public bool LogToFile { get; set; } = false;
         public string LogFilePath { get; set; }
         public bool LogTSV { get; set; } = false;
-        public char Separator { get; set; } = ' ';
+        public char Separator { get; set; } = '\t';
         public bool LogToConsole { get; set; } = true;
         public string LogLevelString { get; set; } = "info";
 

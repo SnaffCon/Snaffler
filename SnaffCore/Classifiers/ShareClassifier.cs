@@ -18,6 +18,8 @@ namespace Classifiers
         {
             BlockingMq Mq = BlockingMq.GetMq();
 
+
+
             // check if the share has a matching classifier
             TextClassifier textClassifier = new TextClassifier(ClassifierRule);
             TextResult textResult = textClassifier.TextMatch(share);

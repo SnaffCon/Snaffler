@@ -32,6 +32,8 @@ namespace SnaffCore
         private static TreeWalker TreeWalker;
         private static FileScanner FileScanner;
 
+        private DateTime StartTime { get; set; }
+
         public SnaffCon(Options options)
         {
             MyOptions = options;
@@ -77,7 +79,7 @@ namespace SnaffCore
 
         public void Execute()
         {
-            DateTime startTime = DateTime.Now;
+            StartTime = DateTime.Now;
             // This is the main execution thread.
             Timer statusUpdateTimer =
                 new Timer(TimeSpan.FromMinutes(1)
@@ -111,7 +113,7 @@ namespace SnaffCore
 
             StatusUpdate();
             DateTime finished = DateTime.Now;
-            TimeSpan runSpan = finished.Subtract(startTime);
+            TimeSpan runSpan = finished.Subtract(StartTime);
             Mq.Info("Finished at " + finished.ToLocalTime());
             Mq.Info("Snafflin' took " + runSpan);
             Mq.Finish();
@@ -261,7 +263,51 @@ namespace SnaffCore
             updateText.Append("FileScanner Tasks Completed: " + fileTaskCounters.CompletedTasks + "\n");
             updateText.Append("FileScanner Tasks Remaining: " + fileTaskCounters.CurrentTasksRemaining + "\n");
             updateText.Append("FileScanner Tasks Running: " + fileTaskCounters.CurrentTasksRunning + "\n");
-            updateText.Append(memorynumber + " RAM in use.");
+            updateText.Append(memorynumber + " RAM in use." + "\n");
+            updateText.Append("\n");
+
+            // if all share tasks have finished, reduce max parallelism to 0 and reassign capacity to file scheduler.
+            if (ShareTaskScheduler.Done() && (shareTaskCounters.MaxParallelism >= 1))
+            {
+                // get the current number of sharetask threads
+                int transferVal = shareTaskCounters.MaxParallelism;
+                // set it to zero
+                ShareTaskScheduler.Scheduler._maxDegreeOfParallelism = 0;
+                // add 1 to the other
+                FileTaskScheduler.Scheduler._maxDegreeOfParallelism = FileTaskScheduler.Scheduler._maxDegreeOfParallelism + transferVal;
+                updateText.Append("ShareScanner queue finished, rebalancing workload." + "\n");
+            }
+
+            // do other rebalancing
+
+            if (fileTaskCounters.CurrentTasksQueued <= (MyOptions.MaxFileQueue / 20))
+            {
+                // but only if one side isn't already at minimum
+                if (FileTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
+                {
+                    updateText.Append("Insufficient FileScanner queue size, rebalancing workload." + "\n");
+                    --FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                    ++TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                }
+            }
+            if (fileTaskCounters.CurrentTasksQueued == MyOptions.MaxFileQueue)
+            {
+                if (TreeTaskScheduler.Scheduler._maxDegreeOfParallelism > 1)
+                {
+                    updateText.Append("Max FileScanner queue size reached, rebalancing workload." + "\n");
+                    ++FileTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                    --TreeTaskScheduler.Scheduler._maxDegreeOfParallelism;
+                }
+            }
+
+            updateText.Append("Max ShareFinder Threads: " + ShareTaskScheduler.Scheduler._maxDegreeOfParallelism + "\n");
+            updateText.Append("Max TreeWalker Threads: " + TreeTaskScheduler.Scheduler._maxDegreeOfParallelism + "\n");
+            updateText.Append("Max FileScanner Threads: " + FileTaskScheduler.Scheduler._maxDegreeOfParallelism + "\n");
+
+            DateTime now = DateTime.Now;
+            TimeSpan runSpan = now.Subtract(StartTime);
+
+            updateText.Append("Been Snafflin' for " + runSpan + " and we ain't done yet..." + "\n");
 
             Mq.Info(updateText.ToString());
 

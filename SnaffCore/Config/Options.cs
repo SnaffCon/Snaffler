@@ -11,12 +11,13 @@ namespace SnaffCore.Config
         public string[] ComputerTargets { get; set; }
         public bool ScanSysvol { get; set; } = true;
         public bool ScanNetlogon { get; set; } = true;
+        public int InterestLevel { get; set; } = 0;
 
         // Concurrency Options
-        //public int MaxThreads { get; set; } = 30;
-        public int ShareThreads { get; set; } = 30;
-        public int TreeThreads { get; set; } = 20;
-        public int FileThreads { get; set; } = 50;
+        public int MaxThreads { get; set; } = 60;
+        public int ShareThreads { get; set; }
+        public int TreeThreads { get; set; }
+        public int FileThreads { get; set; }
         public int MaxFileQueue { get; set; } = 200000;
         public int MaxTreeQueue { get; set; } = 0;
         public int MaxShareQueue { get; set; } = 0;
@@ -36,6 +37,31 @@ namespace SnaffCore.Config
 
         // FileScanner Options
         public bool DomainUserRules { get; set; } = false;
+
+        // passwords to try on certs that require one
+        public List<string> CertPasswords = new List<string>()
+        {
+            //found in various online tutorials etc
+            "",
+            "password",
+            "mimikatz",
+            "1234",
+            "abcd",
+            "secret",
+            "MyPassword",
+            "myPassword",
+            "MyClearTextPassword",
+            "ThePasswordToKeyonPFXFile",
+            "P@ssw0rd",
+            "testpassword",
+            "@OurPassword1",
+            "@de08nt2128",
+            "changeme",
+            "changeit",
+            "SolarWinds.R0cks"
+
+        };
+
         public List<string> DomainUserMatchStrings = new List<string>()
         {
             "sql",

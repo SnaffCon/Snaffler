@@ -17,27 +17,28 @@ namespace SnaffCore.Config
                 WordListType = MatchListType.Contains,
                 WordList = new List<string>()
                     {
-                        // these are directory names that make us skip a dir instantly when building a tree.
+                        // these are directory names that make us skip a dir instantly when walking a tree.
                         "winsxs",
                         "syswow64",
                         "system32",
                         "systemapps",
-                        @"servicing\\packages",
-                        @"Microsoft.NET\\Framework",
-                        @"windows\\immersivecontrolpanel",
-                        @"windows\\diagnostics",
-                        @"windows\\debug",
+                        "windows\\\\servicing",
+                        "\\\\servicing\\\\",
+                        "Microsoft.NET\\\\Framework",
+                        "windows\\\\immersivecontrolpanel",
+                        "windows\\\\diagnostics",
+                        "windows\\\\debug",
                         "node_modules",
-                        @"vendor\\bundle",
-                        @"vendor\\cache",
-                        @"locale\\",
-                        @"chocolatey\\helpers",
-                        @"sources\\sxs",
-                        @"localization\\",
-                        @"\\AppData\\Local\\Microsoft\\",
-                        @"\\AppData\\Roaming\\Microsoft\\",
-                        @"\\wsuscontent",
-                        @"\\Application Data\\Microsoft\\CLR Security Config\\"
+                        "vendor\\\\bundle",
+                        "vendor\\\\cache",
+                        "locale\\\\",
+                        "chocolatey\\\\helpers",
+                        "sources\\\\sxs",
+                        "localization\\\\",
+                        "\\\\AppData\\\\Local\\\\Microsoft\\\\",
+                        "\\\\AppData\\\\Roaming\\\\Microsoft\\\\",
+                        "\\\\wsuscontent",
+                        "\\\\Application Data\\\\Microsoft\\\\CLR Security Config\\\\"
                     },
             });
         }

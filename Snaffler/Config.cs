@@ -50,6 +50,7 @@ namespace Snaffler
             SwitchArgument stdOutArg = new SwitchArgument('s', "stdout",
                 "Enables outputting results to stdout as soon as they're found. You probably want this if you're not using -o.",
                 false);
+            ValueArgument<int> interestLevel = new ValueArgument<int>('b', "interest", "Interest level to report (0-3)");
             ValueArgument<string> snaffleArg = new ValueArgument<string>('m', "snaffle",
                 "Enables and assigns an output dir for Snaffler to automatically snaffle a copy of any found files.");
             ValueArgument<long> snaffleSizeArg = new ValueArgument<long>('l', "snafflesize", "Maximum size of file to snaffle, in bytes. Defaults to 10MB.");
@@ -66,10 +67,10 @@ namespace Snaffler
             ValueArgument<int> grepContextArg = new ValueArgument<int>('j', "grepcontext",
                 "How many bytes of context either side of found strings in files to show, e.g. -j 200");
             SwitchArgument domainUserArg = new SwitchArgument('u', "domainusers", "Makes Snaffler grab a list of interesting-looking accounts from the domain and uses them in searches.", false);
-            
+            ValueArgument<int> maxThreadsArg = new ValueArgument<int>('a', "maxthreads", "How many threads to be snaffling with. Any less than 4 and you're gonna have a bad time.");
             SwitchArgument tsvArg = new SwitchArgument('y', "tsv", "Makes Snaffler output as tsv.", false);
 
-            // list of letters i haven't used yet: abefgknpqwx
+            // list of letters i haven't used yet: efgknpqwx
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
@@ -79,6 +80,7 @@ namespace Snaffler
             parser.Arguments.Add(snaffleArg);
             parser.Arguments.Add(snaffleSizeArg);
             parser.Arguments.Add(dirTargetArg);
+            parser.Arguments.Add(interestLevel);
             parser.Arguments.Add(domainArg);
             parser.Arguments.Add(verboseArg);
             parser.Arguments.Add(domainControllerArg);
@@ -86,6 +88,7 @@ namespace Snaffler
             parser.Arguments.Add(grepContextArg);
             parser.Arguments.Add(domainUserArg);
             parser.Arguments.Add(tsvArg);
+            parser.Arguments.Add(maxThreadsArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -130,10 +133,22 @@ namespace Snaffler
                     Mq.Degub("Logging to file at " + parsedConfig.LogFilePath);
                 }
 
+                if (maxThreadsArg.Parsed)
+                {
+                    parsedConfig.MaxThreads = maxThreadsArg.Value;
+                }
+
+                parsedConfig.ShareThreads = parsedConfig.MaxThreads / 3;
+                parsedConfig.FileThreads = parsedConfig.MaxThreads / 3;
+                parsedConfig.TreeThreads = parsedConfig.MaxThreads / 3;
+
                 if (tsvArg.Parsed)
                 {
                     parsedConfig.LogTSV = true;
-                    parsedConfig.Separator = '\t';
+                    if (parsedConfig.Separator == ' ')
+                    {
+                        parsedConfig.Separator = '\t';
+                    }
                 }
 
                 // Set loglevel.
@@ -189,6 +204,12 @@ namespace Snaffler
                 if (snaffleSizeArg.Parsed)
                 {
                     parsedConfig.MaxSizeToSnaffle = snaffleSizeArg.Value;
+                }
+
+                if (interestLevel.Parsed)
+                {
+                    parsedConfig.InterestLevel = interestLevel.Value;
+                    Mq.Degub("Requested interest level: " + parsedConfig.InterestLevel);
                 }
 
                 // how many bytes 

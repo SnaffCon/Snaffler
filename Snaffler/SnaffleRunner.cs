@@ -55,7 +55,7 @@ namespace Snaffler
                 if (Options.LogTSV)
                 {
                     fileResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6:u}" + Options.Separator + "{7}" + Options.Separator + "{8}";
-                    shareResultTemplate = "{0}" + Options.Separator + "{1}";
+                    shareResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}";
                     dirResultTemplate = "{0}" + Options.Separator + "{1}";
                 }
                 // otherwise just do the normal thing
@@ -63,7 +63,7 @@ namespace Snaffler
                 {
                     // treat all as strings except LastWriteTime {6}
                     fileResultTemplate = "{{{0}}}<{1}|{2}{3}{4}|{5}|{6}|{7:u}>({8}) {9}";
-                    shareResultTemplate = "{{{0}}}({1}) {2}";
+                    shareResultTemplate = "{{{0}}}<{1}>({2}) {3}";
                     dirResultTemplate = "{{{0}}}({1})";
                 }
                 //------------------------------------------
@@ -244,7 +244,27 @@ namespace Snaffler
             string sharePath = message.ShareResult.SharePath;
             string triage = message.ShareResult.Triage.ToString();
             string shareComment = message.ShareResult.ShareComment;
-            return string.Format(shareResultTemplate, triage, sharePath, shareComment);
+
+            string rwString = "";
+            string canread = "";
+            if (message.ShareResult.RootReadable)
+            {
+                rwString = rwString + "R";
+            }
+
+            string canwrite = "";
+            if (message.ShareResult.RootWritable)
+            {
+                rwString = rwString + "W";
+            }
+
+            string canmodify = "";
+            if (message.ShareResult.RootModifyable)
+            {
+                rwString = rwString + "M";
+            }
+
+            return string.Format(shareResultTemplate, triage, sharePath, rwString, shareComment);
         }
 
         public string DirResultLogFromMessage(SnafflerMessage message)

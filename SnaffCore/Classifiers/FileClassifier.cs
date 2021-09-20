@@ -341,24 +341,24 @@ namespace Classifiers
         }
     }
 
-    public class RwStatus
-    {
-        public bool CanRead { get; set; }
-        public bool CanWrite { get; set; }
-        public bool CanModify { get; set; }
-    }
+//   public class RwStatus
+//   {
+//       public bool CanRead { get; set; }
+//       public bool CanWrite { get; set; }
+//       public bool CanModify { get; set; }
+//   }
 
     public class FileResult
     {
         public FileInfo FileInfo { get; set; }
         public TextResult TextResult { get; set; }
-        public RwStatus RwStatus { get; set; }
+        public EffectivePermissions.RwStatus RwStatus { get; set; }
         public ClassifierRule MatchedRule { get; set; }
 
         public FileResult(FileInfo fileInfo)
         {
 
-            this.RwStatus = CanRw(fileInfo);
+            this.RwStatus = EffectivePermissions.CanRw(fileInfo);
             // nasty debug
             this.FileInfo = fileInfo;
             if (MyOptions.Snaffle)
@@ -383,14 +383,14 @@ namespace Classifiers
             File.Copy(sourcePath, (Path.Combine(snafflePath, cleanedPath)), true);
         }
 
-
-        public static RwStatus CanRw(FileInfo fileInfo)
+        /*
+        public static EffectivePermissions.RwStatus CanRw(FileInfo fileInfo)
         {
             BlockingMq Mq = BlockingMq.GetMq();
 
             try
             {
-                RwStatus rwStatus = new RwStatus { CanWrite = false, CanRead = false, CanModify = false };
+                EffectivePermissions.RwStatus rwStatus = new EffectivePermissions.RwStatus { CanWrite = false, CanRead = false, CanModify = false };
                 EffectivePermissions effPerms = new EffectivePermissions();
                 string dir = fileInfo.DirectoryName;
 
@@ -431,8 +431,9 @@ namespace Classifiers
             catch (Exception e)
             {
                 Mq.Error(e.ToString());
-                return new RwStatus { CanWrite = false, CanRead = false }; ;
+                return new EffectivePermissions.RwStatus { CanWrite = false, CanRead = false }; ;
             }
         }
+        */
     }
 }

@@ -685,6 +685,28 @@ namespace SnaffCore.Config
                 new ClassifierRule()
                 {
                     Description = "Files with these extensions will be parsed as x509 certificates to see if they have private keys.",
+                    RuleName = "KeepCertContainsPrivKeyYellow",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.CheckForKeys,
+                    Triage = Triage.Yellow,
+                    WordList = new List<string>()
+                    {
+                        "\\.pem",
+                        "\\.der",
+                        "\\.pfx",
+                        "\\.pk12",
+                        "\\.p12",
+                        "\\.pkcs12",
+                    },
+                }
+            );
+
+            this.ClassifierRules.Add(
+                new ClassifierRule()
+                {
+                    Description = "Files with these extensions will be parsed as x509 certificates to see if they have private keys.",
                     RuleName = "KeepCertContainsPrivKeyRed",
                     EnumerationScope = EnumerationScope.FileEnumeration,
                     MatchLocation = MatchLoc.FileExtension,

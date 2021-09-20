@@ -12,6 +12,7 @@ using System.Collections;
 using System.Security;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.CompilerServices;
+using SnaffCore.Concurrency;
 
 // from Raimund Andree's NTFSSecurity PowerShell module https://www.powershellgallery.com/packages/NTFSSecurity/4.2.3
 
@@ -29,6 +30,7 @@ namespace SnaffCore.Classifiers.EffectiveAccess
 
        public static RwStatus CanRw(FileSystemInfo filesysInfo)
         {
+            BlockingMq mq = BlockingMq.GetMq();
             try
             {
                 RwStatus rwStatus = new RwStatus { CanWrite = false, CanRead = false, CanModify = false };
@@ -68,6 +70,7 @@ namespace SnaffCore.Classifiers.EffectiveAccess
             }
             catch (Exception e)
             {
+                mq.Error(e.ToString());
                 return new RwStatus { CanWrite = false, CanRead = false, CanModify = false }; ;
             }
         }

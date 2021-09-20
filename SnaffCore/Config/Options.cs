@@ -11,6 +11,7 @@ namespace SnaffCore.Config
         public string[] ComputerTargets { get; set; }
         public bool ScanSysvol { get; set; } = true;
         public bool ScanNetlogon { get; set; } = true;
+        public bool ScanFoundShares { get; set; } = true;
         public int InterestLevel { get; set; } = 0;
         public bool DfsOnly { get; set; } = false;
 

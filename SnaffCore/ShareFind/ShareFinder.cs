@@ -7,7 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using SnaffCore.Classifiers.EffectiveAccess;
 using static SnaffCore.Config.Options;
+
 
 namespace SnaffCore.ShareFind
 {
@@ -16,6 +18,8 @@ namespace SnaffCore.ShareFind
         private BlockingMq Mq { get; set; }
         private BlockingStaticTaskScheduler TreeTaskScheduler { get; set; }
         private TreeWalker TreeWalker { get; set; }
+        private EffectivePermissions effectivePermissions { get; set; } = new EffectivePermissions();
+
 
         public ShareFinder()
         {
@@ -65,7 +69,7 @@ namespace SnaffCore.ShareFind
                                 ShareClassifier shareClassifier = new ShareClassifier(classifier);
                                 if (shareClassifier.ClassifyShare(shareName))
                                 {
-                                    // in this instance 'matched' means 'don't send to treewalker'.
+                                    // in this instance 'matched' means 'matched a discard rule, so don't send to treewalker'.
                                     matched = true;
                                     break;
                                 }
@@ -79,27 +83,43 @@ namespace SnaffCore.ShareFind
                     {
                         if (IsShareReadable(shareName))
                         {
+                            DirectoryInfo dirInfo = new DirectoryInfo(shareName);
+                            EffectivePermissions.RwStatus rwStatus = EffectivePermissions.CanRw(dirInfo);
+
+                            Triage triage = Triage.Green;
+                            if (rwStatus.CanWrite || rwStatus.CanModify)
+                            {
+                                triage = Triage.Yellow;
+                            }
+
                             ShareResult shareResult = new ShareResult()
                             {
                                 Listable = true,
+                                Triage = triage,
+                                RootModifyable = rwStatus.CanModify,
+                                RootWritable = rwStatus.CanWrite,
+                                RootReadable = rwStatus.CanRead,
                                 SharePath = shareName,
                                 ShareComment = hostShareInfo.shi1_remark.ToString()
                             };
                             Mq.ShareResult(shareResult);
 
-                            Mq.Trace("Creating a TreeWalker task for " + shareResult.SharePath);
-                            TreeTaskScheduler.New(() =>
+                            if (MyOptions.ScanFoundShares)
                             {
-                                try
+                                Mq.Trace("Creating a TreeWalker task for " + shareResult.SharePath);
+                                TreeTaskScheduler.New(() =>
                                 {
-                                    TreeWalker.WalkTree(shareResult.SharePath);
-                                }
-                                catch (Exception e)
-                                {
-                                    Mq.Error("Exception in TreeWalker task for share " + shareResult.SharePath);
-                                    Mq.Error(e.ToString());
-                                }
-                            });
+                                    try
+                                    {
+                                        TreeWalker.WalkTree(shareResult.SharePath);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Mq.Error("Exception in TreeWalker task for share " + shareResult.SharePath);
+                                        Mq.Error(e.ToString());
+                                    }
+                                });
+                            }
                         }
                     }
                 }

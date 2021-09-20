@@ -246,19 +246,14 @@ namespace Snaffler
             string shareComment = message.ShareResult.ShareComment;
 
             string rwString = "";
-            string canread = "";
             if (message.ShareResult.RootReadable)
             {
                 rwString = rwString + "R";
             }
-
-            string canwrite = "";
             if (message.ShareResult.RootWritable)
             {
                 rwString = rwString + "W";
             }
-
-            string canmodify = "";
             if (message.ShareResult.RootModifyable)
             {
                 rwString = rwString + "M";

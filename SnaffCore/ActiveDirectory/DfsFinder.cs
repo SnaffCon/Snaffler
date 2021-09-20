@@ -11,8 +11,9 @@ namespace SnaffCore.ActiveDirectory
     public class DFSShare
     {
         public string Name { get; set; }
-
         public string RemoteServerName { get; set; }
+        public string DFSNamespace { get; set; }
+        public string DfsNamespacePath { get; set; }
     }
 
     class DfsFinder
@@ -46,6 +47,10 @@ namespace SnaffCore.ActiveDirectory
                     {
                         foreach (SearchResult result in Results)
                         {
+                            //Console.WriteLine("Found a DFSv1 entry.");
+                            DirectoryEntry directoryEntry = result.GetDirectoryEntry();
+                            string dfsnamespace = directoryEntry.Name.Replace("CN=", "");
+
                             Properties = result.Properties;
                             var RemoteNames = Properties[@"remoteservername"];
                             Pkt = Properties[@"pkt"];
@@ -62,24 +67,18 @@ namespace SnaffCore.ActiveDirectory
                                             DFSShares.Add(new DFSShare
                                             {
                                                 Name = Properties[@"name"][0] as string,
-                                                RemoteServerName = name.Split(new char[] { '\\' })[2]
+                                                RemoteServerName = name.Split(new char[] { '\\' })[2],
+                                                DFSNamespace = dfsnamespace
                                             });
                                         }
                                     }
                                     catch (Exception e)
                                     {
-                                        Mq.Error("Get-DomainDFSShareV1 error parsing DFS share : " + e);
+                                        Console.WriteLine("Error parsing DFSv1 share : " + e);
                                     }
                                 }
                             }
-                            try { Results.Dispose(); }
-                            catch (Exception e)
-                            {
-                                Mq.Error("Get-DomainDFSShareV1 error disposing of Results object : " + e);
-                            }
                         }
-
-                        DFSSearcher.Dispose();
 
                         if (Pkt != null && Pkt[0] != null)
                         {
@@ -103,7 +102,7 @@ namespace SnaffCore.ActiveDirectory
                 }
                 catch (Exception e)
                 {
-                    Mq.Error("Get-DomainDFSShareV1 error : " + e);
+                    Console.WriteLine("Get-DomainDFSShareV1 error : " + e);
                 }
                 return DFSShares;
             }
@@ -126,9 +125,14 @@ namespace SnaffCore.ActiveDirectory
                     {
                         foreach (SearchResult result in Results)
                         {
+                            //Console.WriteLine("Found a DFSv2 entry.");
+                            DirectoryEntry directoryEntry = result.GetDirectoryEntry();
+                            string dfsnamespace = directoryEntry.Parent.Name.Replace("CN=", "");
+
                             Properties = result.Properties;
                             var target_list = Properties[@"msdfs-targetlistv2"][0] as byte[];
                             var xml = new XmlDocument();
+                            string thing = System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray());
                             xml.LoadXml(System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray()));
                             if (xml.FirstChild != null)
                             {
@@ -144,28 +148,22 @@ namespace SnaffCore.ActiveDirectory
                                             {
                                                 var DFSroot = Target.Split('\\')[3];
                                                 var ShareName = Properties[@"msdfs-linkpathv2"][0] as string;
-                                                DFSShares.Add(new DFSShare { Name = $@"{DFSroot}{ShareName}", RemoteServerName = Target.Split('\\')[2] });
+                                                DFSShares.Add(new DFSShare { Name = $@"{DFSroot}{ShareName}", RemoteServerName = Target.Split('\\')[2], DFSNamespace = dfsnamespace });
                                             }
                                         }
                                         catch (Exception e)
                                         {
-                                            Mq.Error("Get-DomainDFSShareV2 error in parsing target : " + e);
+                                            Console.WriteLine("Error in parsing DFSv2 share : " + e);
                                         }
                                     }
                                 }
                             }
                         }
-                        try { Results.Dispose(); }
-                        catch (Exception e)
-                        {
-                            Mq.Error("Get-DomainDFSShare Error disposing of Results object : " + e);
-                        }
                     }
-                    DFSSearcher.Dispose();
                 }
                 catch (Exception e)
                 {
-                    Mq.Error("Get-DomainDfsShareV2 error : " + e);
+                    Console.WriteLine("Get-DomainDfsShareV2 error : " + e);
                 }
                 return DFSShares;
             }

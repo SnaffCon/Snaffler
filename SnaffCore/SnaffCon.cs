@@ -123,8 +123,8 @@ namespace SnaffCore
             // We do this single threaded cos it's fast and not easily divisible.
             AdData adData = new ActiveDirectory.AdData();
             List<string> targetComputers = adData.GetDomainComputers();
-
-            if (targetComputers == null)
+            List<DFSShare> dfsShares = adData.GetDfsShares();
+            if (targetComputers == null && dfsShares == null)
             {
                 Mq.Error(
                     "Something fucked out finding stuff in the domain. You must be holding it wrong.");
@@ -133,9 +133,10 @@ namespace SnaffCore
                     Mq.Terminate();
                 }
             }
+
             string numTargetComputers = targetComputers.Count.ToString();
             Mq.Info("Got " + numTargetComputers + " computers from AD.");
-            if (targetComputers.Count == 0)
+            if (targetComputers.Count == 0 && dfsShares.Count == 0)
             {
                 Mq.Error("Didn't find any domain computers. Seems weird. Try pouring water on it.");
                 while (true)
@@ -152,8 +153,23 @@ namespace SnaffCore
                 }
                 PrepDomainUserRules();
             }
-            // immediately call ShareDisco which should handle the rest.
+            // if we found some actual dfsshares
+            if (dfsShares.Count >= 1)
+            {
+                MyOptions.DfsShares = dfsShares;
+                MyOptions.DfsNamespacePaths = adData.GetDfsNamespacePaths();
+            }
+            // if we're only doing dfs shares, construct a list of targets from dfs share objects and jump to FileDiscovery().
+            if (MyOptions.DfsOnly)
+            {
+                List<string> namespacePaths = adData.GetDfsNamespacePaths();
+
+                FileDiscovery(namespacePaths.ToArray());
+            }
+            // call ShareDisco which should handle the rest.
             ShareDiscovery(targetComputers.ToArray());
+            //ShareDiscovery(targetComputers.ToArray(), dfsShares);
+
         }
 
         public void PrepDomainUserRules()
@@ -189,7 +205,7 @@ namespace SnaffCore
             foreach (string computer in computerTargets)
             {
                 // ShareFinder Task Creation - this kicks off the rest of the flow
-                Mq.Trace("Creating a sharefinder task for " + computer);
+                Mq.Trace("Creating a ShareFinder task for " + computer);
                 ShareTaskScheduler.New(() =>
                 {
                     try
@@ -211,7 +227,7 @@ namespace SnaffCore
         {
             foreach (string pathTarget in pathTargets)
             {
-                // ShareScanner Task Creation - this kicks off the rest of the flow
+                // TreeWalker Task Creation - this kicks off the rest of the flow
                 Mq.Info("Creating a TreeWalker task for " + pathTarget);
                 TreeTaskScheduler.New(() =>
                 {

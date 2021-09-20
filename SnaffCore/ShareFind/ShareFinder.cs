@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using SnaffCore.ActiveDirectory;
 using SnaffCore.Classifiers.EffectiveAccess;
 using static SnaffCore.Config.Options;
 
@@ -81,27 +82,59 @@ namespace SnaffCore.ShareFind
                     // send them to TreeWalker
                     if (!matched)
                     {
-                        if (IsShareReadable(shareName))
+                        bool skip = false;
+                        // check if the thing is in MyOptions.DfsShares and whether we've removed it from MyOptions.DfsNamespacePaths yet.
+                        foreach (DFSShare dfsShare in MyOptions.DfsShares)
                         {
-                            DirectoryInfo dirInfo = new DirectoryInfo(shareName);
-                            EffectivePermissions.RwStatus rwStatus = EffectivePermissions.CanRw(dirInfo);
-
-                            Triage triage = Triage.Green;
-                            if (rwStatus.CanWrite || rwStatus.CanModify)
+                            if (dfsShare.RemoteServerName.Equals(computer, StringComparison.OrdinalIgnoreCase) &&
+                                dfsShare.Name.Equals(hostShareInfo.shi1_netname, StringComparison.OrdinalIgnoreCase))
                             {
-                                triage = Triage.Yellow;
+                                if (!MyOptions.DfsNamespacePaths.Contains(dfsShare.DfsNamespacePath))
+                                {
+                                    // remove the namespace path to make sure we don't kick it off again.
+                                    MyOptions.DfsNamespacePaths.Remove(dfsShare.DfsNamespacePath);
+                                    // sub out the \\computer\share path for the dfs namespace path. this makes sure we hit the most efficient endpoint. 
+                                    shareName = dfsShare.DfsNamespacePath;
+                                }
+                                else // if that dfs namespace has already been removed from our list, skip further scanning of that share.
+                                {
+                                    skip = true;
+                                }
                             }
+                        }
+
+                        if (IsShareReadable(shareName) && skip == false)
+                        {
+                            Triage triage = Triage.Green;
 
                             ShareResult shareResult = new ShareResult()
                             {
                                 Listable = true,
                                 Triage = triage,
-                                RootModifyable = rwStatus.CanModify,
-                                RootWritable = rwStatus.CanWrite,
-                                RootReadable = rwStatus.CanRead,
                                 SharePath = shareName,
                                 ShareComment = hostShareInfo.shi1_remark.ToString()
                             };
+
+                            try
+                            {
+                                DirectoryInfo dirInfo = new DirectoryInfo(shareName);
+
+                                EffectivePermissions.RwStatus rwStatus = EffectivePermissions.CanRw(dirInfo);
+
+                                shareResult.RootModifyable = rwStatus.CanModify;
+                                shareResult.RootWritable = rwStatus.CanWrite;
+                                shareResult.RootReadable = rwStatus.CanRead;
+
+                                if (rwStatus.CanWrite || rwStatus.CanModify)
+                                {
+                                    triage = Triage.Yellow;
+                                }
+                            }
+                            catch (System.UnauthorizedAccessException e)
+                            {
+                                Mq.Error("Failed to get permissions on " + shareName);
+                            }
+
                             Mq.ShareResult(shareResult);
 
                             if (MyOptions.ScanFoundShares)

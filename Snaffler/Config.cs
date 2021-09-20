@@ -70,8 +70,9 @@ namespace Snaffler
             
             SwitchArgument tsvArg = new SwitchArgument('y', "tsv", "Makes Snaffler output as tsv.", false);
             SwitchArgument dfsArg = new SwitchArgument('f', "dfs", "Limits Snaffler to finding file shares via DFS, for \"OPSEC\" reasons.", false);
-
-            // list of letters i haven't used yet: aegknpqwx
+            SwitchArgument findSharesOnlyArg = new SwitchArgument('a', "sharesonly",
+                "Stops after finding shares, doesn't walk their filesystems.", false);
+            // list of letters i haven't used yet: egknpqwx
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
@@ -90,6 +91,7 @@ namespace Snaffler
             parser.Arguments.Add(domainUserArg);
             parser.Arguments.Add(tsvArg);
             parser.Arguments.Add(dfsArg);
+            parser.Arguments.Add(findSharesOnlyArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -136,7 +138,12 @@ namespace Snaffler
 
                 if (dfsArg.Parsed)
                 {
-                    parsedConfig.DfsOnly = true;
+                    parsedConfig.DfsOnly = dfsArg.Value;
+                }
+
+                if (findSharesOnlyArg.Parsed)
+                {
+                    parsedConfig.ScanFoundShares = dfsArg.Value;
                 }
 
                 if (tsvArg.Parsed)

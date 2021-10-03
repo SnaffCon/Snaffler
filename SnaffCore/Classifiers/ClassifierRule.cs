@@ -72,6 +72,7 @@ namespace Classifiers
         Black,
         Green,
         Yellow,
-        Red
+        Red,
+        Gray   //HCK_PR strictly informational - it exists but could not be snaffled
     }
 }

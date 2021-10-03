@@ -34,6 +34,7 @@ namespace SnaffCore.Config
         public bool ShareFinderEnabled { get; set; } = true;
         public string TargetDomain { get; set; }
         public string TargetDc { get; set; }
+        public bool LogDeniedShares { get; set; } = false;   //HCK_PR  New config option 
 
         // FileScanner Options
         public bool DomainUserRules { get; set; } = false;

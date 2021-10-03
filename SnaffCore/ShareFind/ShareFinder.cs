@@ -77,15 +77,19 @@ namespace SnaffCore.ShareFind
                     // send them to TreeWalker
                     if (!matched)
                     {
+                        //HCK_PR at least one classifier was matched so we will return the share
+                        ShareResult shareResult = new ShareResult()
+                        {
+                            Listable = true,
+                            SharePath = shareName,
+                            ShareComment = hostShareInfo.shi1_remark.ToString()
+                        };
+
+                        //HCK_PR  If the share is readable then dig deeper.
                         if (IsShareReadable(shareName))
                         {
-                            ShareResult shareResult = new ShareResult()
-                            {
-                                Listable = true,
-                                SharePath = shareName,
-                                ShareComment = hostShareInfo.shi1_remark.ToString()
-                            };
-                            Mq.ShareResult(shareResult);
+                            //HCK_PR  Share is readable, report as green  (the old default/min)
+                            shareResult.Triage = Triage.Green;
 
                             Mq.Trace("Creating a TreeWalker task for " + shareResult.SharePath);
                             TreeTaskScheduler.New(() =>
@@ -100,6 +104,13 @@ namespace SnaffCore.ShareFind
                                     Mq.Error(e.ToString());
                                 }
                             });
+
+                            Mq.ShareResult(shareResult);
+                        }
+                        else if(MyOptions.LogDeniedShares == true)
+                        {
+                            //HCK_PR   return result even though could not access
+                            Mq.ShareResult(shareResult);
                         }
                     }
                 }
@@ -141,6 +152,9 @@ namespace SnaffCore.ShareFind
                 //", but this is usually no cause for alarm.");
                 return null;
             }
+
+            Mq.Degub("Share discovered: " + $"\\\\{computer}\\{hostShareInfo.shi1_netname}");
+
             return $"\\\\{computer}\\{hostShareInfo.shi1_netname}";
         }
 

@@ -80,7 +80,8 @@ namespace SnaffCore.Config
                         "lsass\\.dmp",
                         "lsass\\.exe\\.dmp",
                         "Psmapp\\.cred",
-                        "psmgw\\.cred"
+                        "psmgw\\.cred",
+                        "mobaxterm\\.ini"
                     },
                 }
                 );

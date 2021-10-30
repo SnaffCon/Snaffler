@@ -12,7 +12,7 @@ namespace Classifiers
         // define a way to chain rules together
         public string RuleName { get; set; } = "Default";
         public MatchAction MatchAction { get; set; } = MatchAction.Snaffle;
-        public string RelayTarget { get; set; } = null;
+        public List<string> RelayTargets { get; set; } = null;
 
         public string Description { get; set; } = "A description of what a rule does.";
 

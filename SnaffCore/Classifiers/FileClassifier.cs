@@ -121,31 +121,32 @@ namespace Classifiers
                         };
                         Mq.FileResult(fileResult);
                     }
-                    return true;
+                    return false;
                 case MatchAction.Relay:
                     // bounce it on to the next ClassifierRule
                     try
                     {
-                        ClassifierRule nextRule =
-                            MyOptions.ClassifierRules.First(thing => thing.RuleName == ClassifierRule.RelayTarget);
+                        foreach (string relayTarget in ClassifierRule.RelayTargets)
+                        {
+                            ClassifierRule nextRule =
+                                MyOptions.ClassifierRules.First(thing => thing.RuleName == relayTarget);
 
-                        if (nextRule.EnumerationScope == EnumerationScope.ContentsEnumeration)
-                        {
-                            ContentClassifier nextContentClassifier = new ContentClassifier(nextRule);
-                            nextContentClassifier.ClassifyContent(fileInfo);
-                            return true;
+                            if (nextRule.EnumerationScope == EnumerationScope.ContentsEnumeration)
+                            {
+                                ContentClassifier nextContentClassifier = new ContentClassifier(nextRule);
+                                nextContentClassifier.ClassifyContent(fileInfo);
+                            }
+                            else if (nextRule.EnumerationScope == EnumerationScope.FileEnumeration)
+                            {
+                                FileClassifier nextFileClassifier = new FileClassifier(nextRule);
+                                nextFileClassifier.ClassifyFile(fileInfo);
+                            }
+                            else
+                            {
+                                Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
+                            }
                         }
-                        else if (nextRule.EnumerationScope == EnumerationScope.FileEnumeration)
-                        {
-                            FileClassifier nextFileClassifier = new FileClassifier(nextRule);
-                            nextFileClassifier.ClassifyFile(fileInfo);
-                            return true;
-                        }
-                        else
-                        {
-                            Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
-                            return false;
-                        }
+                        return false;
                     }
                     catch (IOException e)
                     {

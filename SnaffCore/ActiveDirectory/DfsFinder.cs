@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using SnaffCore.Concurrency;
 using System.DirectoryServices;
+using System.DirectoryServices.Protocols;
 using System.Xml;
-
+using SnaffCore.ActiveDirectory.LDAP;
 
 namespace SnaffCore.ActiveDirectory
 {
@@ -25,152 +26,136 @@ namespace SnaffCore.ActiveDirectory
             Mq = BlockingMq.GetMq();
         }
 
-        public List<DFSShare> FindDfsShares(DirectorySearcher domainSearcher)
+        public List<DFSShare> FindDfsShares(DirectorySearch domainSearcher)
         {
             List<DFSShare> dfsShares = Get_DomainDFSShare(domainSearcher);
             return dfsShares;
         }
 
-        private List<DFSShare> Get_DomainDFSShareV1(DirectorySearcher DFSSearcher)
+        private List<DFSShare> Get_DomainDFSShareV1(DirectorySearch _directorySearch)
         {
-            if (DFSSearcher != null)
-            {
                 var DFSShares = new List<DFSShare>();
-                ResultPropertyCollection Properties = null;
-                DFSSearcher.Filter = @"(&(objectClass=fTDfs))";
+                string[] properties = new string[] { "remoteservername", "pkt", "cn", "name" };
+                string filter = @"(&(objectClass=fTDfs))";
 
-                try
+            try
+            {
+                IEnumerable<SearchResultEntry> searchResultEntries = _directorySearch.QueryLdap(filter, properties, System.DirectoryServices.Protocols.SearchScope.Subtree);
+                int count = searchResultEntries.Count();
+
+                foreach (SearchResultEntry resEnt in searchResultEntries)
                 {
-                    ResultPropertyValueCollection Pkt = null;
-                    var Results = DFSSearcher.FindAll();
-                    if (Results != null)
+                    string dfsnamespace = resEnt.DistinguishedName.Replace("CN=", "").Split(',')[0];
+
+                    string[] RemoteNames = resEnt.GetPropertyAsArray(@"remoteservername");
+                    byte[][] pkt = resEnt.GetPropertyAsArrayOfBytes("pkt");
+
+                    if (RemoteNames != null)
                     {
-                        foreach (SearchResult result in Results)
+                        foreach (string name in RemoteNames)
                         {
-                            //Console.WriteLine("Found a DFSv1 entry.");
-                            DirectoryEntry directoryEntry = result.GetDirectoryEntry();
-                            string dfsnamespace = directoryEntry.Name.Replace("CN=", "");
-
-                            Properties = result.Properties;
-                            var RemoteNames = Properties[@"remoteservername"];
-                            Pkt = Properties[@"pkt"];
-
-                            if (RemoteNames != null)
+                            try
                             {
-                                foreach (string name in RemoteNames)
+                                if (name.Contains(@"\"))
                                 {
-                                    try
-                                    {
-                                        if (name.Contains(@"\"))
-                                        {
 
-                                            DFSShares.Add(new DFSShare
-                                            {
-                                                Name = Properties[@"name"][0] as string,
-                                                RemoteServerName = name.Split(new char[] { '\\' })[2],
-                                                DFSNamespace = dfsnamespace
-                                            });
-                                        }
-                                    }
-                                    catch (Exception e)
+                                    DFSShares.Add(new DFSShare
                                     {
-                                        Console.WriteLine("Error parsing DFSv1 share : " + e);
-                                    }
+                                        Name = resEnt.GetProperty("name"),
+                                        RemoteServerName = name.Split(new char[] { '\\' })[2],
+                                        DFSNamespace = dfsnamespace
+                                    });
                                 }
                             }
-                        }
-
-                        if (Pkt != null && Pkt[0] != null)
-                        {
-                            var servers = Parse_Pkt(Pkt[0] as byte[]);
-                            if (servers != null)
+                            catch (Exception e)
                             {
-                                foreach (var server in servers)
+                                Console.WriteLine("Error parsing DFSv1 share : " + e);
+                            }
+                        }
+                    }
+
+                    if (pkt != null && pkt[0] != null)
+                    {
+                        var servers = Parse_Pkt(pkt[0] as byte[]);
+                        if (servers != null)
+                        {
+                            foreach (var server in servers)
+                            {
+                                // If a folder doesn't have a redirection it will have a target like
+                                // \\null\TestNameSpace\folder\.DFSFolderLink so we do actually want to match
+                                // on 'null' rather than $Null
+                                if (server != null && server != @"null" &&
+                                    DFSShares.Any(x => x.RemoteServerName == server))
                                 {
-                                    // If a folder doesn't have a redirection it will have a target like
-                                    // \\null\TestNameSpace\folder\.DFSFolderLink so we do actually want to match
-                                    // on 'null' rather than $Null
-                                    if (server != null && server != @"null" &&
-                                        DFSShares.Any(x => x.RemoteServerName == server))
-                                    {
-                                        DFSShares.Add(new DFSShare { Name = Properties[@"name"][0] as string, RemoteServerName = server });
-                                    }
+                                    DFSShares.Add(new DFSShare { Name = resEnt.GetProperty(@"name") as string, RemoteServerName = server });
                                 }
                             }
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Get-DomainDFSShareV1 error : " + e);
-                }
-                return DFSShares;
             }
-            return null;
+            catch (Exception e)
+            {
+                Console.WriteLine("Get-DomainDFSShareV1 error : " + e);
+            }
+            
+            return DFSShares;
         }
 
-        private List<DFSShare> Get_DomainDFSShareV2(DirectorySearcher DFSSearcher)
+        private List<DFSShare> Get_DomainDFSShareV2(DirectorySearch _directorySearch)
         {
-            if (DFSSearcher != null)
+            var DFSShares = new List<DFSShare>();
+            string[] properties = new string[] { @"msdfs-linkpathv2", @"msDFS-TargetListv2", "cn", "name" };
+            string filter = @"(&(objectClass=msDFS-Linkv2))";
+
+            try
             {
-                var DFSShares = new List<DFSShare>();
-                ResultPropertyCollection Properties = null;
-                DFSSearcher.Filter = @"(&(objectClass=msDFS-Linkv2))";
-                DFSSearcher.PropertiesToLoad.AddRange(new string[] { @"msdfs-linkpathv2", @"msDFS-TargetListv2" });
+                IEnumerable<SearchResultEntry> searchResultEntries = _directorySearch.QueryLdap(filter, properties, System.DirectoryServices.Protocols.SearchScope.Subtree);
+                int count = searchResultEntries.Count();
 
-                try
+                foreach (SearchResultEntry resEnt in searchResultEntries)
                 {
-                    var Results = DFSSearcher.FindAll();
-                    if (Results != null)
+                    //Console.WriteLine("Found a DFSv2 entry.");
+                    string dfsnamespace = resEnt.DistinguishedName.Replace("CN=", "").Split(',')[1];
+
+                    var target_list = resEnt.GetPropertyAsBytes(@"msdfs-targetlistv2");
+                    var xml = new XmlDocument();
+                    string thing = System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray());
+                    xml.LoadXml(System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray()));
+
+                    if (xml.FirstChild != null)
                     {
-                        foreach (SearchResult result in Results)
+                        foreach (XmlNode node in xml.ChildNodes)
                         {
-                            //Console.WriteLine("Found a DFSv2 entry.");
-                            DirectoryEntry directoryEntry = result.GetDirectoryEntry();
-                            string dfsnamespace = directoryEntry.Parent.Name.Replace("CN=", "");
-
-                            Properties = result.Properties;
-                            var target_list = Properties[@"msdfs-targetlistv2"][0] as byte[];
-                            var xml = new XmlDocument();
-                            string thing = System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray());
-                            xml.LoadXml(System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray()));
-                            if (xml.FirstChild != null)
+                            foreach (XmlNode babbynode in node.ChildNodes)
                             {
-                                foreach (XmlNode node in xml.ChildNodes)
+                                try
                                 {
-                                    foreach (XmlNode babbynode in node.ChildNodes)
+                                    var Target = node.InnerText;
+                                    if (Target.Contains(@"\"))
                                     {
-
-                                        try
-                                        {
-                                            var Target = node.InnerText;
-                                            if (Target.Contains(@"\"))
-                                            {
-                                                var DFSroot = Target.Split('\\')[3];
-                                                var ShareName = Properties[@"msdfs-linkpathv2"][0] as string;
-                                                DFSShares.Add(new DFSShare { Name = $@"{DFSroot}{ShareName}", RemoteServerName = Target.Split('\\')[2], DFSNamespace = dfsnamespace });
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Console.WriteLine("Error in parsing DFSv2 share : " + e);
-                                        }
+                                        var DFSroot = Target.Split('\\')[3];
+                                        string ShareName = resEnt.GetProperty(@"msdfs-linkpathv2");
+                                        DFSShares.Add(new DFSShare { Name = $@"{DFSroot}{ShareName}", RemoteServerName = Target.Split('\\')[2], DFSNamespace = dfsnamespace });
                                     }
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine("Error in parsing DFSv2 share : " + e);
                                 }
                             }
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Get-DomainDfsShareV2 error : " + e);
-                }
-                return DFSShares;
             }
-            return null;
+            catch (Exception e)
+            {
+                Console.WriteLine("Get-DomainDfsShareV2 error : " + e);
+            }
+            return DFSShares;
         }
 
-        public List<DFSShare> Get_DomainDFSShare(DirectorySearcher DFSSearcher)
+        public List<DFSShare> Get_DomainDFSShare(DirectorySearch DFSSearcher)
         {
             var DFSShares = new List<DFSShare>();
 

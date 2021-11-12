@@ -593,7 +593,8 @@ namespace SnaffCore.Config
                     "\\.log",
                     "\\.sqlite",
                     "\\.sqlite3",
-                    "\\.fdb"
+                    "\\.fdb",
+                    "\\.tfvars"
                 },
             });
 
@@ -626,6 +627,7 @@ namespace SnaffCore.Config
                     "NVRAM config last updated",
                     "enable password \\.",
                     "simple-bind authenticated encrypt",
+                    "CredFileType="
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()

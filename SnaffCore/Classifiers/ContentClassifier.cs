@@ -39,6 +39,8 @@ namespace Classifiers
                                 {
                                     MatchedRule = ClassifierRule
                                 };
+                                // if the file was list-only, don't bother sending a result back to the user.
+                                if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return; };
                                 Mq.FileResult(fileResult);
                             }
                             return;
@@ -74,7 +76,8 @@ namespace Classifiers
                                         MatchedRule = ClassifierRule,
                                         TextResult = textResult
                                     };
-
+                                    // if the file was list-only, don't bother sending a result back to the user.
+                                    if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return; };
                                     Mq.FileResult(fileResult);
                                 }
                             }
@@ -95,6 +98,9 @@ namespace Classifiers
                                 {
                                     MatchedRule = ClassifierRule
                                 };
+
+                                // if the file was list-only, don't bother sending a result back to the user.
+                                if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return; };
                                 Mq.FileResult(fileResult);
                             }
                             return;
@@ -106,6 +112,9 @@ namespace Classifiers
                                 {
                                     MatchedRule = ClassifierRule
                                 };
+
+                                // if the file was list-only, don't bother sending a result back to the user.
+                                if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return; };
                                 Mq.FileResult(fileResult);
                             }
                             return;

@@ -81,33 +81,11 @@ namespace SnaffCore.Config
                         "lsass\\.exe\\.dmp",
                         "Psmapp\\.cred",
                         "psmgw\\.cred",
-                        "mobaxterm\\.ini"
+                        "mobaxterm\\.ini",
+                        "mobaxterm backup\\.zip"
                     },
                 }
                 );
-
-            this.ClassifierRules.Add(
-                new ClassifierRule()
-                {
-                    Description = "Files with a path containing these strings are very very interesting.",
-                    RuleName = "KeepPathContainsBlack",
-                    EnumerationScope = EnumerationScope.FileEnumeration,
-                    MatchLocation = MatchLoc.FilePath,
-                    WordListType = MatchListType.Contains,
-                    MatchAction = MatchAction.Snaffle,
-                    Triage = Triage.Black,
-                    WordList = new List<string>()
-                {
-                        "\\.ssh\\\\", // test file created
-                        "\\.purple\\\\accounts.xml", // test file created
-                        "\\.aws\\\\", // test file created
-                        "\\.gem\\\\credentials", // test file created
-                        "doctl\\\\config.yaml", // test file created
-                        "config\\\\hub",  // test file created
-                        "control\\customsettings.ini"
-                },
-                }
-            );
 
 
             this.ClassifierRules.Add(
@@ -122,8 +100,6 @@ namespace SnaffCore.Config
                     Triage = Triage.Red,
                     WordList = new List<string>()
                     {
-                        // bak
-                        "\\.bak",
                         "\\.cred",
                         // db backups
                         "\\.sqldump", // test file created
@@ -142,6 +118,8 @@ namespace SnaffCore.Config
                 Triage = Triage.Yellow,
                 WordList = new List<string>()
                 {
+                        // bak
+                        "\\.bak",
                         "\\.rdg", // test file created
                         // packet capture
                         "\\.pcap", // test file created
@@ -150,9 +128,9 @@ namespace SnaffCore.Config
                         "\\.key", // test file created
                         "\\.keypair", // test file created
                         "\\.keychain", // test file created
+                        "\\.mdf", // test file created
                         "\\.dmp",
                         "\\.jks", // test file created
-                        "\\.mdf", // test file created
                         "\\.sdf", // test file created
                         // disk image
                         "\\.wim", // test file created
@@ -166,6 +144,33 @@ namespace SnaffCore.Config
                       //  "\\.fve", // test file created
                 },
             });
+
+            this.ClassifierRules.Add(
+new ClassifierRule()
+{
+    Description = "Files with these extensions might be interesting.",
+    RuleName = "KeepExtExactGreen",
+    EnumerationScope = EnumerationScope.FileEnumeration,
+    MatchLocation = MatchLoc.FileExtension,
+    WordListType = MatchListType.Exact,
+    MatchAction = MatchAction.Snaffle,
+    Triage = Triage.Green,
+    WordList = new List<string>()
+    {
+                        "\\.jks", // test file created
+                        "\\.sdf", // test file created
+                        // disk image
+                        "\\.wim", // test file created
+                        // virtual machines
+                        "\\.ova", // test file created
+                        "\\.ovf", // test file created
+                                 // bitlocker recovery keys
+                        "\\.bek", // test file created
+                                 // tpm backups
+                         "\\.tpm", // test file created
+                         "\\.fve", // test file created
+    },
+});
 
             this.ClassifierRules.Add(
                 new ClassifierRule()

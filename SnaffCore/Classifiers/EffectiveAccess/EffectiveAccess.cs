@@ -39,7 +39,7 @@ namespace SnaffCore.Classifiers.EffectiveAccess
                 string whoami = WindowsIdentity.GetCurrent().Name;
 
                 string[] accessStrings = effPerms.GetEffectivePermissions(filesysInfo, whoami);
-
+                
                 string[] readRights = new string[] { "Read", "ReadAndExecute", "ReadData", "ListDirectory" };
                 string[] writeRights = new string[] { "Write", "Modify", "FullControl", "TakeOwnership", "ChangePermissions", "AppendData", "WriteData", "CreateFiles", "CreateDirectories" };
                 string[] modifyRights = new string[] { "Modify", "FullControl", "TakeOwnership", "ChangePermissions" };

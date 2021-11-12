@@ -99,6 +99,8 @@ namespace Classifiers
                         MatchedRule = ClassifierRule,
                         TextResult = textResult
                     };
+                    // if the file was list-only, don't bother sending a result back to the user.
+                    if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return false; };
                     Mq.FileResult(fileResult);
                     return false;
                     //return true;
@@ -119,6 +121,9 @@ namespace Classifiers
                                 MatchedStrings = new List<string>() { "" }
                             }
                         };
+
+                        if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return false; };
+
                         Mq.FileResult(fileResult);
                     }
                     return false;
@@ -182,7 +187,8 @@ namespace Classifiers
             BlockingMq Mq = BlockingMq.GetMq();
             // IT TURNS OUT THAT new X509Certificate2() actually writes a file to a temp path and if you
             // don't manage it yourself it hits 65,000 temp files and hangs.
-            var tempfile = Path.Combine(Path.GetTempPath(), "Snaff-" + Guid.NewGuid());
+
+            var tempfile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             File.Copy(certPath, tempfile);
             X509Certificate2 parsedCert = null;
 
@@ -337,17 +343,9 @@ namespace Classifiers
                     matchReasons.Add("Issuer:" + parsedCert.Issuer);
                 }
             }
-
             return matchReasons;
         }
     }
-
-//   public class RwStatus
-//   {
-//       public bool CanRead { get; set; }
-//       public bool CanWrite { get; set; }
-//       public bool CanModify { get; set; }
-//   }
 
     public class FileResult
     {
@@ -358,10 +356,13 @@ namespace Classifiers
 
         public FileResult(FileInfo fileInfo)
         {
-
+            // get an aggressively simplified version of the file's ACL
             this.RwStatus = EffectivePermissions.CanRw(fileInfo);
+
             // nasty debug
             this.FileInfo = fileInfo;
+
+            // this is where we actually automatically grab a copy of the file if wanted.
             if (MyOptions.Snaffle)
             {
                 if ((MyOptions.MaxSizeToSnaffle >= fileInfo.Length) && RwStatus.CanRead)

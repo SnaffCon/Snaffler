@@ -82,23 +82,33 @@ namespace SnaffCore.Classifiers.EffectiveAccess
             string servername = "localhost";
 
             IdentityReference2 idRef2 = new IdentityReference2(username);
-
-            if (filesysInfo.GetType() == typeof(DirectoryInfo))
+            if (filesysInfo.FullName.StartsWith("\\\\"))
             {
-                Alphaleonis.Win32.Filesystem.DirectoryInfo item = new Alphaleonis.Win32.Filesystem.DirectoryInfo(filesysInfo.FullName);
-                effectiveAccessInfo = EffectiveAccess.GetEffectiveAccess(item, idRef2, servername);
+                servername = filesysInfo.FullName.Split('\\')[2];
             }
-            else
+            try
             {
-                Alphaleonis.Win32.Filesystem.FileInfo item = new Alphaleonis.Win32.Filesystem.FileInfo(filesysInfo.FullName);
-                effectiveAccessInfo = EffectiveAccess.GetEffectiveAccess(item, idRef2, servername);
+                if (filesysInfo.GetType() == typeof(DirectoryInfo))
+                {
+                    Alphaleonis.Win32.Filesystem.DirectoryInfo item = new Alphaleonis.Win32.Filesystem.DirectoryInfo(filesysInfo.FullName);
+                    effectiveAccessInfo = EffectiveAccess.GetEffectiveAccess(item, idRef2, servername);
+                }
+                else
+                {
+                    Alphaleonis.Win32.Filesystem.FileInfo item = new Alphaleonis.Win32.Filesystem.FileInfo(filesysInfo.FullName);
+                    effectiveAccessInfo = EffectiveAccess.GetEffectiveAccess(item, idRef2, servername);
+                }
+
+                string accesslist = effectiveAccessInfo.Ace.AccessRights.ToString();
+
+                string[] accesslistarray = accesslist.Replace(" ", "").Split(',');
+
+                return accesslistarray;
             }
-
-            string accesslist = effectiveAccessInfo.Ace.AccessRights.ToString();
-
-            string[] accesslistarray = accesslist.Replace(" ", "").Split(',');
-
-            return accesslistarray;
+            catch (Exception e)
+            {
+                return new string[1] { "None" };
+            }
         }
     }
     public class EffectiveAccess

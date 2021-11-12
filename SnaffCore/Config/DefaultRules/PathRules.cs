@@ -43,6 +43,7 @@ namespace SnaffCore.Config
                         @"\\lib\\ruby\\",
                         @"\\lib\\site-packages",
                         @"\\usr\\share\\doc",
+                        @"\\servicing\\LCU\\"
                     },
             });
 

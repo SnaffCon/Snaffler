@@ -161,6 +161,10 @@ namespace SnaffCore.ShareFind
 
         internal bool IsShareReadable(string share)
         {
+            if (share.EndsWith("IPC$", StringComparison.OrdinalIgnoreCase) || share.EndsWith("print$", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
             BlockingMq Mq = BlockingMq.GetMq();
             try
             {
@@ -177,7 +181,7 @@ namespace SnaffCore.ShareFind
             }
             catch (Exception e)
             {
-                Mq.Trace(e.ToString());
+                Mq.Trace("Unhandled exception in IsShareReadable() for share path: " + share + " Full Exception:" + e.ToString());
             }
             return false;
         }

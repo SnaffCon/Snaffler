@@ -37,9 +37,38 @@ namespace SnaffCore.Config
                         @"\\AppData\\Local\\Microsoft\\",
                         @"\\AppData\\Roaming\\Microsoft\\",
                         @"\\wsuscontent",
-                        @"\\Application Data\\Microsoft\\CLR Security Config\\"
+                        @"\\Application Data\\Microsoft\\CLR Security Config\\",
+                        @"\\doc\\openssl",
+                        @"\\puppet\\share\\doc",
+                        @"\\lib\\ruby\\",
+                        @"\\lib\\site-packages",
+                        @"\\usr\\share\\doc",
                     },
             });
+
+            this.ClassifierRules.Add(
+                new ClassifierRule()
+                {
+                    Description = "Files with a path containing these strings are very interesting.",
+                    RuleName = "KeepPathContainsRed",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FilePath,
+                    WordListType = MatchListType.Contains,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Red,
+                    WordList = new List<string>()
+                {
+                        "\\\\.ssh\\\\", // test file created
+                        "\\\\.purple\\\\accounts.xml", // test file created
+                        "\\\\.aws\\\\", // test file created
+                        "\\\\.gem\\\\credentials", // test file created
+                        "doctl\\\\config.yaml", // test file created
+                        "config\\\\hub",  // test file created
+                        "control\\\\customsettings.ini"
+                },
+                }
+            );
+
         }
     }
 }

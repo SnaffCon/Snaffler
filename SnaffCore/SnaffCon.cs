@@ -169,7 +169,6 @@ namespace SnaffCore
             // call ShareDisco which should handle the rest.
             ShareDiscovery(targetComputers.ToArray());
             //ShareDiscovery(targetComputers.ToArray(), dfsShares);
-
         }
 
         public void PrepDomainUserRules()

@@ -31,42 +31,47 @@ namespace SnaffCore.TreeWalk
              {
                  return;
              }
-             
-             try
-             {
-                 string[] files = Directory.GetFiles(currentDir);
-                 // check if we actually like the files
-                 foreach (string file in files)
-                 {
-                     FileTaskScheduler.New(() =>
-                     {
-                         try
-                         {
-                             FileScanner.ScanFile(file);
-                         }
-                         catch (Exception e)
-                         {
-                             Mq.Error("Exception in FileScanner task for file " + file);
-                             Mq.Trace(e.ToString());
-                         }
-                     });
-                 }
-             }
-             catch (UnauthorizedAccessException)
-             {
-                 //Mq.Trace(e.ToString());
-                 //continue;
-             }
-             catch (DirectoryNotFoundException)
-             {
-                 //Mq.Trace(e.ToString());
-                 //continue;
-             }
-             catch (Exception e)
-             {
-                 Mq.Trace(e.ToString());
-                 //continue;
-             }
+
+            try
+            {
+                string[] files = Directory.GetFiles(currentDir);
+                // check if we actually like the files
+                foreach (string file in files)
+                {
+                    FileTaskScheduler.New(() =>
+                    {
+                        try
+                        {
+                            FileScanner.ScanFile(file);
+                        }
+                        catch (Exception e)
+                        {
+                            Mq.Error("Exception in FileScanner task for file " + file);
+                            Mq.Trace(e.ToString());
+                        }
+                    });
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                //Mq.Trace(e.ToString());
+                //continue;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                //Mq.Trace(e.ToString());
+                //continue;
+            }
+            catch (IOException)
+            {
+                //Mq.Trace(e.ToString());
+                //continue;
+            }
+            catch (Exception e)
+            {
+                Mq.Trace(e.ToString());
+                //continue;
+            }
 
             try
             {

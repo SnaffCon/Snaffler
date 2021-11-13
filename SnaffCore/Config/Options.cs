@@ -19,10 +19,10 @@ namespace SnaffCore.Config
         public List<string> DfsNamespacePaths { get; set; } = new List<string>();
 
         // Concurrency Options
-        //public int MaxThreads { get; set; } = 30;
-        public int ShareThreads { get; set; } = 30;
-        public int TreeThreads { get; set; } = 20;
-        public int FileThreads { get; set; } = 50;
+        public int MaxThreads { get; set; } = 60;
+        public int ShareThreads { get; set; }
+        public int TreeThreads { get; set; }
+        public int FileThreads { get; set; }
         public int MaxFileQueue { get; set; } = 200000;
         public int MaxTreeQueue { get; set; } = 0;
         public int MaxShareQueue { get; set; } = 0;

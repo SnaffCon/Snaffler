@@ -103,7 +103,6 @@ namespace Classifiers
                     if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return false; };
                     Mq.FileResult(fileResult);
                     return false;
-                    //return true;
                 case MatchAction.CheckForKeys:
                     // do a special x509 dance
                     List<string> x509MatchReason = x509Match(fileInfo);

@@ -87,6 +87,28 @@ namespace SnaffCore.Config
                 }
                 );
 
+            this.ClassifierRules.Add(
+                new ClassifierRule()
+                {
+                    Description = "Files with a path containing these strings are very very interesting.",
+                    RuleName = "KeepPathContainsBlack",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FilePath,
+                    WordListType = MatchListType.Contains,
+                    MatchAction = MatchAction.Snaffle,
+                    Triage = Triage.Black,
+                    WordList = new List<string>()
+                {
+                        "\\\\.ssh\\\\", // test file created
+                        "\\\\.purple\\\\accounts.xml", // test file created
+                        "\\\\.aws\\\\", // test file created
+                        "\\\\.gem\\\\credentials", // test file created
+                        "doctl\\\\config.yaml", // test file created
+                        "config\\\\hub",  // test file created
+                        "control\\\\customsettings.ini"
+                },
+                }
+            );
 
             this.ClassifierRules.Add(
                 new ClassifierRule()

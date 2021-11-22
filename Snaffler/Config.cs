@@ -209,11 +209,6 @@ namespace Snaffler
                              " bytes");
                 }
 
-                if (snaffleArg.Parsed)
-                {
-                    parsedConfig.SnafflePath = snaffleArg.Value;
-                }
-
                 if (snaffleSizeArg.Parsed)
                 {
                     parsedConfig.MaxSizeToSnaffle = snaffleSizeArg.Value;

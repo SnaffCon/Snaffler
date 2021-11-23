@@ -7,7 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using SnaffCore.ActiveDirectory;
+using SnaffCore.Classifiers.EffectiveAccess;
 using static SnaffCore.Config.Options;
+
 
 namespace SnaffCore.ShareFind
 {
@@ -16,6 +19,8 @@ namespace SnaffCore.ShareFind
         private BlockingMq Mq { get; set; }
         private BlockingStaticTaskScheduler TreeTaskScheduler { get; set; }
         private TreeWalker TreeWalker { get; set; }
+        private EffectivePermissions effectivePermissions { get; set; } = new EffectivePermissions();
+
 
         public ShareFinder()
         {
@@ -65,7 +70,7 @@ namespace SnaffCore.ShareFind
                                 ShareClassifier shareClassifier = new ShareClassifier(classifier);
                                 if (shareClassifier.ClassifyShare(shareName))
                                 {
-                                    // in this instance 'matched' means 'don't send to treewalker'.
+                                    // in this instance 'matched' means 'matched a discard rule, so don't send to treewalker'.
                                     matched = true;
                                     break;
                                 }
@@ -77,29 +82,77 @@ namespace SnaffCore.ShareFind
                     // send them to TreeWalker
                     if (!matched)
                     {
-                        if (IsShareReadable(shareName))
+                        bool skip = false;
+                        // check if the thing is in MyOptions.DfsShares and whether we've removed it from MyOptions.DfsNamespacePaths yet.
+                        foreach (DFSShare dfsShare in MyOptions.DfsShares)
                         {
+                            if (dfsShare.RemoteServerName.Equals(computer, StringComparison.OrdinalIgnoreCase) &&
+                                dfsShare.Name.Equals(hostShareInfo.shi1_netname, StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (!MyOptions.DfsNamespacePaths.Contains(dfsShare.DfsNamespacePath))
+                                {
+                                    // remove the namespace path to make sure we don't kick it off again.
+                                    MyOptions.DfsNamespacePaths.Remove(dfsShare.DfsNamespacePath);
+                                    // sub out the \\computer\share path for the dfs namespace path. this makes sure we hit the most efficient endpoint. 
+                                    shareName = dfsShare.DfsNamespacePath;
+                                }
+                                else // if that dfs namespace has already been removed from our list, skip further scanning of that share.
+                                {
+                                    skip = true;
+                                }
+                            }
+                        }
+
+                        if (IsShareReadable(shareName) && skip == false)
+                        {
+                            Triage triage = Triage.Green;
+
                             ShareResult shareResult = new ShareResult()
                             {
                                 Listable = true,
+                                Triage = triage,
                                 SharePath = shareName,
                                 ShareComment = hostShareInfo.shi1_remark.ToString()
                             };
+
+                            try
+                            {
+                                DirectoryInfo dirInfo = new DirectoryInfo(shareName);
+
+                                EffectivePermissions.RwStatus rwStatus = EffectivePermissions.CanRw(dirInfo);
+
+                                shareResult.RootModifyable = rwStatus.CanModify;
+                                shareResult.RootWritable = rwStatus.CanWrite;
+                                shareResult.RootReadable = rwStatus.CanRead;
+
+                                if (rwStatus.CanWrite || rwStatus.CanModify)
+                                {
+                                    triage = Triage.Yellow;
+                                }
+                            }
+                            catch (System.UnauthorizedAccessException e)
+                            {
+                                Mq.Error("Failed to get permissions on " + shareName);
+                            }
+
                             Mq.ShareResult(shareResult);
 
-                            Mq.Trace("Creating a TreeWalker task for " + shareResult.SharePath);
-                            TreeTaskScheduler.New(() =>
+                            if (MyOptions.ScanFoundShares)
                             {
-                                try
+                                Mq.Trace("Creating a TreeWalker task for " + shareResult.SharePath);
+                                TreeTaskScheduler.New(() =>
                                 {
-                                    TreeWalker.WalkTree(shareResult.SharePath);
-                                }
-                                catch (Exception e)
-                                {
-                                    Mq.Error("Exception in TreeWalker task for share " + shareResult.SharePath);
-                                    Mq.Error(e.ToString());
-                                }
-                            });
+                                    try
+                                    {
+                                        TreeWalker.WalkTree(shareResult.SharePath);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Mq.Error("Exception in TreeWalker task for share " + shareResult.SharePath);
+                                        Mq.Error(e.ToString());
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -108,6 +161,10 @@ namespace SnaffCore.ShareFind
 
         internal bool IsShareReadable(string share)
         {
+            if (share.EndsWith("IPC$", StringComparison.OrdinalIgnoreCase) || share.EndsWith("print$", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
             BlockingMq Mq = BlockingMq.GetMq();
             try
             {
@@ -124,7 +181,7 @@ namespace SnaffCore.ShareFind
             }
             catch (Exception e)
             {
-                Mq.Trace(e.ToString());
+                Mq.Trace("Unhandled exception in IsShareReadable() for share path: " + share + " Full Exception:" + e.ToString());
             }
             return false;
         }

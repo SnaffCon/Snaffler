@@ -54,16 +54,16 @@ namespace Snaffler
                 // set up the  TSV output if the flag is set
                 if (Options.LogTSV)
                 {
-                    fileResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6:u}" + Options.Separator + "{7}" + Options.Separator + "{8}";
-                    shareResultTemplate = "{0}" + Options.Separator + "{1}";
+                    fileResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6:u}" + Options.Separator + "{7}" + Options.Separator + "{8}" + Options.Separator + "{9}";
+                    shareResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}";
                     dirResultTemplate = "{0}" + Options.Separator + "{1}";
                 }
                 // otherwise just do the normal thing
                 else
                 {
                     // treat all as strings except LastWriteTime {6}
-                    fileResultTemplate = "{{{0}}}<{1}|{2}{3}|{4}|{5}|{6:u}>({7}) {8}";
-                    shareResultTemplate = "{{{0}}}({1}) {2}";
+                    fileResultTemplate = "{{{0}}}<{1}|{2}{3}{4}|{5}|{6}|{7:u}>({8}) {9}";
+                    shareResultTemplate = "{{{0}}}<{1}>({2}) {3}";
                     dirResultTemplate = "{{{0}}}({1})";
                 }
                 //------------------------------------------
@@ -244,7 +244,22 @@ namespace Snaffler
             string sharePath = message.ShareResult.SharePath;
             string triage = message.ShareResult.Triage.ToString();
             string shareComment = message.ShareResult.ShareComment;
-            return string.Format(shareResultTemplate, triage, sharePath, shareComment);
+
+            string rwString = "";
+            if (message.ShareResult.RootReadable)
+            {
+                rwString = rwString + "R";
+            }
+            if (message.ShareResult.RootWritable)
+            {
+                rwString = rwString + "W";
+            }
+            if (message.ShareResult.RootModifyable)
+            {
+                rwString = rwString + "M";
+            }
+
+            return string.Format(shareResultTemplate, triage, sharePath, rwString, shareComment);
         }
 
         public string DirResultLogFromMessage(SnafflerMessage message)
@@ -274,6 +289,12 @@ namespace Snaffler
                     canwrite = "W";
                 }
 
+                string canmodify = "";
+                if (message.FileResult.RwStatus.CanModify)
+                {
+                    canmodify = "M";
+                }
+
                 string matchedstring = "";
 
                 long fileSize = message.FileResult.FileInfo.Length;
@@ -299,7 +320,7 @@ namespace Snaffler
                     matchcontext = message.FileResult.TextResult.MatchContext;
                 }
 
-                return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, matchedstring, fileSizeString, modifiedStamp,
+                return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, canmodify, matchedstring, fileSizeString, modifiedStamp,
                     filepath, matchcontext);
             }
             catch (Exception e)

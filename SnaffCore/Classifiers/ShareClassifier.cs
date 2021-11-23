@@ -29,7 +29,7 @@ namespace Classifiers
                     case MatchAction.Discard:
                         return true;
                     case MatchAction.Snaffle:
-                        // in this context snaffle means 'send a report up the queue but don't scan the share'
+                        // in this context snaffle means 'send a report up the queue, and scan the share further'
                         if (IsShareReadable(share))
                         {
                             ShareResult shareResult = new ShareResult()
@@ -76,6 +76,9 @@ namespace Classifiers
         public string SharePath { get; set; }
         public string ShareComment { get; set; }
         public bool Listable { get; set; }
+        public bool RootWritable { get; set; }
+        public bool RootReadable { get; set; }
+        public bool RootModifyable { get; set; }
         public Triage Triage { get; set; } = Triage.Green;
     }
 }

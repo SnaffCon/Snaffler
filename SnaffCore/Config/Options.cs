@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SnaffCore.ActiveDirectory;
 
 namespace SnaffCore.Config
 {
@@ -11,7 +12,11 @@ namespace SnaffCore.Config
         public string[] ComputerTargets { get; set; }
         public bool ScanSysvol { get; set; } = true;
         public bool ScanNetlogon { get; set; } = true;
+        public bool ScanFoundShares { get; set; } = true;
         public int InterestLevel { get; set; } = 0;
+        public bool DfsOnly { get; set; } = false;
+        public List<DFSShare> DfsShares { get; set; } = new List<DFSShare>();
+        public List<string> DfsNamespacePaths { get; set; } = new List<string>();
 
         // Concurrency Options
         public int MaxThreads { get; set; } = 60;

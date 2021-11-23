@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Snaffler</RootNamespace>
     <AssemblyName>Snaffler</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -68,6 +68,9 @@
     <PackageReference Include="NLog">
       <Version>4.7.2</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

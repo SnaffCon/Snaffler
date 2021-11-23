@@ -4,12 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using static SnaffCore.Config.Options;
+using SnaffCore.Classifiers.EffectiveAccess;
 
 namespace Classifiers
 {
@@ -96,6 +99,8 @@ namespace Classifiers
                         MatchedRule = ClassifierRule,
                         TextResult = textResult
                     };
+                    // if the file was list-only, don't bother sending a result back to the user.
+                    if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return false; };
                     Mq.FileResult(fileResult);
                     return false;
                 case MatchAction.CheckForKeys:
@@ -115,6 +120,9 @@ namespace Classifiers
                                 MatchedStrings = new List<string>() { "" }
                             }
                         };
+
+                        if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return false; };
+
                         Mq.FileResult(fileResult);
                     }
                     return false;
@@ -122,26 +130,27 @@ namespace Classifiers
                     // bounce it on to the next ClassifierRule
                     try
                     {
-                        ClassifierRule nextRule =
-                            MyOptions.ClassifierRules.First(thing => thing.RuleName == ClassifierRule.RelayTarget);
+                        foreach (string relayTarget in ClassifierRule.RelayTargets)
+                        {
+                            ClassifierRule nextRule =
+                                MyOptions.ClassifierRules.First(thing => thing.RuleName == relayTarget);
 
-                        if (nextRule.EnumerationScope == EnumerationScope.ContentsEnumeration)
-                        {
-                            ContentClassifier nextContentClassifier = new ContentClassifier(nextRule);
-                            nextContentClassifier.ClassifyContent(fileInfo);
-                            return false;
+                            if (nextRule.EnumerationScope == EnumerationScope.ContentsEnumeration)
+                            {
+                                ContentClassifier nextContentClassifier = new ContentClassifier(nextRule);
+                                nextContentClassifier.ClassifyContent(fileInfo);
+                            }
+                            else if (nextRule.EnumerationScope == EnumerationScope.FileEnumeration)
+                            {
+                                FileClassifier nextFileClassifier = new FileClassifier(nextRule);
+                                nextFileClassifier.ClassifyFile(fileInfo);
+                            }
+                            else
+                            {
+                                Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
+                            }
                         }
-                        else if (nextRule.EnumerationScope == EnumerationScope.FileEnumeration)
-                        {
-                            FileClassifier nextFileClassifier = new FileClassifier(nextRule);
-                            nextFileClassifier.ClassifyFile(fileInfo);
-                            return false;
-                        }
-                        else
-                        {
-                            Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
-                            return false;
-                        }
+                        return false;
                     }
                     catch (IOException e)
                     {
@@ -177,7 +186,8 @@ namespace Classifiers
             BlockingMq Mq = BlockingMq.GetMq();
             // IT TURNS OUT THAT new X509Certificate2() actually writes a file to a temp path and if you
             // don't manage it yourself it hits 65,000 temp files and hangs.
-            var tempfile = Path.Combine(Path.GetTempPath(), "Snaff-" + Guid.NewGuid());
+
+            var tempfile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             File.Copy(certPath, tempfile);
             X509Certificate2 parsedCert = null;
 
@@ -332,106 +342,7 @@ namespace Classifiers
                     matchReasons.Add("Issuer:" + parsedCert.Issuer);
                 }
             }
-
             return matchReasons;
-        }
-    }
-
-    public class RwStatus
-    {
-        public bool CanRead { get; set; }
-        public bool CanWrite { get; set; }
-    }
-
-    public class CurrentUserSecurity
-    {
-        private readonly WindowsPrincipal _currentPrincipal;
-        private readonly WindowsIdentity _currentUser;
-
-        public CurrentUserSecurity()
-        {
-            _currentUser = WindowsIdentity.GetCurrent();
-            _currentPrincipal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-        }
-
-        public bool HasAccess(DirectoryInfo directory, FileSystemRights right)
-        {
-            try
-            {
-                // Get the collection of authorization rules that apply to the directory.
-                AuthorizationRuleCollection acl = directory.GetAccessControl()
-                    .GetAccessRules(true, true, typeof(SecurityIdentifier));
-                return HasFileOrDirectoryAccess(right, acl);
-            }
-
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-        }
-
-        public bool HasAccess(FileInfo file, FileSystemRights right)
-        {
-            try
-            {
-                // Get the collection of authorization rules that apply to the file.
-                AuthorizationRuleCollection acl = file.GetAccessControl()
-                    .GetAccessRules(true, true, typeof(SecurityIdentifier));
-
-                return HasFileOrDirectoryAccess(right, acl);
-            }
-
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-        }
-
-        public bool HasFileOrDirectoryAccess(FileSystemRights right,
-            AuthorizationRuleCollection acl)
-        {
-            bool allow = false;
-            bool inheritedAllow = false;
-            bool inheritedDeny = false;
-
-            for (int i = 0; i < acl.Count; i++)
-            {
-                FileSystemAccessRule currentRule = (FileSystemAccessRule)acl[i];
-                // If the current rule applies to the current user.
-                if (_currentUser.User.Equals(currentRule.IdentityReference) ||
-                    _currentPrincipal.IsInRole(
-                        (SecurityIdentifier)currentRule.IdentityReference))
-                {
-                    if (currentRule.AccessControlType.Equals(AccessControlType.Deny))
-                    {
-                        if ((currentRule.FileSystemRights & right) == right)
-                        {
-                            if (currentRule.IsInherited)
-                                inheritedDeny = true;
-                            else
-                                // Non inherited "deny" takes overall precedence.
-                                return false;
-                        }
-                    }
-                    else if (currentRule.AccessControlType
-                        .Equals(AccessControlType.Allow))
-                    {
-                        if ((currentRule.FileSystemRights & right) == right)
-                        {
-                            if (currentRule.IsInherited)
-                                inheritedAllow = true;
-                            else
-                                allow = true;
-                        }
-                    }
-                }
-            }
-
-            if (allow)
-                // Non inherited "allow" takes precedence over inherited rules.
-                return true;
-
-            return inheritedAllow && !inheritedDeny;
         }
     }
 
@@ -439,35 +350,24 @@ namespace Classifiers
     {
         public FileInfo FileInfo { get; set; }
         public TextResult TextResult { get; set; }
-        public RwStatus RwStatus { get; set; }
+        public EffectivePermissions.RwStatus RwStatus { get; set; }
         public ClassifierRule MatchedRule { get; set; }
 
         public FileResult(FileInfo fileInfo)
         {
-            this.RwStatus = CanRw(fileInfo);
+            // get an aggressively simplified version of the file's ACL
+            this.RwStatus = EffectivePermissions.CanRw(fileInfo);
+
+            // nasty debug
             this.FileInfo = fileInfo;
+
+            // this is where we actually automatically grab a copy of the file if wanted.
             if (MyOptions.Snaffle)
             {
                 if ((MyOptions.MaxSizeToSnaffle >= fileInfo.Length) && RwStatus.CanRead)
                 {
                     SnaffleFile(fileInfo, MyOptions.SnafflePath);
                 }
-            }
-        }
-
-        public static RwStatus CanRw(FileInfo fileInfo)
-        {
-            BlockingMq Mq = BlockingMq.GetMq();
-
-            try
-            {
-                RwStatus rwStatus = new RwStatus { CanWrite = CanIWrite(fileInfo), CanRead = CanIRead(fileInfo) };
-                return rwStatus;
-            }
-            catch (Exception e)
-            {
-                Mq.Error(e.ToString());
-                return new RwStatus { CanWrite = false, CanRead = false }; ;
             }
         }
 
@@ -484,63 +384,57 @@ namespace Classifiers
             File.Copy(sourcePath, (Path.Combine(snafflePath, cleanedPath)), true);
         }
 
-        public static bool CanIRead(FileInfo fileInfo)
+        /*
+        public static EffectivePermissions.RwStatus CanRw(FileInfo fileInfo)
         {
-            // this will return true if file read perm is available.
-            CurrentUserSecurity currentUserSecurity = new CurrentUserSecurity();
+            BlockingMq Mq = BlockingMq.GetMq();
 
-            FileSystemRights[] fsRights =
+            try
             {
-                FileSystemRights.Read,
-                FileSystemRights.ReadAndExecute,
-                FileSystemRights.ReadData
-            };
+                EffectivePermissions.RwStatus rwStatus = new EffectivePermissions.RwStatus { CanWrite = false, CanRead = false, CanModify = false };
+                EffectivePermissions effPerms = new EffectivePermissions();
+                string dir = fileInfo.DirectoryName;
 
-            bool readRight = false;
-            foreach (FileSystemRights fsRight in fsRights)
-                try
+                // we hard code this otherwise it tries to do some madness where it uses RPC with a share server to check file access, then fails if you're not admin on that host.
+                string hostname = "localhost";
+
+                string whoami = WindowsIdentity.GetCurrent().Name;
+
+                string[] accessStrings = effPerms.GetEffectivePermissions(fileInfo, whoami);
+
+                string[] readRights = new string[] { "Read", "ReadAndExecute", "ReadData", "ListDirectory" };
+                string[] writeRights = new string[] { "Write", "Modify", "FullControl", "TakeOwnership", "ChangePermissions", "AppendData", "WriteData", "CreateFiles", "CreateDirectories" };
+                string[] modifyRights = new string[] { "Modify", "FullControl", "TakeOwnership", "ChangePermissions" };
+
+                foreach (string access in accessStrings)
                 {
-                    if (currentUserSecurity.HasAccess(fileInfo, fsRight)) readRight = true;
+                    if (access == "FullControl")
+                    {
+                        rwStatus.CanModify = true;
+                        rwStatus.CanRead = true;
+                        rwStatus.CanWrite = true;
+                    }
+                    if (readRights.Contains(access)){
+                        rwStatus.CanRead = true;
+                    }
+                    if (writeRights.Contains(access))
+                    {
+                        rwStatus.CanWrite = true;
+                    }
+                    if (modifyRights.Contains(access))
+                    {
+                        rwStatus.CanModify = true;
+                    }
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    return false;
-                }
 
-            return readRight;
-        }
-
-        public static bool CanIWrite(FileInfo fileInfo)
-        {
-            // this will return true if write or modify or take ownership or any of those other good perms are available.
-            CurrentUserSecurity currentUserSecurity = new CurrentUserSecurity();
-
-            FileSystemRights[] fsRights =
+                return rwStatus;
+            }
+            catch (Exception e)
             {
-                FileSystemRights.Write,
-                FileSystemRights.Modify,
-                FileSystemRights.FullControl,
-                FileSystemRights.TakeOwnership,
-                FileSystemRights.ChangePermissions,
-                FileSystemRights.AppendData,
-                FileSystemRights.WriteData
-            };
-
-            bool writeRight = false;
-            foreach (FileSystemRights fsRight in fsRights)
-                try
-                {
-                    if (currentUserSecurity.HasAccess(fileInfo, fsRight)) writeRight = true;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return false;
-                }
-
-            return writeRight;
+                Mq.Error(e.ToString());
+                return new EffectivePermissions.RwStatus { CanWrite = false, CanRead = false }; ;
+            }
         }
-
-
-
+        */
     }
 }

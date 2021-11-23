@@ -53,7 +53,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepPyRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepPyRegexRed" },
                 WordList = new List<string>()
                 {
                     // python
@@ -98,7 +99,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepPhpRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepPhpRegexRed" },
                 WordList = new List<string>()
                 {
                     // php
@@ -150,7 +152,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepCsRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepCsRegexRed" },
                 WordList = new List<string>()
                 {
                     // asp.net
@@ -200,7 +203,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepJavaRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepJavaRegexRed" },
                 WordList = new List<string>()
                 {
                     // java
@@ -247,7 +251,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepRubyRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepRubyRegexRed" },
                 WordList = new List<string>()
                 {
                     // ruby
@@ -291,7 +296,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepPerlRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepPerlRegexRed" },
                 WordList = new List<string>()
                 {
                     // perl
@@ -335,7 +341,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepPsRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepPsRegexRed","KeepCmdRegexRed" },
                 WordList = new List<string>()
                 {
                     // powershell
@@ -356,9 +363,6 @@ namespace SnaffCore.Config
                 WordList = new List<string>()
                 {
                     // PS
-                    "net user ",
-                    "psexec .{0,100} -p ",
-                    "net use .{0,300} /user:",
                     "-SecureString",
                     "-AsPlainText",
                     "\\[Net.NetworkCredential\\]::new\\(",
@@ -386,7 +390,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepCmdRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepCmdRegexRed" },
                 WordList = new List<string>()
                 {
                     // cmd.exe
@@ -426,7 +431,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepBashRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepBashRegexRed" },
                 WordList = new List<string>()
                 {
                     // bash, sh, zsh, etc
@@ -471,7 +477,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileName,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepFFRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepFFRegexRed" },
                 WordList = new List<string>()
                 {
                     // Firefox/Thunderbird
@@ -503,7 +510,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileName,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepUnattendXmlRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepUnattendXmlRegexRed" },
                 WordList = new List<string>()
                 {
                     "unattend\\.xml",
@@ -534,7 +542,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepRdpPasswordRed",
+                RelayTargets = new List<string>()
+                {"KeepRdpPasswordRed" },
                 WordList = new List<string>()
                 {
                     "\\.rdp"
@@ -551,7 +560,7 @@ namespace SnaffCore.Config
                 Triage = Triage.Red,
                 WordList = new List<string>()
                 {
-                    "password 51:b"
+                    "password 51\\:b"
                 }
             });
 
@@ -563,7 +572,7 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileExtension,
                 WordListType = MatchListType.Exact,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepConfigRegexRed",
+                RelayTargets = new List<string>(){"KeepConfigRegexRed"},
                 WordList = new List<string>()
                 {
                     "\\.yaml",
@@ -584,7 +593,8 @@ namespace SnaffCore.Config
                     "\\.log",
                     "\\.sqlite",
                     "\\.sqlite3",
-                    "\\.fdb"
+                    "\\.fdb",
+                    "\\.tfvars"
                 },
             });
 
@@ -617,6 +627,7 @@ namespace SnaffCore.Config
                     "NVRAM config last updated",
                     "enable password \\.",
                     "simple-bind authenticated encrypt",
+                    "CredFileType="
                 },
             });
             this.ClassifierRules.Add(new ClassifierRule()
@@ -627,7 +638,8 @@ namespace SnaffCore.Config
                 MatchLocation = MatchLoc.FileName,
                 WordListType = MatchListType.EndsWith,
                 MatchAction = MatchAction.Relay,
-                RelayTarget = "KeepCertRegexRed",
+                RelayTargets = new List<string>()
+                {"KeepCertRegexRed" },
                 WordList = new List<string>()
                 {
                     "_rsa", // test file created
@@ -680,6 +692,28 @@ namespace SnaffCore.Config
                 },
             });
             */
+
+            this.ClassifierRules.Add(
+                new ClassifierRule()
+                {
+                    Description = "Files with these extensions will be parsed as x509 certificates to see if they have private keys.",
+                    RuleName = "KeepCertContainsPrivKeyYellow",
+                    EnumerationScope = EnumerationScope.FileEnumeration,
+                    MatchLocation = MatchLoc.FileExtension,
+                    WordListType = MatchListType.Exact,
+                    MatchAction = MatchAction.CheckForKeys,
+                    Triage = Triage.Yellow,
+                    WordList = new List<string>()
+                    {
+                        "\\.pem",
+                        "\\.der",
+                        "\\.pfx",
+                        "\\.pk12",
+                        "\\.p12",
+                        "\\.pkcs12",
+                    },
+                }
+            );
 
             this.ClassifierRules.Add(
                 new ClassifierRule()

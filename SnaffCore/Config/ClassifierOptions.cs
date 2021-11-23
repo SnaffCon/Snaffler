@@ -98,9 +98,21 @@ namespace SnaffCore.Config
              * Keep all discard & archive parsing rules.
              * Else, if rule (or child rule, recursive) interest level is lower than provided (0 default), then discard
              */
-            if (!String.IsNullOrEmpty(classifier.RelayTarget))
+            if (classifier.RelayTargets != null)
             {
-                return IsInterest(ClassifierRules.First(thing => thing.RuleName == classifier.RelayTarget));
+                int max = 0;
+                foreach (string relayTarget in classifier.RelayTargets)
+                {
+                    ClassifierRule relayRule = ClassifierRules.First(thing => thing.RuleName == relayTarget);
+                    if (
+                        (relayRule.Triage == Triage.Black && InterestLevel >3) ||
+                        (relayRule.Triage == Triage.Red && InterestLevel > 2) ||
+                    (relayRule.Triage == Triage.Yellow && InterestLevel > 1) ||
+                    (relayRule.Triage == Triage.Green && InterestLevel > 0))
+                    {
+                        return true;
+                    }
+                }
             }
             return !(
                 (
@@ -108,6 +120,7 @@ namespace SnaffCore.Config
                     classifier.MatchAction == MatchAction.CheckForKeys
                 ) &&
                 (
+                (classifier.Triage == Triage.Black && InterestLevel > 3) ||
                     (classifier.Triage == Triage.Red && InterestLevel > 2) ||
                     (classifier.Triage == Triage.Yellow && InterestLevel > 1) ||
                     (classifier.Triage == Triage.Green && InterestLevel > 0)

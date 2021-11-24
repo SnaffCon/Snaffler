@@ -21,6 +21,15 @@ namespace SnaffCore.Classifiers.EffectiveAccess
 
     public class EffectivePermissions
     {
+        public string[] ReadRights { get; set; } = new string[] { "Read", "ReadAndExecute", "ReadData", "ListDirectory" };
+        public string[] WriteRights { get; set; } = new string[] { "Write", "Modify", "FullControl", "TakeOwnership", "ChangePermissions", "AppendData", "WriteData", "CreateFiles", "CreateDirectories" };
+        public string[] ModifyRights { get; set; } = new string[] { "Modify", "FullControl", "TakeOwnership", "ChangePermissions" };
+        public string User { get; set; }
+
+        public EffectivePermissions(string user)
+        {
+            User = user;
+        }
         public class RwStatus
         {
             public bool CanRead { get; set; }
@@ -28,22 +37,16 @@ namespace SnaffCore.Classifiers.EffectiveAccess
             public bool CanModify { get; set; }
         }
 
-       public static RwStatus CanRw(FileSystemInfo filesysInfo)
+       public RwStatus CanRw(FileSystemInfo filesysInfo)
         {
+
             BlockingMq mq = BlockingMq.GetMq();
             try
             {
                 RwStatus rwStatus = new RwStatus { CanWrite = false, CanRead = false, CanModify = false };
-                EffectivePermissions effPerms = new EffectivePermissions();
 
-                string whoami = WindowsIdentity.GetCurrent().Name;
-
-                string[] accessStrings = effPerms.GetEffectivePermissions(filesysInfo, whoami);
+                string[] accessStrings = GetEffectivePermissions(filesysInfo, User);
                 
-                string[] readRights = new string[] { "Read", "ReadAndExecute", "ReadData", "ListDirectory" };
-                string[] writeRights = new string[] { "Write", "Modify", "FullControl", "TakeOwnership", "ChangePermissions", "AppendData", "WriteData", "CreateFiles", "CreateDirectories" };
-                string[] modifyRights = new string[] { "Modify", "FullControl", "TakeOwnership", "ChangePermissions" };
-
                 foreach (string access in accessStrings)
                 {
                     if (access == "FullControl")
@@ -52,15 +55,15 @@ namespace SnaffCore.Classifiers.EffectiveAccess
                         rwStatus.CanRead = true;
                         rwStatus.CanWrite = true;
                     }
-                    if (readRights.Contains(access))
+                    if (ReadRights.Contains(access))
                     {
                         rwStatus.CanRead = true;
                     }
-                    if (writeRights.Contains(access))
+                    if (WriteRights.Contains(access))
                     {
                         rwStatus.CanWrite = true;
                     }
-                    if (modifyRights.Contains(access))
+                    if (ModifyRights.Contains(access))
                     {
                         rwStatus.CanModify = true;
                     }

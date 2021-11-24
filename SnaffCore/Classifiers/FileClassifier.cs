@@ -355,8 +355,9 @@ namespace Classifiers
 
         public FileResult(FileInfo fileInfo)
         {
+            EffectivePermissions effPerms = new EffectivePermissions(MyOptions.CurrentUser);
             // get an aggressively simplified version of the file's ACL
-            this.RwStatus = EffectivePermissions.CanRw(fileInfo);
+            this.RwStatus = effPerms.CanRw(fileInfo);
 
             // nasty debug
             this.FileInfo = fileInfo;

@@ -48,7 +48,7 @@ namespace SnaffCore.Config
                 Triage = Triage.Black,
                 WordList = new List<string>()
                     {
-                        "\\Users",
+                        "\\\\Users",
                     },
             });
             */

@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SnaffCore</RootNamespace>
     <AssemblyName>SnaffCore</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE;ULTRASNAFFLER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,21 +31,35 @@
     <DefineConstants>TRACE;ULTRASNAFFLER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AlphaFS, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Group3r\LibSnaffle\Classifiers\EffectiveAccess\AlphaFS.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.Protocols" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActiveDirectory\AdData.cs" />
+    <Compile Include="ActiveDirectory\DfsFinder.cs" />
+    <Compile Include="ActiveDirectory\DirectorySearch.cs" />
+    <Compile Include="ActiveDirectory\Extensions.cs" />
+    <Compile Include="ActiveDirectory\Helpers.cs" />
+    <Compile Include="ActiveDirectory\LdapTypeEnum.cs" />
     <Compile Include="Classifiers\ArchiveClassifier.cs" />
+    <Compile Include="Classifiers\Certificate.cs" />
+    <Compile Include="Classifiers\EffectiveAccess.cs" />
     <Compile Include="Classifiers\TextClassifier.cs" />
     <Compile Include="Classifiers\ContentClassifier.cs" />
     <Compile Include="Classifiers\DirClassifier.cs" />
     <Compile Include="Classifiers\FileClassifier.cs" />
     <Compile Include="Classifiers\ShareClassifier.cs" />
-    <Compile Include="ActiveDirectory\ActiveDirectory.cs" />
     <Compile Include="Concurrency\BlockingMq.cs" />
     <Compile Include="Concurrency\BlockingTaskScheduler.cs" />
     <Compile Include="Concurrency\SnafflerMessage.cs" />

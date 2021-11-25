@@ -350,14 +350,24 @@ namespace Classifiers
     {
         public FileInfo FileInfo { get; set; }
         public TextResult TextResult { get; set; }
-        public EffectivePermissions.RwStatus RwStatus { get; set; }
+        public RwStatus RwStatus { get; set; }
         public ClassifierRule MatchedRule { get; set; }
 
         public FileResult(FileInfo fileInfo)
         {
-            EffectivePermissions effPerms = new EffectivePermissions(MyOptions.CurrentUser);
+            //EffectivePermissions effPerms = new EffectivePermissions(MyOptions.CurrentUser);
+
             // get an aggressively simplified version of the file's ACL
-            this.RwStatus = effPerms.CanRw(fileInfo);
+            //this.RwStatus = effPerms.CanRw(fileInfo);
+            try
+            {
+                File.OpenRead(fileInfo.FullName);
+                this.RwStatus = new RwStatus() { CanRead = true, CanModify = false, CanWrite = false };
+            }
+            catch (Exception e)
+            {
+                this.RwStatus = new RwStatus() { CanModify = false, CanRead = false, CanWrite = false };
+            }
 
             // nasty debug
             this.FileInfo = fileInfo;

@@ -19,8 +19,7 @@ namespace SnaffCore.ShareFind
         private BlockingMq Mq { get; set; }
         private BlockingStaticTaskScheduler TreeTaskScheduler { get; set; }
         private TreeWalker TreeWalker { get; set; }
-        private EffectivePermissions effectivePermissions { get; set; } = new EffectivePermissions();
-
+        //private EffectivePermissions effectivePermissions { get; set; } = new EffectivePermissions(MyOptions.CurrentUser);
 
         public ShareFinder()
         {
@@ -119,16 +118,18 @@ namespace SnaffCore.ShareFind
                             {
                                 DirectoryInfo dirInfo = new DirectoryInfo(shareName);
 
-                                EffectivePermissions.RwStatus rwStatus = EffectivePermissions.CanRw(dirInfo);
+                                //EffectivePermissions.RwStatus rwStatus = effectivePermissions.CanRw(dirInfo);
 
-                                shareResult.RootModifyable = rwStatus.CanModify;
-                                shareResult.RootWritable = rwStatus.CanWrite;
-                                shareResult.RootReadable = rwStatus.CanRead;
+                                shareResult.RootModifyable = false;
+                                shareResult.RootWritable = false;
+                                shareResult.RootReadable = true;
 
-                                if (rwStatus.CanWrite || rwStatus.CanModify)
+                                /*
+                                 if (rwStatus.CanWrite || rwStatus.CanModify)
                                 {
                                     triage = Triage.Yellow;
                                 }
+                                */
                             }
                             catch (System.UnauthorizedAccessException e)
                             {
@@ -176,6 +177,10 @@ namespace SnaffCore.ShareFind
                 return false;
             }
             catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
+            catch (IOException)
             {
                 return false;
             }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Security.Principal;
 using SnaffCore.ActiveDirectory;
 
 namespace SnaffCore.Config
@@ -17,6 +18,7 @@ namespace SnaffCore.Config
         public bool DfsOnly { get; set; } = false;
         public List<DFSShare> DfsShares { get; set; } = new List<DFSShare>();
         public List<string> DfsNamespacePaths { get; set; } = new List<string>();
+        public string CurrentUser { get; set; } = WindowsIdentity.GetCurrent().Name;
 
         // Concurrency Options
         public int MaxThreads { get; set; } = 60;

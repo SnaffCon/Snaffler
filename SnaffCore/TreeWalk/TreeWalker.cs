@@ -124,6 +124,11 @@ namespace SnaffCore.TreeWalk
                 //Mq.Trace(e.ToString());
                 //continue;
             }
+            catch (IOException)
+            {
+                //Mq.Trace(e.ToString());
+                //continue;
+            }
             catch (Exception e)
             {
                 Mq.Trace(e.ToString());

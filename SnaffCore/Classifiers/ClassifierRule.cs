@@ -72,6 +72,7 @@ namespace Classifiers
         Black,
         Green,
         Yellow,
-        Red
+        Red,
+        Gray  // PR:log_denied_shares
     }
 }

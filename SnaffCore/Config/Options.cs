@@ -41,6 +41,7 @@ namespace SnaffCore.Config
         public bool ShareFinderEnabled { get; set; } = true;
         public string TargetDomain { get; set; }
         public string TargetDc { get; set; }
+        public bool LogDeniedShares { get; set; } = false; 
 
         // FileScanner Options
         public bool DomainUserRules { get; set; } = false;
@@ -69,7 +70,11 @@ namespace SnaffCore.Config
 
         };
 
-        public List<string> DomainUserMatchStrings = new List<string>()
+        // initialize a list for this.  We will build it dynamically so don't allow for toml setting
+        public List<string> DomainUsersToMatch = new List<string>();
+
+        // These options can be set in toml. They need the get/set accessor
+        public List<string> DomainUserMatchStrings { get; set; } = new List<string>()
         {
             "sql",
             "svc",
@@ -80,9 +85,7 @@ namespace SnaffCore.Config
             "opsmgr",
             "adm"
         };
-
-        public List<string> DomainUsersToMatch = new List<string>();
-        public List<string> DomainUsersWordlistRules = new List<string>()
+        public List<string> DomainUsersWordlistRules { get; set; } = new List<string>()
         {
             "KeepConfigRegexRed"
         };

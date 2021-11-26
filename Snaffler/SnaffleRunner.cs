@@ -193,8 +193,8 @@ namespace Snaffler
 
         private void ProcessMessage(SnafflerMessage message)
         {
-            //  standardized time formatting
-            string datetime =  String.Format("{1}{0}{2:u}{0}",  Options.Separator,hostString(), message.DateTime);
+            //  standardized time formatting,  UTC
+            string datetime = String.Format("{1}{0}{2:u}{0}", Options.Separator, hostString(), message.DateTime.ToUniversalTime());
 
             switch (message.Type)
             {

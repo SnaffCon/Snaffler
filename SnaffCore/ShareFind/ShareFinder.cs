@@ -102,17 +102,20 @@ namespace SnaffCore.ShareFind
                             }
                         }
 
+
+                        // At least one classifier was matched so we will return the share
+                        ShareResult shareResult = new ShareResult()
+                        {
+                            Listable = true,
+                            SharePath = shareName,
+                            ShareComment = hostShareInfo.shi1_remark.ToString()
+                        };
+
+                        //  If the share is readable then dig deeper.
                         if (IsShareReadable(shareName) && skip == false)
                         {
-                            Triage triage = Triage.Green;
-
-                            ShareResult shareResult = new ShareResult()
-                            {
-                                Listable = true,
-                                Triage = triage,
-                                SharePath = shareName,
-                                ShareComment = hostShareInfo.shi1_remark.ToString()
-                            };
+                            // Share is readable, report as green  (the old default/min of the Triage enum )
+                            shareResult.Triage = Triage.Green;
 
                             try
                             {
@@ -136,8 +139,6 @@ namespace SnaffCore.ShareFind
                                 Mq.Error("Failed to get permissions on " + shareName);
                             }
 
-                            Mq.ShareResult(shareResult);
-
                             if (MyOptions.ScanFoundShares)
                             {
                                 Mq.Trace("Creating a TreeWalker task for " + shareResult.SharePath);
@@ -153,7 +154,13 @@ namespace SnaffCore.ShareFind
                                         Mq.Error(e.ToString());
                                     }
                                 });
+
+                                Mq.ShareResult(shareResult);
                             }
+                        }
+                        else if (MyOptions.LogDeniedShares == true)
+                        {
+                            Mq.ShareResult(shareResult);
                         }
                     }
                 }
@@ -203,6 +210,9 @@ namespace SnaffCore.ShareFind
                 //", but this is usually no cause for alarm.");
                 return null;
             }
+
+            Mq.Degub("Share discovered: " + $"\\\\{computer}\\{hostShareInfo.shi1_netname}");
+
             return $"\\\\{computer}\\{hostShareInfo.shi1_netname}";
         }
 

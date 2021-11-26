@@ -20,7 +20,6 @@ namespace SnaffCore.ActiveDirectory
         private string _domainName;
         private string _targetDomain;
         private string _targetDc;
-        private DirectorySearch _directorySearch;
         private BlockingMq Mq { get; set; }
 
         public List<string> GetDomainComputers()
@@ -51,7 +50,7 @@ namespace SnaffCore.ActiveDirectory
         public DirectoryContext DirectoryContext { get; set; }
         private List<string> DomainControllers { get; set; } = new List<string>();
 
-        public AdData()
+        private DirectorySearch GetDirectorySearcher()
         {
             Mq = BlockingMq.GetMq();
 
@@ -71,25 +70,21 @@ namespace SnaffCore.ActiveDirectory
                 _targetDc = _targetDomain;
             }
 
-            _directorySearch = new DirectorySearch(_targetDomain, _targetDc);
-
-            SetDomainUsersAndComputers();
+            return new DirectorySearch(_targetDomain, _targetDc);
         }
 
-
-        private void SetDomainUsersAndComputers()
+        public void SetDomainComputers()
         {
-           
+            DirectorySearch ds = GetDirectorySearcher();
+
             List<string> domainComputers = new List<string>();
-            List<string> domainUsers = new List<string>();
 
             try
             {
                 Mq.Degub("Starting DFS Enumeration.");
 
-                
                 DfsFinder dfsFinder = new DfsFinder();
-                List<DFSShare> dfsShares = dfsFinder.FindDfsShares(_directorySearch);
+                List<DFSShare> dfsShares = dfsFinder.FindDfsShares(ds);
                 _dfsNamespacePaths = new List<string>();
                 foreach (DFSShare dfsShare in dfsShares)
                 {
@@ -109,16 +104,10 @@ namespace SnaffCore.ActiveDirectory
                 {
                     // if limiting to DFS shares, we stop there.
 
-
-
                     string[] ldapProperties = new string[] { "name", "dNSHostName", "lastLogonTimeStamp" };
                     string ldapFilter = "(objectClass=computer)";
 
-                    IEnumerable<SearchResultEntry> searchResultEntries = _directorySearch.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
-
-                    int count = searchResultEntries.Count();
-
-
+                    IEnumerable<SearchResultEntry> searchResultEntries = ds.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
 
                     foreach (SearchResultEntry resEnt in searchResultEntries)
                     {
@@ -129,126 +118,129 @@ namespace SnaffCore.ActiveDirectory
                         }
                     }
 
-                    // now users
-                    if (MyOptions.DomainUserRules)
-                    {
-                        ldapProperties = new string[] { "name", "adminCount", "sAMAccountName", "userAccountControl" };
-                        ldapFilter = "(objectClass=user)";
-
-                        searchResultEntries = _directorySearch.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
-                        count = searchResultEntries.Count();
-
-                        foreach (SearchResultEntry resEnt in searchResultEntries)
-                        {
-                            try
-                            {
-                                //busted account name
-                                if (String.IsNullOrEmpty(resEnt.GetProperty("sAMAccountName")))
-                                {
-                                    continue;
-                                }
-
-                                int uacFlags;
-                                bool success =
-                                    int.TryParse(resEnt.GetProperty("userAccountControl"),
-                                        out uacFlags);
-                                UserAccountControlFlags userAccFlags = (UserAccountControlFlags)uacFlags;
-
-                                if (userAccFlags.HasFlag(UserAccountControlFlags.AccountDisabled))
-                                {
-                                    continue;
-                                }
-
-                                string userName = resEnt.GetProperty("sAMAccountName");
-
-                                // skip computer accounts
-                                if (userName.EndsWith("$"))
-                                {
-                                    continue;
-                                }
-
-                                //skip mailboxy accounts - domains always have a billion of these.
-                                if (userName.IndexOf("mailbox", StringComparison.OrdinalIgnoreCase) >= 0)
-                                {
-                                    continue;
-                                }
-
-                                if (userName.IndexOf("mbx", StringComparison.OrdinalIgnoreCase) >= 0)
-                                {
-                                    continue;
-                                }
-
-                                // if it's got adminCount, keep it
-                                if (resEnt.GetProperty("adminCount") == "1")
-                                {
-                                    Mq.Trace("Adding " + userName +
-                                             " to target list because it had adminCount=1.");
-                                    domainUsers.Add(userName);
-                                    continue;
-                                }
-
-                                // if the password doesn't expire it's probably a service account
-                                if (userAccFlags.HasFlag(UserAccountControlFlags.PasswordDoesNotExpire))
-                                {
-                                    Mq.Trace("Adding " + userName +
-                                             " to target list because I think it's a service account.");
-                                    domainUsers.Add(userName);
-                                    continue;
-                                }
-
-                                if (userAccFlags.HasFlag(UserAccountControlFlags.DontRequirePreauth))
-                                {
-                                    Mq.Trace("Adding " + userName +
-                                             " to target list because I think it's a service account.");
-                                    domainUsers.Add(userName);
-                                    continue;
-                                }
-
-                                if (userAccFlags.HasFlag(UserAccountControlFlags.TrustedForDelegation))
-                                {
-                                    Mq.Trace("Adding " + userName +
-                                             " to target list because I think it's a service account.");
-                                    domainUsers.Add(userName);
-                                    continue;
-                                }
-
-                                if (userAccFlags.HasFlag(UserAccountControlFlags
-                                    .TrustedToAuthenticateForDelegation))
-                                {
-                                    Mq.Trace("Adding " + userName +
-                                             " to target list because I think it's a service account.");
-                                    domainUsers.Add(userName);
-                                    continue;
-                                }
-
-                                // if it matches a string we like, keep it
-                                foreach (string str in MyOptions.DomainUserMatchStrings)
-                                {
-                                    if (userName.ToLower().Contains(str.ToLower()))
-                                    {
-                                        Mq.Trace("Adding " + userName +
-                                                 " to target list because it contained " + str + ".");
-                                        domainUsers.Add(userName);
-                                        break;
-                                    }
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Mq.Trace(e.ToString());
-                                continue;
-                            }
-                        }
-                    }
-                    this._domainComputers = domainComputers;
-                    this._domainUsers = domainUsers;
                 }
             }
             catch (Exception e)
             {
                 Mq.Trace(e.ToString());
-                throw;
             }
+
+            this._domainComputers = domainComputers;
+        }
+
+        public void SetDomainUsers()
+        {
+            DirectorySearch ds = GetDirectorySearcher();
+            List<string> domainUsers = new List<string>();
+
+            string[] ldapProperties = new string[] { "name", "adminCount", "sAMAccountName", "userAccountControl" };
+            string ldapFilter = "(objectClass=user)";
+
+            IEnumerable<SearchResultEntry> searchResultEntries = ds.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
+
+            foreach (SearchResultEntry resEnt in searchResultEntries)
+            {
+                try
+                {
+                    //busted account name
+                    if (String.IsNullOrEmpty(resEnt.GetProperty("sAMAccountName")))
+                    {
+                        continue;
+                    }
+
+                    int uacFlags;
+                    bool success =
+                        int.TryParse(resEnt.GetProperty("userAccountControl"),
+                            out uacFlags);
+                    UserAccountControlFlags userAccFlags = (UserAccountControlFlags)uacFlags;
+
+                    if (userAccFlags.HasFlag(UserAccountControlFlags.AccountDisabled))
+                    {
+                        continue;
+                    }
+
+                    string userName = resEnt.GetProperty("sAMAccountName");
+
+                    // skip computer accounts
+                    if (userName.EndsWith("$"))
+                    {
+                        continue;
+                    }
+
+                    //skip mailboxy accounts - domains always have a billion of these.
+                    if (userName.IndexOf("mailbox", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        continue;
+                    }
+
+                    if (userName.IndexOf("mbx", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        continue;
+                    }
+
+                    // if it's got adminCount, keep it
+                    if (resEnt.GetProperty("adminCount") == "1")
+                    {
+                        Mq.Trace("Adding " + userName +
+                                    " to target list because it had adminCount=1.");
+                        domainUsers.Add(userName);
+                        continue;
+                    }
+
+                    // if the password doesn't expire it's probably a service account
+                    if (userAccFlags.HasFlag(UserAccountControlFlags.PasswordDoesNotExpire))
+                    {
+                        Mq.Trace("Adding " + userName +
+                                    " to target list because password does not expire,  probably service account.");
+                        domainUsers.Add(userName);
+                        continue;
+                    }
+
+                    if (userAccFlags.HasFlag(UserAccountControlFlags.DontRequirePreauth))
+                    {
+                        Mq.Trace("Adding " + userName +
+                                    " to target list because it doesn't require Kerberos pre-auth.");
+                        domainUsers.Add(userName);
+                        continue;
+                    }
+
+                    if (userAccFlags.HasFlag(UserAccountControlFlags.TrustedForDelegation))
+                    {
+                        Mq.Trace("Adding " + userName +
+                                    " to target list because it is trusted for delegation.");
+                        domainUsers.Add(userName);
+                        continue;
+                    }
+
+                    if (userAccFlags.HasFlag(UserAccountControlFlags
+                        .TrustedToAuthenticateForDelegation))
+                    {
+                        Mq.Trace("Adding " + userName +
+                                    " to target list because it is trusted for delegation.");
+                        domainUsers.Add(userName);
+                        continue;
+                    }
+
+                    // if it matches a string we like, keep it
+                    foreach (string str in MyOptions.DomainUserMatchStrings)
+                    {
+                        if (userName.ToLower().Contains(str.ToLower()))
+                        {
+                            Mq.Trace("Adding " + userName +
+                                        " to target list because it contained " + str + ".");
+                            domainUsers.Add(userName);
+                            break;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Mq.Trace(e.ToString());
+                    continue;
+                }                    
+            }
+
+            this._domainUsers = domainUsers;
         }
     }
 

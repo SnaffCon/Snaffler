@@ -73,7 +73,7 @@ namespace SnaffCore.ActiveDirectory
             return new DirectorySearch(_targetDomain, _targetDc);
         }
 
-        public void SetDomainComputers()
+        public void SetDomainComputers(string LdapFilter)
         {
             DirectorySearch ds = GetDirectorySearcher();
 
@@ -88,7 +88,7 @@ namespace SnaffCore.ActiveDirectory
                 _dfsNamespacePaths = new List<string>();
                 foreach (DFSShare dfsShare in dfsShares)
                 {
-                    string dfsShareNamespacePath = @"\\" + _domainName + @"\" + dfsShare.DFSNamespace;
+                    string dfsShareNamespacePath = @"\\" + _targetDomain + @"\" + dfsShare.DFSNamespace;
                     dfsShare.DfsNamespacePath = dfsShareNamespacePath;
                     if (!_dfsNamespacePaths.Contains(dfsShareNamespacePath))
                     {
@@ -105,12 +105,24 @@ namespace SnaffCore.ActiveDirectory
                     // if limiting to DFS shares, we stop there.
 
                     string[] ldapProperties = new string[] { "name", "dNSHostName", "lastLogonTimeStamp" };
-                    string ldapFilter = "(objectClass=computer)";
+                    string ldapFilter = LdapFilter;
 
                     IEnumerable<SearchResultEntry> searchResultEntries = ds.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
 
                     foreach (SearchResultEntry resEnt in searchResultEntries)
                     {
+                        int uacFlags;
+                        bool success =
+                            int.TryParse(resEnt.GetProperty("userAccountControl"),
+                                out uacFlags);
+
+                        UserAccountControlFlags userAccFlags = (UserAccountControlFlags)uacFlags;
+
+                        if (userAccFlags.HasFlag(UserAccountControlFlags.AccountDisabled))
+                        {
+                            continue;
+                        }
+
                         if (!String.IsNullOrEmpty(resEnt.GetProperty("dNSHostName")))
                         {
                             string computerName = resEnt.GetProperty("dNSHostName");
@@ -133,7 +145,7 @@ namespace SnaffCore.ActiveDirectory
             DirectorySearch ds = GetDirectorySearcher();
             List<string> domainUsers = new List<string>();
 
-            string[] ldapProperties = new string[] { "name", "adminCount", "sAMAccountName", "userAccountControl" };
+            string[] ldapProperties = new string[] { "name", "adminCount", "sAMAccountName", "userAccountControl"};
             string ldapFilter = "(objectClass=user)";
 
             IEnumerable<SearchResultEntry> searchResultEntries = ds.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);

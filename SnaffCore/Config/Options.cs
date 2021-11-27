@@ -11,6 +11,7 @@ namespace SnaffCore.Config
         // Manual Targeting Options
         public string[] PathTargets { get; set; }
         public string[] ComputerTargets { get; set; }
+        public string ComputerTargetsLdapFilter { get; set; } = "(objectClass=computer)";
         public bool ScanSysvol { get; set; } = true;
         public bool ScanNetlogon { get; set; } = true;
         public bool ScanFoundShares { get; set; } = true;

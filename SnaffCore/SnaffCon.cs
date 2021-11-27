@@ -96,15 +96,10 @@ namespace SnaffCore
                 DomainUserDiscovery();
             }
 
-            // if we haven't been told what dir or computer to target, build a list from the current 
-            if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
+            // If we weren't given path targets then assume we want to do network discovery (even if it's just to get the DFS dedupe benefits
+            if (MyOptions.PathTargets == null )
             {
                 DomainTargetDiscovery();
-            }
-            // if we've been told what computers to hit...
-            else if (MyOptions.ComputerTargets != null)
-            {
-                ShareDiscovery(MyOptions.ComputerTargets);
             }
             // otherwise we should have a set of path targets...
             else if (MyOptions.PathTargets != null)
@@ -129,16 +124,32 @@ namespace SnaffCore
 
         private void DomainTargetDiscovery()
         {
-            Mq.Info("Getting computers and DFS targets from AD.");
             // We do this single threaded cos it's fast and not easily divisible.
+            Mq.Info("Getting computers and DFS targets from AD.");
 
             // The AdData class set/get semantics have gotten wonky here.  Leaving as-is to minimize breakage/changes, but needs another look.
             AdData adData = new AdData();
-            adData.SetDomainComputers();
+            adData.SetDomainComputers(MyOptions.ComputerTargetsLdapFilter);
 
-            List<string> targetComputers = adData.GetDomainComputers();
             List<DFSShare> dfsShares = adData.GetDfsShares();
-            
+            List<string> targetComputers;
+
+            // Give preference to explicit targets in the options file.
+            if (MyOptions.ComputerTargets != null)  
+            {
+                targetComputers = new List<string>();
+                foreach (string t in MyOptions.ComputerTargets)
+                {
+                    targetComputers.Add(t);
+                }
+                Mq.Info(string.Format("Took {0} computers specified in options file.", targetComputers.Count));
+            }
+            else
+            {
+                targetComputers = adData.GetDomainComputers();
+                Mq.Info(string.Format("Got {0} computers from AD.", targetComputers.Count));
+            }
+
             if (targetComputers == null && dfsShares == null)
             {
                 Mq.Error(
@@ -149,8 +160,6 @@ namespace SnaffCore
                 }
             }
 
-            string numTargetComputers = targetComputers.Count.ToString();
-            Mq.Info("Got " + numTargetComputers + " computers from AD.");
             if (targetComputers.Count == 0 && dfsShares.Count == 0)
             {
                 Mq.Error("Didn't find any domain computers. Seems weird. Try pouring water on it.");

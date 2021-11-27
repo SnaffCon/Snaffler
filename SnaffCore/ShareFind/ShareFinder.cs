@@ -82,13 +82,15 @@ namespace SnaffCore.ShareFind
                     if (!matched)
                     {
                         bool skip = false;
-                        // check if the thing is in MyOptions.DfsShares and whether we've removed it from MyOptions.DfsNamespacePaths yet.
+                        // Try to find this computer+share in the list of DFS targets
                         foreach (DFSShare dfsShare in MyOptions.DfsShares)
                         {
+                            ///TODO: Add some logic to match cases where short hostnames is used in DFS target list
                             if (dfsShare.RemoteServerName.Equals(computer, StringComparison.OrdinalIgnoreCase) &&
                                 dfsShare.Name.Equals(hostShareInfo.shi1_netname, StringComparison.OrdinalIgnoreCase))
                             {
-                                if (!MyOptions.DfsNamespacePaths.Contains(dfsShare.DfsNamespacePath))
+                                // why the not operator?   if (!MyOptions.DfsNamespacePaths.Contains(dfsShare.DfsNamespacePath))
+                                if (MyOptions.DfsNamespacePaths.Contains(dfsShare.DfsNamespacePath))
                                 {
                                     // remove the namespace path to make sure we don't kick it off again.
                                     MyOptions.DfsNamespacePaths.Remove(dfsShare.DfsNamespacePath);
@@ -99,9 +101,11 @@ namespace SnaffCore.ShareFind
                                 {
                                     skip = true;
                                 }
+
+                                // Found DFS target matching this computer+share - no further comparisons needed
+                                break;
                             }
                         }
-
 
                         // At least one classifier was matched so we will return the share
                         ShareResult shareResult = new ShareResult()

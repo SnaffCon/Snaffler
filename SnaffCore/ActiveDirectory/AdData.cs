@@ -145,8 +145,8 @@ namespace SnaffCore.ActiveDirectory
             DirectorySearch ds = GetDirectorySearcher();
             List<string> domainUsers = new List<string>();
 
-            string[] ldapProperties = new string[] { "name", "adminCount", "sAMAccountName", "userAccountControl"};
-            string ldapFilter = "(objectClass=user)";
+            string[] ldapProperties = new string[] { "name", "adminCount", "sAMAccountName", "userAccountControl","servicePrincipalName"};
+            string ldapFilter = "(&(objectClass=user)(objectCategory=person))";
 
             IEnumerable<SearchResultEntry> searchResultEntries = ds.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
 
@@ -173,20 +173,42 @@ namespace SnaffCore.ActiveDirectory
 
                     string userName = resEnt.GetProperty("sAMAccountName");
 
-                    // skip computer accounts
                     if (userName.EndsWith("$"))
                     {
+                        Mq.Trace("Skipping " + userName +
+                                " because it appears to be a computer or trust account.");
+                        continue;
+                    }
+
+                    // Excluded literals
+                    if (MyOptions.DomainUserExcludeStrings.Contains(userName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        Mq.Trace("Skipping " + userName +
+                                " because of a match in DomainUserExludeStrings.");
                         continue;
                     }
 
                     //skip mailboxy accounts - domains always have a billion of these.
                     if (userName.IndexOf("mailbox", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
+                        Mq.Trace("Skipping " + userName +
+                                " because it appears to be a mailbox.");
                         continue;
                     }
 
                     if (userName.IndexOf("mbx", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
+                        Mq.Trace("Skipping " + userName +
+                                " because it appears to be a mailbox.");
+                        continue;
+                    }
+
+                    // if has an SPN, keep it
+                    if (resEnt.GetProperty("servicePrincipalName") != null)
+                    {
+                        Mq.Trace("Adding " + userName +
+                                    " to target list because it has an SPN");
+                        domainUsers.Add(userName);
                         continue;
                     }
 
@@ -233,10 +255,11 @@ namespace SnaffCore.ActiveDirectory
                         continue;
                     }
 
-                    // if it matches a string we like, keep it
+
+                    // Included patterns
                     foreach (string str in MyOptions.DomainUserMatchStrings)
                     {
-                        if (userName.ToLower().Contains(str.ToLower()))
+                        if (userName.ToLower().Contains(str.ToLower()))                            
                         {
                             Mq.Trace("Adding " + userName +
                                         " to target list because it contained " + str + ".");

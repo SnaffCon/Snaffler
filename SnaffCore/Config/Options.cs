@@ -47,6 +47,8 @@ namespace SnaffCore.Config
         // FileScanner Options
         public bool DomainUserRules { get; set; } = false;
 
+        public bool DomainUsersWithSPNs { get; set; } = true;
+
         // passwords to try on certs that require one
         public List<string> CertPasswords = new List<string>()
         {
@@ -68,7 +70,6 @@ namespace SnaffCore.Config
             "changeme",
             "changeit",
             "SolarWinds.R0cks"
-
         };
 
         // initialize a list for this.  We will build it dynamically so don't allow for toml setting
@@ -84,8 +85,18 @@ namespace SnaffCore.Config
             "ccm",
             "scom",
             "opsmgr",
-            "adm"
+            "adm",
+            "MSOL",
+            "adsync",
+            "thycotic",
+            "secretserver",
+            "cyberark",
+            "sccm",
+            "configmgr"
         };
+
+        public List<string> DomainUserExcludeStrings { get; set; } 
+
         public List<string> DomainUsersWordlistRules { get; set; } = new List<string>()
         {
             "KeepConfigRegexRed"

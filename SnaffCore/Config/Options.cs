@@ -46,8 +46,7 @@ namespace SnaffCore.Config
 
         // FileScanner Options
         public bool DomainUserRules { get; set; } = false;
-
-        public bool DomainUsersWithSPNs { get; set; } = true;
+        public DomainUserNamesFormat[] DomainUserNameFormats { get; set; } = new DomainUserNamesFormat[] { DomainUserNamesFormat.sAMAccountName };
 
         // passwords to try on certs that require one
         public List<string> CertPasswords = new List<string>()
@@ -95,7 +94,7 @@ namespace SnaffCore.Config
             "configmgr"
         };
 
-        public List<string> DomainUserExcludeStrings { get; set; } 
+        public List<string> DomainUserStrictStrings { get; set; } 
 
         public List<string> DomainUsersWordlistRules { get; set; } = new List<string>()
         {
@@ -117,6 +116,13 @@ namespace SnaffCore.Config
         {
             //PrepareClassifiers();
             //BuildDefaultClassifiers();
+        }
+
+        public enum DomainUserNamesFormat
+        {
+            sAMAccountName,
+            NetBIOS,
+            UPN
         }
     }
 }

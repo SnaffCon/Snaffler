@@ -222,7 +222,9 @@ namespace SnaffCore
                             Regex regex = new Regex(pattern,
                                 RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.CultureInvariant);
                             configClassifierRule.Regexes.Add(regex);
+                            Mq.Trace(String.Format("Adding regex {0} to rule {1}", regex, ruleName));
                         }
+
                     }
                 }
             }

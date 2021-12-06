@@ -274,17 +274,28 @@ namespace SnaffCore.ActiveDirectory
                     }
 
                     // Included patterns
-                    foreach (string str in MyOptions.DomainUserMatchStrings)
-                    {
-                        if (userName.ToLower().Contains(str.ToLower()))                            
+                    if (!keepUser)
+                    { 
+                        foreach (string str in MyOptions.DomainUserMatchStrings)
                         {
-                            Mq.Trace("Adding " + userName +
-                                        " to target list because it contained " + str + ".");
-                            keepUser = true;
+                            if (userName.ToLower().Contains(str.ToLower()))                            
+                            {
+                                Mq.Trace("Adding " + userName +
+                                            " to target list because it contained " + str + ".");
+                                keepUser = true;
+                                break;
+                            }
                         }
                     }
 
 
+                    // Finished testing
+                    if(!keepUser)
+                    {
+                        continue;
+                    }
+
+                    // Must have matched something
                     // For common/frequent names,  force fully-qualified strict formats
                     if (MyOptions.DomainUserStrictStrings.Contains(userName, StringComparer.OrdinalIgnoreCase))
                     {
@@ -300,7 +311,7 @@ namespace SnaffCore.ActiveDirectory
                         continue;
                     }
     
-                    // Otherwise, go with the format preference from the config
+                    // Otherwise, go with the format preference from the config file
                     foreach (DomainUserNamesFormat dnuf in MyOptions.DomainUserNameFormats)
                     {
                         switch (dnuf)
@@ -323,8 +334,7 @@ namespace SnaffCore.ActiveDirectory
                                 domainUsers.Add(userName);
                                 break;
                         }
-                    }
-                    
+                    }                    
                 }
                 catch (Exception e)
                 {

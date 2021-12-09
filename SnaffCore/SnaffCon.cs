@@ -124,19 +124,15 @@ namespace SnaffCore
 
         private void DomainTargetDiscovery()
         {
-            // We do this single threaded cos it's fast and not easily divisible.
-            Mq.Info("Getting computers and DFS targets from AD.");
-
-            // The AdData class set/get semantics have gotten wonky here.  Leaving as-is to minimize breakage/changes, but needs another look.
-            AdData adData = new AdData();
-            adData.SetDomainComputers(MyOptions.ComputerTargetsLdapFilter);
-
-            List<DFSShare> dfsShares = adData.GetDfsShares();
+            AdData adData;
             List<string> targetComputers;
+            List<DFSShare> dfsShares = null;
 
             // Give preference to explicit targets in the options file.
             if (MyOptions.ComputerTargets != null)  
             {
+                Mq.Info("Using computer list from user-specified options.  No DFS discovery.");
+
                 targetComputers = new List<string>();
                 foreach (string t in MyOptions.ComputerTargets)
                 {
@@ -146,8 +142,32 @@ namespace SnaffCore
             }
             else
             {
+                // We do this single threaded cos it's fast and not easily divisible.
+                Mq.Info("Getting computers and DFS targets from AD.");
+
+                // The AdData class set/get semantics have gotten wonky here.  Leaving as-is to minimize breakage/changes, but needs another look.
+                adData = new AdData();
+                adData.SetDomainComputers(MyOptions.ComputerTargetsLdapFilter);
+
                 targetComputers = adData.GetDomainComputers();
                 Mq.Info(string.Format("Got {0} computers from AD.", targetComputers.Count));
+
+                dfsShares = adData.GetDfsShares();
+
+                // if we found some actual dfsshares
+                if (dfsShares.Count >= 1)
+                {
+                    MyOptions.DfsShares = dfsShares;
+                    MyOptions.DfsNamespacePaths = adData.GetDfsNamespacePaths();
+                }
+
+                // if we're only doing dfs shares, construct a list of targets from dfs share objects and jump to FileDiscovery().
+                if (MyOptions.DfsOnly)
+                {
+                    List<string> namespacePaths = adData.GetDfsNamespacePaths();
+
+                    FileDiscovery(namespacePaths.ToArray());
+                }
             }
 
             if (targetComputers == null && dfsShares == null)
@@ -169,22 +189,9 @@ namespace SnaffCore
                 }
             }
 
-            // if we found some actual dfsshares
-            if (dfsShares.Count >= 1)
-            {
-                MyOptions.DfsShares = dfsShares;
-                MyOptions.DfsNamespacePaths = adData.GetDfsNamespacePaths();
-            }
-            // if we're only doing dfs shares, construct a list of targets from dfs share objects and jump to FileDiscovery().
-            if (MyOptions.DfsOnly)
-            {
-                List<string> namespacePaths = adData.GetDfsNamespacePaths();
-
-                FileDiscovery(namespacePaths.ToArray());
-            }
             // call ShareDisco which should handle the rest.
             ShareDiscovery(targetComputers.ToArray());
-            //ShareDiscovery(targetComputers.ToArray(), dfsShares);
+            // ShareDiscovery(targetComputers.ToArray(), dfsShares);
         }
 
         private void DomainUserDiscovery()

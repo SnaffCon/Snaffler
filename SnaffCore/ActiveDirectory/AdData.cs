@@ -109,7 +109,7 @@ namespace SnaffCore.ActiveDirectory
                 _dfsNamespacePaths = new List<string>();
                 foreach (DFSShare dfsShare in dfsShares)
                 {
-                    string dfsShareNamespacePath = @"\\" + _targetDomain + @"\" + dfsShare.DFSNamespace;
+                    string dfsShareNamespacePath = @"\\" + _targetDomain.Name + @"\" + dfsShare.DFSNamespace;
                     dfsShare.DfsNamespacePath = dfsShareNamespacePath;
                     if (!_dfsNamespacePaths.Contains(dfsShareNamespacePath))
                     {

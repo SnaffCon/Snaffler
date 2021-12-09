@@ -53,27 +53,19 @@ namespace SnaffCore.ActiveDirectory
 
         private string GetNetBiosDomainName(string dnsDomainName)
         {
-            string netbiosDomainName = string.Empty;
+            string ldapBase = $"CN=Partitions,CN=Configuration,DC={_targetDomain.Name.Replace(".", ",DC=")}";
 
-            DirectoryEntry rootDSE = new DirectoryEntry(String.Format("LDAP://{0}/RootDSE",dnsDomainName));
+            DirectorySearch ds = new DirectorySearch(dnsDomainName, dnsDomainName, ldapBase, null, null, 0, false);
 
-            string configurationNamingContext = rootDSE.Properties["configurationNamingContext"][0].ToString();
+            string[] ldapProperties = new string[] { "netbiosname"};
+            string ldapFilter = string.Format("(&(objectcategory=Crossref)(dnsRoot={0})(netBIOSName=*))",_targetDomain.Name);
 
-            DirectoryEntry searchRoot = new DirectoryEntry(String.Format("LDAP://{0}/cn=Partitions,{1}",dnsDomainName,configurationNamingContext));
-
-            DirectorySearcher searcher = new DirectorySearcher(searchRoot);
-            searcher.SearchScope = System.DirectoryServices.SearchScope.OneLevel;
-            searcher.PropertiesToLoad.Add("netbiosname");
-            searcher.Filter = string.Format("(&(objectcategory=Crossref)(dnsRoot={0})(netBIOSName=*))", dnsDomainName);
-
-            SearchResult result = searcher.FindOne();
-
-            if (result != null)
+            foreach (SearchResultEntry sre in ds.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree))
             {
-                netbiosDomainName = result.Properties["netbiosname"][0].ToString();
+                return sre.GetProperty("netbiosname");
             }
 
-            return netbiosDomainName;
+            return null;
         }
 
 
@@ -97,8 +89,6 @@ namespace SnaffCore.ActiveDirectory
                 _targetDomain = Domain.GetCurrentDomain();
                 _targetDc = _targetDomain.PdcRoleOwner.Name;
             }
-
-
 
             _targetDomainNetBIOSName = GetNetBiosDomainName(_targetDomain.Name);
             return new DirectorySearch(_targetDomain.Name, _targetDc);

@@ -98,7 +98,7 @@ namespace SnaffCore
             
             if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
             {
-                DomainDiscovery();
+                DomainTargetDiscovery();
             }
             // if we've been told what computers to hit...
             else if (MyOptions.ComputerTargets != null)

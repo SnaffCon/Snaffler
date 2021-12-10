@@ -130,6 +130,8 @@ namespace Classifiers
                     // bounce it on to the next ClassifierRule
                     try
                     {
+                        bool fLoggedContentSizeWarning = false;
+
                         foreach (string relayTarget in ClassifierRule.RelayTargets)
                         {
                             ClassifierRule nextRule =
@@ -137,6 +139,18 @@ namespace Classifiers
 
                             if (nextRule.EnumerationScope == EnumerationScope.ContentsEnumeration)
                             {
+                                if (fileInfo.Length > MyOptions.MaxSizeToGrep)
+                                {
+                                    if(!fLoggedContentSizeWarning)
+                                    {
+                                        // Just log once per relay rule, no need to fill up the log with one for each relay target
+                                        Mq.Trace("The following file was bigger than the MaxSizeToGrep config parameter:" + fileInfo.FullName);
+                                        fLoggedContentSizeWarning = true;
+                                    }
+                                    
+                                    continue;
+                                }
+
                                 ContentClassifier nextContentClassifier = new ContentClassifier(nextRule);
                                 nextContentClassifier.ClassifyContent(fileInfo);
                             }

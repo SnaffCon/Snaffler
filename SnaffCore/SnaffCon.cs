@@ -88,20 +88,22 @@ namespace SnaffCore
             statusUpdateTimer.Elapsed += TimedStatusUpdate;
             statusUpdateTimer.Start();
 
-            // if we haven't been told what dir or computer to target, we're going to need to do share discovery. that means finding computers from the domain.
+
+            // If we want to hunt for user IDs, we need data from the running user's domain.
+            // Future - walk trusts
+            if ( MyOptions.DomainUserRules)
+            {
+                DomainUserDiscovery();
+            }
+            
             if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
             {
-                DomainDiscovery();
+                DomainTargetDiscovery();
             }
             // if we've been told what computers to hit...
             else if (MyOptions.ComputerTargets != null)
             {
                 ShareDiscovery(MyOptions.ComputerTargets);
-            }
-            // otherwise we should have a set of path targets...
-            else if (MyOptions.PathTargets != null)
-            {
-                FileDiscovery(MyOptions.PathTargets);
             }
             // but if that hasn't been done, something has gone wrong.
             else
@@ -119,13 +121,54 @@ namespace SnaffCore
             Mq.Finish();
         }
 
-        private void DomainDiscovery()
+        private void DomainTargetDiscovery()
         {
-            Mq.Info("Getting users and computers from AD.");
-            // We do this single threaded cos it's fast and not easily divisible.
-            AdData adData = new ActiveDirectory.AdData();
-            List<string> targetComputers = adData.GetDomainComputers();
-            List<DFSShare> dfsShares = adData.GetDfsShares();
+            AdData adData;
+            List<string> targetComputers;
+            List<DFSShare> dfsShares = null;
+
+            // Give preference to explicit targets in the options file.
+            if (MyOptions.ComputerTargets != null)  
+            {
+                Mq.Info("Using computer list from user-specified options.  No DFS discovery.");
+
+                targetComputers = new List<string>();
+                foreach (string t in MyOptions.ComputerTargets)
+                {
+                    targetComputers.Add(t);
+                }
+                Mq.Info(string.Format("Took {0} computers specified in options file.", targetComputers.Count));
+            }
+            else
+            {
+                // We do this single threaded cos it's fast and not easily divisible.
+                Mq.Info("Getting computers and DFS targets from AD.");
+
+                // The AdData class set/get semantics have gotten wonky here.  Leaving as-is to minimize breakage/changes, but needs another look.
+                adData = new AdData();
+                adData.SetDomainComputers(MyOptions.ComputerTargetsLdapFilter);
+
+                targetComputers = adData.GetDomainComputers();
+                Mq.Info(string.Format("Got {0} computers from AD.", targetComputers.Count));
+
+                dfsShares = adData.GetDfsShares();
+
+                // if we found some actual dfsshares
+                if (dfsShares.Count >= 1)
+                {
+                    MyOptions.DfsShares = dfsShares;
+                    MyOptions.DfsNamespacePaths = adData.GetDfsNamespacePaths();
+                }
+
+                // if we're only doing dfs shares, construct a list of targets from dfs share objects and jump to FileDiscovery().
+                if (MyOptions.DfsOnly)
+                {
+                    List<string> namespacePaths = adData.GetDfsNamespacePaths();
+
+                    FileDiscovery(namespacePaths.ToArray());
+                }
+            }
+
             if (targetComputers == null && dfsShares == null)
             {
                 Mq.Error(
@@ -136,8 +179,6 @@ namespace SnaffCore
                 }
             }
 
-            string numTargetComputers = targetComputers.Count.ToString();
-            Mq.Info("Got " + numTargetComputers + " computers from AD.");
             if (targetComputers.Count == 0 && dfsShares.Count == 0)
             {
                 Mq.Error("Didn't find any domain computers. Seems weird. Try pouring water on it.");
@@ -146,31 +187,28 @@ namespace SnaffCore
                     Mq.Terminate();
                 }
             }
-            // Push list of fun users to Options
-            if (MyOptions.DomainUserRules)
-            {
-                foreach (string user in adData.GetDomainUsers())
-                {
-                    MyOptions.DomainUsersToMatch.Add(user);
-                }
-                PrepDomainUserRules();
-            }
-            // if we found some actual dfsshares
-            if (dfsShares.Count >= 1)
-            {
-                MyOptions.DfsShares = dfsShares;
-                MyOptions.DfsNamespacePaths = adData.GetDfsNamespacePaths();
-            }
-            // if we're only doing dfs shares, construct a list of targets from dfs share objects and jump to FileDiscovery().
-            if (MyOptions.DfsOnly)
-            {
-                List<string> namespacePaths = adData.GetDfsNamespacePaths();
 
-                FileDiscovery(namespacePaths.ToArray());
-            }
             // call ShareDisco which should handle the rest.
             ShareDiscovery(targetComputers.ToArray());
-            //ShareDiscovery(targetComputers.ToArray(), dfsShares);
+            // ShareDiscovery(targetComputers.ToArray(), dfsShares);
+        }
+
+        private void DomainUserDiscovery()
+        {
+            Mq.Info("Getting interesting users from AD.");
+            // We do this single threaded cos it's fast and not easily divisible.
+
+            // The AdData class set/get semantics have gotten wonky here.  Leaving as-is to minimize breakage/changes, but needs another look.
+            AdData adData = new AdData();
+            adData.SetDomainUsers();
+
+            foreach (string user in adData.GetDomainUsers())
+            {
+                MyOptions.DomainUsersToMatch.Add(user);
+            }
+
+            // build the regexes for use in the file scans
+            PrepDomainUserRules();
         }
 
         public void PrepDomainUserRules()
@@ -190,7 +228,9 @@ namespace SnaffCore
                             Regex regex = new Regex(pattern,
                                 RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.CultureInvariant);
                             configClassifierRule.Regexes.Add(regex);
+                            Mq.Trace(String.Format("Adding regex {0} to rule {1}", regex, ruleName));
                         }
+
                     }
                 }
             }

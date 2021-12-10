@@ -54,7 +54,7 @@ namespace Snaffler
                 // set up the  TSV output if the flag is set
                 if (Options.LogTSV)
                 {
-                    fileResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6:u}" + Options.Separator + "{7}" + Options.Separator + "{8}" + Options.Separator + "{9}";
+                    fileResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6}" + Options.Separator + "{7:u}" + Options.Separator + "{8}" + Options.Separator + "{9}";
                     shareResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}";
                     dirResultTemplate = "{0}" + Options.Separator + "{1}";
                 }
@@ -193,8 +193,8 @@ namespace Snaffler
 
         private void ProcessMessage(SnafflerMessage message)
         {
-            //  standardized time formatting
-            string datetime =  String.Format("{1}{0}{2:u}{0}",  Options.Separator,hostString(), message.DateTime);
+            //  standardized time formatting,  UTC
+            string datetime = String.Format("{1}{0}{2:u}{0}", Options.Separator, hostString(), message.DateTime.ToUniversalTime());
 
             switch (message.Type)
             {

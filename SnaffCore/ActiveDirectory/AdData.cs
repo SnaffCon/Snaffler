@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using SnaffCore.Concurrency;
 using System.Collections.Generic;
 using System.DirectoryServices;
@@ -16,9 +16,9 @@ namespace SnaffCore.ActiveDirectory
         private List<string> _domainUsers = new List<string>();
         private List<DFSShare> _dfsShares = new List<DFSShare>();
         private List<string> _dfsNamespacePaths;
-//        private Domain _currentDomain;
-//        private string _domainName;
-        private Domain _targetDomain;
+        private Domain _currentDomain;
+        private string _domainName;
+        private string _targetDomain;
         private string _targetDc;
         private string _targetDomainNetBIOSName;
         private BlockingMq Mq { get; set; }
@@ -51,14 +51,14 @@ namespace SnaffCore.ActiveDirectory
         public DirectoryContext DirectoryContext { get; set; }
         private List<string> DomainControllers { get; set; } = new List<string>();
 
-        private string GetNetBiosDomainName(string dnsDomainName)
+        private string GetNetBiosDomainName()
         {
-            string ldapBase = $"CN=Partitions,CN=Configuration,DC={_targetDomain.Name.Replace(".", ",DC=")}";
+            string ldapBase = $"CN=Partitions,CN=Configuration,DC={_targetDomain.Replace(".", ",DC=")}";
 
-            DirectorySearch ds = new DirectorySearch(dnsDomainName, dnsDomainName, ldapBase, null, null, 0, false);
+            DirectorySearch ds = new DirectorySearch(_targetDomain, _targetDc, ldapBase, null, null, 0, false);
 
             string[] ldapProperties = new string[] { "netbiosname"};
-            string ldapFilter = string.Format("(&(objectcategory=Crossref)(dnsRoot={0})(netBIOSName=*))",_targetDomain.Name);
+            string ldapFilter = string.Format("(&(objectcategory=Crossref)(dnsRoot={0})(netBIOSName=*))",_targetDomain);
 
             foreach (SearchResultEntry sre in ds.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree))
             {
@@ -78,20 +78,19 @@ namespace SnaffCore.ActiveDirectory
             {
                 Mq.Trace("Target DC and Domain specified: " + MyOptions.TargetDomain + " + " + MyOptions.TargetDc);
                 _targetDc = MyOptions.TargetDc;
-                _targetDomain = Domain.GetDomain(new DirectoryContext(DirectoryContextType.Domain, MyOptions.TargetDomain));
+                _targetDomain = MyOptions.TargetDomain;
             }
             // no target DC or domain set
             else
             {
                 Mq.Trace("Getting current domain from user context.");
-//                _currentDomain = Domain.GetCurrentDomain();
-//                _targetDomain = _currentDomain.Name;
-                _targetDomain = Domain.GetCurrentDomain();
-                _targetDc = _targetDomain.PdcRoleOwner.Name;
+                _currentDomain = Domain.GetCurrentDomain();
+                _targetDomain = _currentDomain.Name;
+                _targetDc = _targetDomain;
             }
 
-            _targetDomainNetBIOSName = GetNetBiosDomainName(_targetDomain.Name);
-            return new DirectorySearch(_targetDomain.Name, _targetDc);
+            _targetDomainNetBIOSName = GetNetBiosDomainName();
+            return new DirectorySearch(_targetDomain, _targetDc);
         }
 
         public void SetDomainComputers(string LdapFilter)
@@ -109,7 +108,7 @@ namespace SnaffCore.ActiveDirectory
                 _dfsNamespacePaths = new List<string>();
                 foreach (DFSShare dfsShare in dfsShares)
                 {
-                    string dfsShareNamespacePath = @"\\" + _targetDomain.Name + @"\" + dfsShare.DFSNamespace;
+                    string dfsShareNamespacePath = @"\\" + _targetDomain + @"\" + dfsShare.DFSNamespace;
                     dfsShare.DfsNamespacePath = dfsShareNamespacePath;
                     if (!_dfsNamespacePaths.Contains(dfsShareNamespacePath))
                     {

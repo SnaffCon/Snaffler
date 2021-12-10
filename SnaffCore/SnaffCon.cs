@@ -95,16 +95,15 @@ namespace SnaffCore
             {
                 DomainUserDiscovery();
             }
-
-            // If we weren't given path targets then assume we want to do network discovery (even if it's just to get the DFS dedupe benefits
-            if (MyOptions.PathTargets == null )
+            
+            if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
             {
-                DomainTargetDiscovery();
+                DomainDiscovery();
             }
-            // otherwise we should have a set of path targets...
-            else if (MyOptions.PathTargets != null)
+            // if we've been told what computers to hit...
+            else if (MyOptions.ComputerTargets != null)
             {
-                FileDiscovery(MyOptions.PathTargets);
+                ShareDiscovery(MyOptions.ComputerTargets);
             }
             // but if that hasn't been done, something has gone wrong.
             else

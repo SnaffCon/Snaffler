@@ -26,15 +26,18 @@ namespace SnaffCore.ActiveDirectory.LDAP
         private Dictionary<string, string> _domainGuidMap;
         private bool _isFaulted;
 
-        private readonly string baseLdapPath;
+        private readonly string _baseLdapPath;
         //Thread-safe storage for our Ldap Connection Pool
         private readonly ConcurrentBag<LdapConnection> _connectionPool = new ConcurrentBag<LdapConnection>();
 
-        public DirectorySearch(string domainName, string domainController, string ldapUserName = null, string ldapPassword = null, int ldapPort = 0, bool secureLdap = false)
+        public DirectorySearch(string domainName, string domainController, string ldapUserName = null, string ldapPassword = null, int ldapPort = 0, bool secureLdap = false) :
+            this(domainName, domainController, $"DC={domainName.Replace(".", ",DC=")}", ldapUserName, ldapPassword, ldapPort, secureLdap){ }
+
+        public DirectorySearch(string domainName, string domainController, string baseLdapPath, string ldapUserName = null, string ldapPassword = null, int ldapPort = 0, bool secureLdap = false)
         {
+            _domainName = domainName;
             _domain = GetDomain();
-            _domainName = _domain.Name;
-            baseLdapPath = $"DC={_domainName.Replace(".", ",DC=")}";
+            _baseLdapPath = baseLdapPath;
             _domainController = domainController;
             _domainGuidMap = new Dictionary<string, string>();
             _ldapUsername = ldapUserName;
@@ -43,8 +46,6 @@ namespace SnaffCore.ActiveDirectory.LDAP
             _secureLdap = secureLdap;
             CreateSchemaMap();
         }
-
-
 
         /// <summary>
         /// Get a single LDAP entry for the specified filter
@@ -254,7 +255,7 @@ namespace SnaffCore.ActiveDirectory.LDAP
         }
 
         /// <summary>
-        /// Gets the domain object associated with the specified domain for this DirectorySearcher
+        /// Gets the System.DirectoryServices domain object associated with this DirectorySearcher
         /// </summary>
         /// <returns></returns>
         private Domain GetDomain()
@@ -273,6 +274,7 @@ namespace SnaffCore.ActiveDirectory.LDAP
                 return null;
             }
         }
+
 
         /// <summary>
         /// Gets an LDAPConnection to the Global Catalog
@@ -335,7 +337,7 @@ namespace SnaffCore.ActiveDirectory.LDAP
 
         private SearchRequest CreateSearchRequest(string ldapFilter, SearchScope scope, string[] props, string adsPath = null)
         {
-            var activeDirectorySearchPath = adsPath ?? baseLdapPath;
+            var activeDirectorySearchPath = adsPath ?? _baseLdapPath;
             var request = new SearchRequest(activeDirectorySearchPath, ldapFilter, scope, props);
             request.Controls.Add(new SearchOptionsControl(SearchOption.DomainScope));
 
@@ -351,7 +353,6 @@ namespace SnaffCore.ActiveDirectory.LDAP
             // AD Schema is defined at forest-level so we use forest DN as LDAP search base
             var path = _domain.Forest.Schema.Name;
             
-
             foreach (var result in QueryLdap("(schemaIDGUID=*)", new[] { "schemaidguid", "name" }, SearchScope.Subtree, path))
             {
                 var name = result.GetProperty("name");

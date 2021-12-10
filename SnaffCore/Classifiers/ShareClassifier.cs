@@ -79,6 +79,6 @@ namespace Classifiers
         public bool RootWritable { get; set; }
         public bool RootReadable { get; set; }
         public bool RootModifyable { get; set; }
-        public Triage Triage { get; set; } = Triage.Green;
+        public Triage Triage { get; set; } = Triage.Gray; 
     }
 }

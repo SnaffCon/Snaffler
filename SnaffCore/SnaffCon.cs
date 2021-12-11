@@ -95,7 +95,12 @@ namespace SnaffCore
             {
                 DomainUserDiscovery();
             }
-            
+
+            if (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly)
+            {
+                DomainDfsDiscovery();
+            }
+
             if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
             {
                 DomainTargetDiscovery();
@@ -121,16 +126,36 @@ namespace SnaffCore
             Mq.Finish();
         }
 
+        private void DomainDfsDiscovery()
+        {
+            Dictionary<string, string> dfsSharesDict = null;
+            AdData adData = null;
+
+            Mq.Info("Getting DFS paths from AD.");
+
+            adData = new AdData();
+
+            adData.SetDfsPaths();
+            dfsSharesDict = adData.GetDfsSharesDict();
+
+            // if we found some actual dfsshares
+            if (dfsSharesDict.Count >= 1)
+            {
+                MyOptions.DfsSharesDict = dfsSharesDict;
+                MyOptions.DfsNamespacePaths = adData.GetDfsNamespacePaths();
+            }
+        }
+
         private void DomainTargetDiscovery()
         {
-            AdData adData;
+            AdData adData = null;
             List<string> targetComputers;
-            List<DFSShare> dfsShares = null;
 
-            // Give preference to explicit targets in the options file.
+
+            // Give preference to explicit targets in the options file over LDAP computer discovery
             if (MyOptions.ComputerTargets != null)  
             {
-                Mq.Info("Using computer list from user-specified options.  No DFS discovery.");
+                Mq.Info("Using computer list from user-specified options.");
 
                 targetComputers = new List<string>();
                 foreach (string t in MyOptions.ComputerTargets)
@@ -142,34 +167,27 @@ namespace SnaffCore
             else
             {
                 // We do this single threaded cos it's fast and not easily divisible.
-                Mq.Info("Getting computers and DFS targets from AD.");
+                Mq.Info("Getting computers from AD.");
 
                 // The AdData class set/get semantics have gotten wonky here.  Leaving as-is to minimize breakage/changes, but needs another look.
-                adData = new AdData();
+                // initialize it if we didn't already
+                if(adData == null)
+                {
+                    adData = new AdData();
+                }
                 adData.SetDomainComputers(MyOptions.ComputerTargetsLdapFilter);
 
                 targetComputers = adData.GetDomainComputers();
                 Mq.Info(string.Format("Got {0} computers from AD.", targetComputers.Count));
 
-                dfsShares = adData.GetDfsShares();
-
-                // if we found some actual dfsshares
-                if (dfsShares.Count >= 1)
-                {
-                    MyOptions.DfsShares = dfsShares;
-                    MyOptions.DfsNamespacePaths = adData.GetDfsNamespacePaths();
-                }
-
-                // if we're only doing dfs shares, construct a list of targets from dfs share objects and jump to FileDiscovery().
+                // if we're only scanning DFS shares then we can skip the SMB sharefinder and work from the list in AD, then jump to FileDiscovery().
                 if (MyOptions.DfsOnly)
                 {
-                    List<string> namespacePaths = adData.GetDfsNamespacePaths();
-
-                    FileDiscovery(namespacePaths.ToArray());
+                    FileDiscovery(MyOptions.DfsNamespacePaths.ToArray());
                 }
             }
 
-            if (targetComputers == null && dfsShares == null)
+            if (targetComputers == null && MyOptions.DfsNamespacePaths == null)
             {
                 Mq.Error(
                     "Something fucked out finding stuff in the domain. You must be holding it wrong.");
@@ -179,7 +197,7 @@ namespace SnaffCore
                 }
             }
 
-            if (targetComputers.Count == 0 && dfsShares.Count == 0)
+            if (targetComputers.Count == 0 && MyOptions.DfsNamespacePaths.Count == 0)
             {
                 Mq.Error("Didn't find any domain computers. Seems weird. Try pouring water on it.");
                 while (true)

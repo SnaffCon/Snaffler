@@ -14,7 +14,7 @@ namespace SnaffCore.ActiveDirectory
     {
         private List<string> _domainComputers = new List<string>();
         private List<string> _domainUsers = new List<string>();
-        private List<DFSShare> _dfsShares = new List<DFSShare>();
+        private Dictionary<string, string> _dfsSharesDict;
         private List<string> _dfsNamespacePaths;
         private Domain _currentDomain;
         private string _domainName;
@@ -33,16 +33,11 @@ namespace SnaffCore.ActiveDirectory
             return _domainUsers;
         }
 
-        public List<DFSShare> GetDfsShares()
+        public Dictionary<string, string> GetDfsSharesDict()
         {
-            return _dfsShares;
+            return _dfsSharesDict;
         }
-/*
-        public string GetDomainName()
-        {
-            return _domainName;
-        }
-*/
+
         public List<string> GetDfsNamespacePaths()
         {
             return _dfsNamespacePaths;
@@ -93,6 +88,71 @@ namespace SnaffCore.ActiveDirectory
             return new DirectorySearch(_targetDomain, _targetDc);
         }
 
+        public void SetDfsPaths()
+        {
+            DirectorySearch ds = GetDirectorySearcher();
+
+            try
+            {
+                Mq.Degub("Starting DFS Enumeration.");
+
+                DfsFinder dfsFinder = new DfsFinder();
+                List<DFSShare> dfsShares = dfsFinder.FindDfsShares(ds);
+
+                _dfsSharesDict = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+                _dfsNamespacePaths = new List<string>();
+                string realPath;
+
+                foreach (DFSShare dfsShare in dfsShares)
+                {
+                    // Construct the UNC path to this DFS share and add it to the list.  
+                    // We use this structure as a to-do list in the ShareFinder code, skipping DFS shares that have already been processed
+                    string dfsShareNamespacePath = @"\\" + _targetDomain + @"\" + dfsShare.DFSNamespace;
+                    List<string> hostnames = new List<string>();
+
+                    if (!_dfsNamespacePaths.Contains(dfsShareNamespacePath))
+                    {
+                        _dfsNamespacePaths.Add(dfsShareNamespacePath);
+                    }
+
+                    // Calculate a long and a short name version for each "real" share path in lowercase.  Admins can set either in AD and
+                    //    we may get either for our scan (depending on how we got our computer list.
+                    // This simplifies the cross-referencing of actual server shares back to DFS paths in the ShareFinder code.
+
+                    hostnames.Add(dfsShare.RemoteServerName);
+
+                    if (dfsShare.RemoteServerName.EndsWith(_targetDomain, StringComparison.OrdinalIgnoreCase))
+                    {   // share path has FQDN so crack out the short hostname
+                        hostnames.Add(dfsShare.RemoteServerName.Split('.')[0]);
+                    }
+                    else
+                    {   // share path has short name so append domain for FQDN
+                        hostnames.Add(String.Format("{0}.{1}", dfsShare.RemoteServerName, _targetDomain));
+                    }
+
+                    // Add these paths as keys in the dictionary
+                    foreach (string h in hostnames)
+                    {
+                        realPath = String.Format(@"\\{0}\{1}", h, dfsShare.Name);
+
+                        if (!_dfsSharesDict.ContainsKey(realPath))
+                        {
+                            _dfsSharesDict.Add(realPath, dfsShareNamespacePath);
+                        }
+                    }
+                }
+                
+                Mq.Info("Found " + _dfsSharesDict.Count.ToString() + " DFS Shares in " + _dfsNamespacePaths.Count.ToString() + " namespaces.");
+
+                Mq.Degub("Finished DFS Enumeration.");
+
+            }
+            catch (Exception e)
+            {
+                Mq.Trace(e.ToString());
+            }
+        }
+
         public void SetDomainComputers(string LdapFilter)
         {
             DirectorySearch ds = GetDirectorySearcher();
@@ -101,28 +161,9 @@ namespace SnaffCore.ActiveDirectory
 
             try
             {
-                Mq.Degub("Starting DFS Enumeration.");
-
-                DfsFinder dfsFinder = new DfsFinder();
-                List<DFSShare> dfsShares = dfsFinder.FindDfsShares(ds);
-                _dfsNamespacePaths = new List<string>();
-                foreach (DFSShare dfsShare in dfsShares)
-                {
-                    string dfsShareNamespacePath = @"\\" + _targetDomain + @"\" + dfsShare.DFSNamespace;
-                    dfsShare.DfsNamespacePath = dfsShareNamespacePath;
-                    if (!_dfsNamespacePaths.Contains(dfsShareNamespacePath))
-                    {
-                        _dfsNamespacePaths.Add(dfsShareNamespacePath);
-                    }
-                    _dfsShares.Add(dfsShare);
-                }
-                Mq.Info("Found " + _dfsShares.Count.ToString() + " DFS Shares in " + _dfsNamespacePaths.Count.ToString() + " namespaces.");
-
-
-                Mq.Degub("Finished DFS Enumeration.");
                 if (!MyOptions.DfsOnly)
                 {
-                    // if limiting to DFS shares, we stop there.
+                    // if we aren't limiting the scan to DFS shares then let's get some computer targets.
 
                     string[] ldapProperties = new string[] { "name", "dNSHostName", "lastLogonTimeStamp" };
                     string ldapFilter = LdapFilter;
@@ -149,7 +190,6 @@ namespace SnaffCore.ActiveDirectory
                             domainComputers.Add(computerName);
                         }
                     }
-
                 }
             }
             catch (Exception e)

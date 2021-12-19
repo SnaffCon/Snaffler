@@ -103,6 +103,11 @@ namespace SnaffCore
 
             if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
             {
+                if(MyOptions.DfsSharesDict == null)
+                {
+                    Mq.Info("Invoking DFS Discovery because ComputerTargets and PathTargets were being discovered");
+                    DomainDfsDiscovery();
+                }
                 DomainTargetDiscovery();
             }
             // if we've been told what computers to hit...

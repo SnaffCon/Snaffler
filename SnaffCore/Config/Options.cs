@@ -18,7 +18,6 @@ namespace SnaffCore.Config
         public int InterestLevel { get; set; } = 0;
         public bool DfsOnly { get; set; } = false;
         public bool DfsShareDiscovery { get; set; } = false;
-//        public List<DFSShare> DfsShares { get; set; } = new List<DFSShare>();
         public Dictionary<string, string> DfsSharesDict { get; set; } = new Dictionary<string, string>();
         public List<string> DfsNamespacePaths { get; set; } = new List<string>();
         public string CurrentUser { get; set; } = WindowsIdentity.GetCurrent().Name;

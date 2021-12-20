@@ -14,7 +14,6 @@ namespace SnaffCore.ActiveDirectory
         public string Name { get; set; }
         public string RemoteServerName { get; set; }
         public string DFSNamespace { get; set; }
-        public string DfsNamespacePath { get; set; }
     }
 
     class DfsFinder
@@ -50,6 +49,7 @@ namespace SnaffCore.ActiveDirectory
                     string[] RemoteNames = resEnt.GetPropertyAsArray(@"remoteservername");
                     byte[][] pkt = resEnt.GetPropertyAsArrayOfBytes("pkt");
 
+                    // Add the namespace-level shares
                     if (RemoteNames != null)
                     {
                         foreach (string name in RemoteNames)
@@ -74,23 +74,18 @@ namespace SnaffCore.ActiveDirectory
                         }
                     }
 
+                    // add the multi-level stuff
                     if (pkt != null && pkt[0] != null)
                     {
-                        var servers = Parse_Pkt(pkt[0] as byte[]);
-                        if (servers != null)
+                        List<DFSShare> shares = Parse_Pkt(pkt[0] as byte[]);
+                        if (shares != null)
                         {
-                            foreach (var server in servers)
+                            foreach (var share in shares)
                             {
-                                // If a folder doesn't have a redirection it will have a target like
-                                // \\null\TestNameSpace\folder\.DFSFolderLink so we do actually want to match
-                                // on 'null' rather than $Null
-                                if (server != null && server != @"null" &&
-                                    DFSShares.Any(x => x.RemoteServerName == server))
-                                {
-                                    DFSShares.Add(new DFSShare { Name = resEnt.GetProperty(@"name") as string, RemoteServerName = server });
-                                }
+                                DFSShares.Add(share);
                             }
                         }
+
                     }
                 }
             }
@@ -165,18 +160,20 @@ namespace SnaffCore.ActiveDirectory
             return DFSShares;
         }
 
-        private static IEnumerable<string> Parse_Pkt(byte[] Pkt)
+        private static List<DFSShare> Parse_Pkt(byte[] Pkt)
         {
             var bin = Pkt;
             var blob_version = BitConverter.ToUInt32(bin.Skip(0).Take(4).ToArray(), 0);
             var blob_element_count = BitConverter.ToUInt32(bin.Skip(4).Take(4).ToArray(), 0);
+            int blob_data_end = 0;
             var offset = 8;
             string prefix = null;
             string blob_name = null;
             List<string> target_list = null;
-            int blob_data_end = 0;
+            var shares = new List<DFSShare>();
             // https://msdn.microsoft.com/en-us/library/cc227147.aspx
             var object_list = new List<Dictionary<string, object>>();
+
             for (var i = 1; i <= blob_element_count; i++)
             {
                 var blob_name_size_start = offset;
@@ -195,7 +192,7 @@ namespace SnaffCore.ActiveDirectory
                 blob_data_end = (int)(blob_data_start + blob_data_size - 1);
                 var blob_data = bin.Skip(blob_data_start).Take(blob_data_end + 1 - blob_data_start);
                 if (blob_name == @"\siteroot") { }
-                else if (blob_name == @"\domainroot*")
+                else if (blob_name.StartsWith(@"\domainroot"))
                 {
                     // Parse DFSNamespaceRootOrLinkBlob object. Starts with variable length DFSRootOrLinkIDBlob which we parse first...
                     // DFSRootOrLinkIDBlob
@@ -314,34 +311,49 @@ namespace SnaffCore.ActiveDirectory
                 }
                 offset = blob_data_end + 1;
                 var dfs_pkt_properties = new Dictionary<string, object>
-            {
-                { @"Name", blob_name },
+                {
+                    { @"Name", blob_name },
                     { @"Prefix", prefix },
                     { @"TargetList", target_list }
-            };
+                };
                 object_list.Add(dfs_pkt_properties);
                 prefix = null;
                 blob_name = null;
                 target_list = null;
             }
 
-            var servers = new List<string>();
             if (object_list != null)
             {
                 foreach (var item in object_list)
                 {
-                    var targetList = item[@"TargetList"] as string[];
+                    if(item[@"Prefix"] == null)
+                    {
+                        continue;
+                    }
+
+                    prefix = item[@"Prefix"] as string;
+                    string dfsns = prefix.Split(new char[] {'\\'},3)[2];
+
+                    List<string> targetList = item[@"TargetList"] as List<string>;
                     if (targetList != null)
                     {
                         foreach (var target in targetList)
                         {
-                            servers.Add(target.Split(new char[] { '\\' })[2]);
+                            //shareDict.Add();
+                            var share = new DFSShare();
+
+                            string[] target_parts = target.Split(new char[] { '\\' });
+                            share.DFSNamespace = dfsns;
+                            share.Name = target_parts[3];
+                            share.RemoteServerName = target_parts[2];
+
+                            shares.Add(share);
                         }
                     }
                 }
             }
 
-            return servers;
+            return shares;
         }
     }
 }

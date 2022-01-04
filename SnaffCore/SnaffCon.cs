@@ -96,7 +96,8 @@ namespace SnaffCore
                 DomainUserDiscovery();
             }
 
-            if (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly)
+            // Explicit folder setting overrides DFS
+            if (MyOptions.PathTargets == null && (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly))
             {
                 DomainDfsDiscovery();
             }
@@ -110,7 +111,12 @@ namespace SnaffCore
                 }
                 DomainTargetDiscovery();
             }
-            // if we've been told what computers to hit...
+            // otherwise we should have a set of path targets...
+            else if (MyOptions.PathTargets != null)
+            {
+                FileDiscovery(MyOptions.PathTargets);
+            }
+            // or we've been told what computers to hit...
             else if (MyOptions.ComputerTargets != null)
             {
                 ShareDiscovery(MyOptions.ComputerTargets);
@@ -247,7 +253,8 @@ namespace SnaffCore
 
                         foreach (string user in MyOptions.DomainUsersToMatch)
                         {
-                            string pattern = "( |'|\")" + Regex.Escape(user) + "( |'|\")";
+                            // Use the null character to match begin and end of line
+                            string pattern = "(| |'|\")" + Regex.Escape(user) + "(| |'|\")";
                             Regex regex = new Regex(pattern,
                                 RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.CultureInvariant);
                             configClassifierRule.Regexes.Add(regex);

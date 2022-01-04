@@ -253,6 +253,12 @@ namespace SnaffCore
 
                         foreach (string user in MyOptions.DomainUsersToMatch)
                         {
+                            if (user.Length < MyOptions.DomainUserMinLen)
+                            {
+                                Mq.Trace(String.Format("Skipping regex for \"{0}\".  Shorter than minimum chars: {1}", user, MyOptions.DomainUserMinLen));
+                                continue;
+                            }
+
                             // Use the null character to match begin and end of line
                             string pattern = "(| |'|\")" + Regex.Escape(user) + "(| |'|\")";
                             Regex regex = new Regex(pattern,

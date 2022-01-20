@@ -111,9 +111,14 @@ namespace SnaffCore
                 DomainTargetDiscovery();
             }
             // if we've been told what computers to hit...
-            else if (MyOptions.ComputerTargets != null)
+            else if (MyOptions.ComputerTargets != null && MyOptions.PathTargets == null)
             {
                 ShareDiscovery(MyOptions.ComputerTargets);
+            }
+            // otherwise we should have a set of path targets...
+            else if (MyOptions.PathTargets != null && MyOptions.ComputerTargets != null)
+            {
+                FileDiscovery(MyOptions.PathTargets);
             }
             // but if that hasn't been done, something has gone wrong.
             else

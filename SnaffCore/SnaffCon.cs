@@ -116,7 +116,7 @@ namespace SnaffCore
                 ShareDiscovery(MyOptions.ComputerTargets);
             }
             // otherwise we should have a set of path targets...
-            else if (MyOptions.PathTargets != null && MyOptions.ComputerTargets != null)
+            else if (MyOptions.PathTargets != null && MyOptions.ComputerTargets == null)
             {
                 FileDiscovery(MyOptions.PathTargets);
             }

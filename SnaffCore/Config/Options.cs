@@ -9,7 +9,7 @@ namespace SnaffCore.Config
         public static Options MyOptions { get; set; }
 
         // Manual Targeting Options
-        public string[] PathTargets { get; set; }
+        public List<string> PathTargets { get; set; } = new List<string>();
         public string[] ComputerTargets { get; set; }
         public string ComputerTargetsLdapFilter { get; set; } = "(objectClass=computer)";
         public bool ScanSysvol { get; set; } = true;

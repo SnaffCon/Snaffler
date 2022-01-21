@@ -97,32 +97,42 @@ namespace SnaffCore
             }
 
             // Explicit folder setting overrides DFS
-            if (MyOptions.PathTargets == null && (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly))
+            if (MyOptions.PathTargets.Count != 0 && (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly))
             {
                 DomainDfsDiscovery();
             }
 
-            if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
+            if (MyOptions.PathTargets.Count == 0 && MyOptions.ComputerTargets == null)
             {
-                if (MyOptions.DfsSharesDict == null)
+                if (MyOptions.DfsSharesDict.Count == 0)
                 {
                     Mq.Info("Invoking DFS Discovery because no ComputerTargets or PathTargets were specified");
                     DomainDfsDiscovery();
                 }
+
                 if (!MyOptions.DfsOnly)
                 {
-                    Mq.Info("Invoking full domain computer discovery.";
+                    Mq.Info("Invoking full domain computer discovery.");
                     DomainTargetDiscovery();
                 }
                 else
                 {
-                    Mq.Info("Skipping domain computer discovery."
+                    Mq.Info("Skipping domain computer discovery.");
+                    foreach (string share in MyOptions.DfsSharesDict.Keys)
+                    {
+                        if (!MyOptions.PathTargets.Contains(share))
+                        {
+                            MyOptions.PathTargets.Add(share);
+                        }
+                    }
+                    Mq.Info("Starting TreeWalker tasks on DFS shares.");
+                    FileDiscovery(MyOptions.PathTargets.ToArray());
                 }
             }
             // otherwise we should have a set of path targets...
-            else if (MyOptions.PathTargets != null)
+            else if (MyOptions.PathTargets.Count != 0)
             {
-                FileDiscovery(MyOptions.PathTargets);
+                FileDiscovery(MyOptions.PathTargets.ToArray());
             }
             // or we've been told what computers to hit...
             else if (MyOptions.ComputerTargets != null)

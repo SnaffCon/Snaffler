@@ -104,12 +104,20 @@ namespace SnaffCore
 
             if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
             {
-                if(MyOptions.DfsSharesDict == null)
+                if (MyOptions.DfsSharesDict == null)
                 {
-                    Mq.Info("Invoking DFS Discovery because ComputerTargets and PathTargets were being discovered");
+                    Mq.Info("Invoking DFS Discovery because no ComputerTargets or PathTargets were specified");
                     DomainDfsDiscovery();
                 }
-                DomainTargetDiscovery();
+                if (!MyOptions.DfsOnly)
+                {
+                    Mq.Info("Invoking full domain computer discovery.";
+                    DomainTargetDiscovery();
+                }
+                else
+                {
+                    Mq.Info("Skipping domain computer discovery."
+                }
             }
             // otherwise we should have a set of path targets...
             else if (MyOptions.PathTargets != null)
@@ -121,6 +129,7 @@ namespace SnaffCore
             {
                 ShareDiscovery(MyOptions.ComputerTargets);
             }
+
             // but if that hasn't been done, something has gone wrong.
             else
             {

@@ -130,7 +130,7 @@ namespace SnaffCore.ActiveDirectory
                                     if (Target.Contains(@"\"))
                                     {
                                         var DFSroot = Target.Split('\\')[3];
-                                        string ShareName = resEnt.GetProperty(@"msdfs-linkpathv2");
+                                        string ShareName = resEnt.GetProperty(@"msdfs-linkpathv2").Replace("/","\\");
                                         DFSShares.Add(new DFSShare { Name = $@"{DFSroot}{ShareName}", RemoteServerName = Target.Split('\\')[2], DFSNamespace = dfsnamespace });
                                     }
                                 }

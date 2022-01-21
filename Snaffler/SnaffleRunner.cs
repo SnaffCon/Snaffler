@@ -229,9 +229,10 @@ namespace Snaffler
                     break;
                 case SnafflerMessageType.Finish:
                     Logger.Info("Snaffler out.");
-                    Console.WriteLine("Press any key to exit.");
+                    
                     if (Debugger.IsAttached)
                     {
+                        Console.WriteLine("Press any key to exit.");
                         Console.ReadKey();
                     }
                     Environment.Exit(0);

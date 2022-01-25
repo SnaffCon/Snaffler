@@ -96,25 +96,50 @@ namespace SnaffCore
                 DomainUserDiscovery();
             }
 
-            if (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly)
+            // Explicit folder setting overrides DFS
+            if (MyOptions.PathTargets.Count != 0 && (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly))
             {
                 DomainDfsDiscovery();
             }
 
-            if (MyOptions.PathTargets == null && MyOptions.ComputerTargets == null)
+            if (MyOptions.PathTargets.Count == 0 && MyOptions.ComputerTargets == null)
             {
-                if(MyOptions.DfsSharesDict == null)
+                if (MyOptions.DfsSharesDict.Count == 0)
                 {
-                    Mq.Info("Invoking DFS Discovery because ComputerTargets and PathTargets were being discovered");
+                    Mq.Info("Invoking DFS Discovery because no ComputerTargets or PathTargets were specified");
                     DomainDfsDiscovery();
                 }
-                DomainTargetDiscovery();
+
+                if (!MyOptions.DfsOnly)
+                {
+                    Mq.Info("Invoking full domain computer discovery.");
+                    DomainTargetDiscovery();
+                }
+                else
+                {
+                    Mq.Info("Skipping domain computer discovery.");
+                    foreach (string share in MyOptions.DfsSharesDict.Keys)
+                    {
+                        if (!MyOptions.PathTargets.Contains(share))
+                        {
+                            MyOptions.PathTargets.Add(share);
+                        }
+                    }
+                    Mq.Info("Starting TreeWalker tasks on DFS shares.");
+                    FileDiscovery(MyOptions.PathTargets.ToArray());
+                }
             }
-            // if we've been told what computers to hit...
+            // otherwise we should have a set of path targets...
+            else if (MyOptions.PathTargets.Count != 0)
+            {
+                FileDiscovery(MyOptions.PathTargets.ToArray());
+            }
+            // or we've been told what computers to hit...
             else if (MyOptions.ComputerTargets != null)
             {
                 ShareDiscovery(MyOptions.ComputerTargets);
             }
+
             // but if that hasn't been done, something has gone wrong.
             else
             {
@@ -247,7 +272,14 @@ namespace SnaffCore
 
                         foreach (string user in MyOptions.DomainUsersToMatch)
                         {
-                            string pattern = "( |'|\")" + Regex.Escape(user) + "( |'|\")";
+                            if (user.Length < MyOptions.DomainUserMinLen)
+                            {
+                                Mq.Trace(String.Format("Skipping regex for \"{0}\".  Shorter than minimum chars: {1}", user, MyOptions.DomainUserMinLen));
+                                continue;
+                            }
+
+                            // Use the null character to match begin and end of line
+                            string pattern = "(| |'|\")" + Regex.Escape(user) + "(| |'|\")";
                             Regex regex = new Regex(pattern,
                                 RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.CultureInvariant);
                             configClassifierRule.Regexes.Add(regex);

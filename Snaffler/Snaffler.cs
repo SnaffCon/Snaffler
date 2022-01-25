@@ -8,7 +8,6 @@ namespace Snaffler
         {
             SnaffleRunner runner = new SnaffleRunner();
             runner.Run(args);
-            Console.ReadKey();
         }
     }
 }

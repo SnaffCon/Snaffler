@@ -72,7 +72,8 @@ namespace Snaffler
             SwitchArgument dfsArg = new SwitchArgument('f', "dfs", "Limits Snaffler to finding file shares via DFS, for \"OPSEC\" reasons.", false);
             SwitchArgument findSharesOnlyArg = new SwitchArgument('a', "sharesonly",
                 "Stops after finding shares, doesn't walk their filesystems.", false);
-            // list of letters i haven't used yet: egknpqwx
+            ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "Computer (or comma separated list) to target.");
+            // list of letters i haven't used yet: egknpqw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
@@ -93,6 +94,7 @@ namespace Snaffler
             parser.Arguments.Add(dfsArg);
             parser.Arguments.Add(findSharesOnlyArg);
             parser.Arguments.Add(maxThreadsArg);
+            parser.Arguments.Add(compTargetArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -142,9 +144,24 @@ namespace Snaffler
                     parsedConfig.DfsOnly = dfsArg.Value;
                 }
 
+                if (compTargetArg.Parsed)
+                {
+                    string[] compTargets = null;
+                    if (compTargetArg.Value.Contains(","))
+                    {
+                        compTargets = compTargetArg.Value.Split(',');
+                        
+                    }
+                    else
+                    {
+                        compTargets = new string[] { compTargetArg.Value };
+                    }
+                    parsedConfig.ComputerTargets = compTargets;
+                }
+
                 if (findSharesOnlyArg.Parsed)
                 {
-                    parsedConfig.ScanFoundShares = dfsArg.Value;
+                    parsedConfig.ScanFoundShares = false;
                 }
                 if (maxThreadsArg.Parsed)
                 {

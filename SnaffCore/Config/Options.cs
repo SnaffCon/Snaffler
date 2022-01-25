@@ -9,7 +9,7 @@ namespace SnaffCore.Config
         public static Options MyOptions { get; set; }
 
         // Manual Targeting Options
-        public string[] PathTargets { get; set; }
+        public List<string> PathTargets { get; set; } = new List<string>();
         public string[] ComputerTargets { get; set; }
         public string ComputerTargetsLdapFilter { get; set; } = "(objectClass=computer)";
         public bool ScanSysvol { get; set; } = true;
@@ -47,6 +47,7 @@ namespace SnaffCore.Config
 
         // FileScanner Options
         public bool DomainUserRules { get; set; } = false;
+        public int DomainUserMinLen { get; set; } = 6;
         public DomainUserNamesFormat[] DomainUserNameFormats { get; set; } = new DomainUserNamesFormat[] { DomainUserNamesFormat.sAMAccountName };
 
         // passwords to try on certs that require one

@@ -18,7 +18,7 @@ Ugh, fine. But we aren't responsible for the results. We wrote all this other st
 
 ## What does it do?
 
-It gets a list of Windows computers from Active Directory, then spreads out its snaffly appendages to them all to figure out which ones have file shares, and whether you can read them. 
+*Broadly speaking* - it gets a list of Windows computers from Active Directory, then spreads out its snaffly appendages to them all to figure out which ones have file shares, and whether you can read them. 
 
 Then YET MORE snaffly appendages enumerate all the files in those shares and use **L**EARNED **A**RTIFACTUAL **I**NTELLIGENCE for **M**ACHINES to figure out which ones a grubby little hacker like you might want. 
 
@@ -26,7 +26,7 @@ Actually it doesn't do any ML stuff (yet), because doing that right would requir
 
 ## What does it look like?
 
-Like this (mostly)!
+Like this! (mostly, this screenshot is a few versions old now)
 
 <p align="center">
   <img src="./snaffler_screenshot.png">
@@ -44,13 +44,25 @@ The key incantations are:
 
 `-s`   Enables outputting results to stdout as soon as they're found. You probably want this if you're not using `-o`.
 
-`-v`   Controls verbosity level, options are Trace (most verbose), Debug (less verbose), Info (less verbose still, default), and Data (results only). e.g `-v debug` 
+`-v`   Controls verbosity level, options are Trace (most verbose), Degub (less verbose, less gubs), Info (less verbose still, default), and Data (results only). e.g `-v debug` 
 
 `-m`   Enables and assigns an output dir for snaffler to automatically take a copy of (or Snaffle... if you will) any found files that it likes.
 
 `-l`   Maximum size of files (in bytes) to Snaffle. Defaults to 10000000, which is *about* 10MB.
 
 `-i`   Disables computer and share discovery, requires a path to a directory in which to perform file discovery.
+
+`-n`   Disables computer discovery, takes a comma-separated list of hosts to do share and file discovery on.
+
+`-y`   TSV-formats the output.
+
+`-b`   Skips the LAIM rules that will find less-interesting stuff, tune it with a number between 0 and 3.
+
+`-f`   Limits Snaffler to finding file shares via DFS (Distributed File System) - this should be quite a bit sneakier than the default while still covering the biggest file shares in a lot of orgs.
+
+`-a`   Skips file enumeration, just gives you a list of listable shares on the target hosts.
+
+`-u`   Makes Snaffler pull a list of account names from AD, choose the ones that look most-interesting, and then use them in a search rule.
 
 `-d`   Domain to search for computers to search for shares on to search for files in. Easy.
 

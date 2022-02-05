@@ -1,0 +1,15 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepMemDumpByName"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [ 
+        "MEMORY\\.DMP", 
+        "hiberfil\\.sys", 
+        "lsass\\.dmp", 
+        "lsass\\.exe\\.dmp", 
+        ]
+Triage = "Black"

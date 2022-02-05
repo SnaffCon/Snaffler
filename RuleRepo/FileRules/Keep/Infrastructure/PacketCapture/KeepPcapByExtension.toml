@@ -1,0 +1,13 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepPcapByExtension"
+MatchAction = "Snaffle"
+Description = "Files with these extensions are a little interesting."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [
+"\\.pcap", 
+"\\.cap", 
+]
+Triage = "Yellow"

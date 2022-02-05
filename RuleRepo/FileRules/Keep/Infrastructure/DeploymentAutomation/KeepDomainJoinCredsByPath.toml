@@ -1,0 +1,11 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepDomainJoinCredsByPath"
+MatchAction = "Snaffle"
+Description = "Files with a path containing these strings are very interesting."
+MatchLocation = "FilePath"
+WordListType = "Contains"
+MatchLength = 0
+WordList = [
+"control\\\\customsettings.ini"]
+Triage = "Red"

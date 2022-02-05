@@ -1,0 +1,15 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepSSHKeysByFileName"
+MatchAction = "Snaffle"
+Description = "SSHKeys"
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [
+    "id_rsa", 
+    "id_dsa", 
+    "id_ecdsa", 
+    "id_ed25519",
+    ]
+Triage = "Black"

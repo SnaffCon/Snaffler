@@ -100,8 +100,7 @@ MatchLocation = "FileName"
 WordListType = "Exact"
 MatchLength = 0
 WordList = [
-"\\.netrc", 
-"_netrc", 
+
 "\\.htpasswd", 
 "otr\\.private_key", 
 "\\.secret_token\\.rb", 
@@ -109,7 +108,6 @@ WordList = [
 "database\\.yml", 
 "omniauth\\.rb", 
 "settings\\.py", 
-"\\.agilekeychain", 
 "jenkins\\.plugins\\.publish_over_ssh\\.BapSshPublisherPlugin\\.xml", 
 "credentials\\.xml", 
 "LocalSettings\\.php", 
@@ -120,15 +118,6 @@ WordList = [
 "robomongo\\.json", 
 "filezilla\\.xml", 
 "recentservers\\.xml", 
-"\\.exports", 
-"\\.functions", 
-"\\.extra", 
-"\\.bash_history", 
-"\\.zsh_history", 
-"\\.sh_history", 
-"zhistory", 
-"\\.irb_history", 
-"\\.s3vfg", 
 "sftp-config\\.json", 
 "config\\.inc", 
 "config\\.php", 
@@ -138,81 +127,10 @@ WordList = [
 "\\.git-credentials", 
 "\\.gitconfig", 
 "\\.dockercfg", 
-"\\.npmrc", 
-"\\.env", 
-"\\.bashrc", 
-"\\.profile", 
-"\\.zshrc", 
 "key3\\.db", 
 "key4\\.db", 
 "Login Data"]
 Triage = "Red"
-
-[[ClassifierRules]]
-EnumerationScope = "FileEnumeration"
-RuleName = "KeepNameContainsGreen"
-MatchAction = "Snaffle"
-Description = "A description of what a rule does."
-MatchLocation = "FileName"
-WordListType = "Contains"
-MatchLength = 0
-WordList = ["passw", 
-"secret", 
-"thycotic", 
-"cyberark"]
-Triage = "Green"
-
-[[ClassifierRules]]
-EnumerationScope = "FileEnumeration"
-RuleName = "PyContentByExt"
-MatchAction = "Relay"
-RelayTargets = ["KeepPyRegexRed"]
-Description = "Files with these extensions will be searched for python related strings."
-MatchLocation = "FileExtension"
-WordListType = "Exact"
-MatchLength = 0
-WordList = ["\\.py"]
-Triage = "Green"
-
-[[ClassifierRules]]
-EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepPyRegexRed"
-MatchAction = "Snaffle"
-Description = "Files with contents matching these regexen are very interesting."
-MatchLocation = "FileContentAsString"
-WordListType = "Regex"
-MatchLength = 0
-WordList = ["mysql\\.connector\\.connect\\(", 
-"psycopg2\\.connect\\(", 
-"passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", 
-"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", 
-"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", 
-"aws[_\\-\\.]?key", 
-"[_\\-\\.]?api[_\\-\\.]?key", 
-"[_\\-\\.]oauth\\s*=", 
-"client_secret", 
-"secret[_\\-\\.]?(key)?\\s*=", 
-"-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", 
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)"]
-Triage = "Red"
-
-[[ClassifierRules]]
-EnumerationScope = "FileEnumeration"
-RuleName = "phpContentByExt"
-MatchAction = "Relay"
-RelayTargets = ["KeepPhpRegexRed"]
-Description = "Files with these extensions will be searched for php related strings."
-MatchLocation = "FileExtension"
-WordListType = "Exact"
-MatchLength = 0
-WordList = ["\\.php", 
-"\\.phtml", 
-"\\.inc", 
-"\\.php3", 
-"\\.php5", 
-"\\.php7"]
-Triage = "Green"
 
 [[ClassifierRules]]
 EnumerationScope = "ContentsEnumeration"
@@ -492,77 +410,6 @@ Triage = "Red"
 
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
-RuleName = "browerContentByName"
-MatchAction = "Relay"
-RelayTargets = ["KeepFFRegexRed"]
-Description = "Files with these extensions will be searched for Firefox/Thunderbird backups related strings."
-MatchLocation = "FileName"
-WordListType = "Exact"
-MatchLength = 0
-WordList = ["logins\\.json"]
-Triage = "Green"
-
-[[ClassifierRules]]
-EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepFFRegexRed"
-MatchAction = "Snaffle"
-Description = "Files with contents matching these regexes are very interesting."
-MatchLocation = "FileContentAsString"
-WordListType = "Regex"
-MatchLength = 0
-WordList = ["\"encryptedPassword\":\"[A-Za-z0-9+/=]+\""]
-Triage = "Red"
-
-[[ClassifierRules]]
-EnumerationScope = "FileEnumeration"
-RuleName = "Unattend.xml"
-MatchAction = "Relay"
-RelayTargets = ["KeepUnattendXmlRegexRed"]
-Description = "Look inside unattend.xml files for actual values."
-MatchLocation = "FileName"
-WordListType = "Exact"
-MatchLength = 0
-WordList = ["unattend\\.xml", 
-"Autounattend\\.xml"]
-Triage = "Green"
-
-[[ClassifierRules]]
-EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepUnattendXmlRegexRed"
-MatchAction = "Snaffle"
-Description = "Files with contents matching these regexen are very interesting."
-MatchLocation = "FileContentAsString"
-WordListType = "Regex"
-MatchLength = 0
-WordList = ["(?s)<AdministratorPassword>.{0,30}<Value>.*<\\/Value>", 
-"(?s)<AutoLogon>.{0,30}<Value>.*<\\/Value>"]
-Triage = "Red"
-
-[[ClassifierRules]]
-EnumerationScope = "FileEnumeration"
-RuleName = "RDPFile"
-MatchAction = "Relay"
-RelayTargets = ["KeepRdpPasswordRed"]
-Description = "Look inside unattend.xml files for actual values."
-MatchLocation = "FileExtension"
-WordListType = "Exact"
-MatchLength = 0
-WordList = ["\\.rdp"]
-Triage = "Green"
-
-[[ClassifierRules]]
-EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepRdpPasswordRed"
-MatchAction = "Snaffle"
-Description = "Files with contents matching these regexen are very interesting."
-MatchLocation = "FileContentAsString"
-WordListType = "Regex"
-MatchLength = 0
-WordList = ["password 51\\:b"]
-Triage = "Red"
-
-[[ClassifierRules]]
-EnumerationScope = "FileEnumeration"
 RuleName = "ConfigContentByExt"
 MatchAction = "Relay"
 RelayTargets = ["KeepConfigRegexRed"]
@@ -646,22 +493,6 @@ WordListType = "Regex"
 MatchLength = 0
 WordList = ["-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----"]
 Triage = "Red"
-
-[[ClassifierRules]]
-EnumerationScope = "FileEnumeration"
-RuleName = "KeepCertContainsPrivKeyYellow"
-MatchAction = "CheckForKeys"
-Description = "Files with these extensions will be parsed as x509 certificates to see if they have private keys."
-MatchLocation = "FileExtension"
-WordListType = "Exact"
-MatchLength = 0
-WordList = ["\\.pem", 
-"\\.der", 
-"\\.pfx", 
-"\\.pk12", 
-"\\.p12", 
-"\\.pkcs12"]
-Triage = "Yellow"
 
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"

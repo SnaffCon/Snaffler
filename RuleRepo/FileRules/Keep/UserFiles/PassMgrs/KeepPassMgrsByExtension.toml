@@ -12,5 +12,6 @@ WordList = [
     "\\.psafe3", 
     "\\.kwallet", 
     "\\.keychain",
+    "\\.agilekeychain", 
     ]
 Triage = "Black"

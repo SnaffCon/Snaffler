@@ -1,0 +1,22 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepFfLoginsJsonRelay"
+MatchAction = "Relay"
+RelayTargets = ["KeepFFRegexRed"]
+Description = "Files with these extensions will be searched for Firefox/Thunderbird backups related strings."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["logins\\.json"]
+Triage = "Green"
+
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepFFRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexes are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["\"encryptedPassword\":\"[A-Za-z0-9+/=]+\""]
+Triage = "Red"

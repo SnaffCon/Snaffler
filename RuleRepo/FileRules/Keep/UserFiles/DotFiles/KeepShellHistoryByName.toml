@@ -1,0 +1,17 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepShellHistoryByName"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [
+"\\.bash_history", 
+"\\.zsh_history", 
+"\\.sh_history",
+"zhistory", 
+"\\.irb_history",
+"ConsoleHost_History\\.txt"
+]
+Triage = "Yellow"

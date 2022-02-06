@@ -1,0 +1,13 @@
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepPyRegexRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = [
+    "mysql\\.connector\\.connect\\(", 
+    "psycopg2\\.connect\\(", 
+]
+Triage = "Red"

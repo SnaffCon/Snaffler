@@ -1,0 +1,22 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RDPFile"
+MatchAction = "Relay"
+RelayTargets = ["KeepRdpPasswordRed"]
+Description = "Look inside unattend.xml files for actual values."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.rdp"]
+Triage = "Green"
+
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepRdpPasswordRed"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["password 51\\:b"]
+Triage = "Red"

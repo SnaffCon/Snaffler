@@ -1,16 +1,13 @@
+
 [[ClassifierRules]]
 EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepPhpDbConnStrings"
+RuleName = "KeepCSharpDbConnStrings"
 MatchAction = "Snaffle"
 Description = "Files with contents matching these regexen are very interesting."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
 WordList = [
-    "mysql_connect\\s*\\(.*\\$.*\\)", 
-    "mysql_pconnect\\s*\\(.*\\$.*\\)", 
-    "mysql_change_user\\s*\\(.*\\$.*\\)", 
-    "pg_connect\\s*\\(.*\\$.*\\)", 
-    "pg_pconnect\\s*\\(.*\\$.*\\)"
+    "connectionstring.{1,200}passw"
 ]
 Triage = "Red"

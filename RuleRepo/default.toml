@@ -133,74 +133,6 @@ WordList = [
 Triage = "Red"
 
 [[ClassifierRules]]
-EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepPhpRegexRed"
-MatchAction = "Snaffle"
-Description = "Files with contents matching these regexen are very interesting."
-MatchLocation = "FileContentAsString"
-WordListType = "Regex"
-MatchLength = 0
-WordList = ["mysql_connect\\s*\\(.*\\$.*\\)", 
-"mysql_pconnect\\s*\\(.*\\$.*\\)", 
-"mysql_change_user\\s*\\(.*\\$.*\\)", 
-"pg_connect\\s*\\(.*\\$.*\\)", 
-"pg_pconnect\\s*\\(.*\\$.*\\)", 
-"passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", 
-"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", 
-"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", 
-"aws[_\\-\\.]?key", 
-"[_\\-\\.]?api[_\\-\\.]?key", 
-"[_\\-\\.]oauth\\s*=", 
-"client_secret", 
-"secret[_\\-\\.]?(key)?\\s*=", 
-"-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", 
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)"]
-Triage = "Red"
-
-[[ClassifierRules]]
-EnumerationScope = "FileEnumeration"
-RuleName = "csContentByExt"
-MatchAction = "Relay"
-RelayTargets = ["KeepCsRegexRed"]
-Description = "Files with these extensions will be searched for CSharp and ASP.NET related strings."
-MatchLocation = "FileExtension"
-WordListType = "Exact"
-MatchLength = 0
-WordList = ["\\.aspx", 
-"\\.ashx", 
-"\\.asmx", 
-"\\.asp", 
-"\\.cshtml", 
-"\\.cs", 
-"\\.ascx"]
-Triage = "Green"
-
-[[ClassifierRules]]
-EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepCsRegexRed"
-MatchAction = "Snaffle"
-Description = "Files with contents matching these regexen are very interesting."
-MatchLocation = "FileContentAsString"
-WordListType = "Regex"
-MatchLength = 0
-WordList = ["connectionstring.{1,200}passw", 
-"validationkey\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"decryptionkey\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", 
-"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", 
-"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", 
-"aws[_\\-\\.]?key", 
-"[_\\-\\.]?api[_\\-\\.]?key", 
-"[_\\-\\.]oauth\\s*=", 
-"client_secret", 
-"secret[_\\-\\.]?(key)?\\s*=", 
-"-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", 
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)"]
-Triage = "Red"
-
-[[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
 RuleName = "javaContentByExt"
 MatchAction = "Relay"
@@ -225,16 +157,7 @@ WordListType = "Regex"
 MatchLength = 0
 WordList = ["\\.getConnection\\(\\\"jdbc\\:", 
 "passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", 
-"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", 
-"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", 
-"aws[_\\-\\.]?key", 
-"[_\\-\\.]?api[_\\-\\.]?key", 
-"[_\\-\\.]oauth\\s*=", 
-"client_secret", 
-"secret[_\\-\\.]?(key)?\\s*=", 
-"-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", 
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)"]
+]
 Triage = "Red"
 
 [[ClassifierRules]]
@@ -258,17 +181,7 @@ MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
 WordList = ["DBI\\.connect\\(", 
-"passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", 
-"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", 
-"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", 
-"aws[_\\-\\.]?key", 
-"[_\\-\\.]?api[_\\-\\.]?key", 
-"[_\\-\\.]oauth\\s*=", 
-"client_secret", 
-"secret[_\\-\\.]?(key)?\\s*=", 
-"-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", 
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)"]
+]
 Triage = "Red"
 
 [[ClassifierRules]]
@@ -291,18 +204,9 @@ Description = "Files with contents matching these regexen are very interesting."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
-WordList = ["DBI\\-\\>connect\\(", 
-"passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", 
-"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", 
-"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", 
-"aws[_\\-\\.]?key", 
-"[_\\-\\.]?api[_\\-\\.]?key", 
-"[_\\-\\.]oauth\\s*=", 
-"client_secret", 
-"secret[_\\-\\.]?(key)?\\s*=", 
-"-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", 
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)"]
+WordList = [
+        "DBI\\-\\>connect\\(", 
+]
 Triage = "Red"
 
 [[ClassifierRules]]
@@ -315,9 +219,11 @@ Description = "Files with these extensions will be searched for PowerShell relat
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
-WordList = ["\\.psd1", 
-"\\.psm1", 
-"\\.ps1"]
+WordList = [
+        "\\.psd1", 
+        "\\.psm1", 
+        "\\.ps1"
+]
 Triage = "Green"
 
 [[ClassifierRules]]
@@ -328,20 +234,11 @@ Description = "Files with contents matching these regexen are very interesting."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
-WordList = ["-SecureString", 
+WordList = [
+        "-SecureString", 
 "-AsPlainText", 
 "\\[Net.NetworkCredential\\]::new\\(", 
-"passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"CREATE (USER|LOGIN) .{0,00} (IDENTIFIED BY|WITH PASSWORD)", 
-"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", 
-"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", 
-"aws[_\\-\\.]?key", 
-"[_\\-\\.]?api[_\\-\\.]?key", 
-"[_\\-\\.]oauth\\s*=", 
-"client_secret", 
-"secret[_\\-\\.]?(key)?\\s*=", 
-"-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", 
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)"]
+]
 Triage = "Red"
 
 [[ClassifierRules]]
@@ -353,7 +250,8 @@ Description = "Files with these extensions will be searched for cmd.exe/batch fi
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
-WordList = ["\\.bat", 
+WordList = [
+        "\\.bat", 
 "\\.cmd"]
 Triage = "Green"
 
@@ -365,11 +263,13 @@ Description = "Files with contents matching these regexen are very interesting."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
-WordList = ["passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
+WordList = [
+        "passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
 "schtasks.{1,300}(/rp\\s|/p\\s)", 
 "net user ", 
 "psexec .{0,100} -p ", 
-"net use .{0,300} /user:"]
+"net use .{0,300} /user:"
+]
 Triage = "Red"
 
 [[ClassifierRules]]
@@ -381,9 +281,11 @@ Description = "Files with these extensions will be searched for Bash related str
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
-WordList = ["\\.sh", 
+WordList = [
+        "\\.sh", 
 "\\.rc", 
-"\\.profile"]
+"\\.profile"
+]
 Triage = "Green"
 
 [[ClassifierRules]]
@@ -394,18 +296,9 @@ Description = "Files with contents matching these regexen are very interesting."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
-WordList = ["sshpass.{1,300}-p", 
-"passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", 
-"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", 
-"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", 
-"aws[_\\-\\.]?key", 
-"[_\\-\\.]?api[_\\-\\.]?key", 
-"[_\\-\\.]oauth\\s*=", 
-"client_secret", 
-"secret[_\\-\\.]?(key)?\\s*=", 
-"-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", 
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)"]
+WordList = [
+        "sshpass.{1,300}-p", 
+]
 Triage = "Red"
 
 [[ClassifierRules]]
@@ -417,7 +310,8 @@ Description = "Files with these extensions will be subjected to a generic search
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
-WordList = ["\\.yaml", 
+WordList = [
+        "\\.yaml", 
 "\\.yml", 
 "\\.toml", 
 "\\.xml", 
@@ -436,7 +330,8 @@ WordList = ["\\.yaml",
 "\\.sqlite", 
 "\\.sqlite3", 
 "\\.fdb", 
-"\\.tfvars"]
+"\\.tfvars"
+]
 Triage = "Green"
 
 [[ClassifierRules]]
@@ -447,21 +342,11 @@ Description = "A description of what a rule does."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
-WordList = ["sqlconnectionstring\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
+WordList = [
+        "sqlconnectionstring\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
 "connectionstring\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
 "validationkey\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"decryptionkey\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....", 
-"CREATE (USER|LOGIN) .{0,200} (IDENTIFIED BY|WITH PASSWORD)", 
-"(xox[pboa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})", 
-"https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}", 
-"aws[_\\-\\.]?key", 
-"[_\\-\\.]?api[_\\-\\.]?key", 
-"[_\\-\\.]oauth\\s*=", 
-"client_secret", 
-"secret[_\\-\\.]?(key)?\\s*=", 
-"-----BEGIN( RSA| OPENSSH| DSA| EC| PGP)? PRIVATE KEY( BLOCK)?-----", 
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)", 
+"decryptionkey\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
 "NVRAM config last updated", 
 "enable password \\.", 
 "simple-bind authenticated encrypt", 
@@ -477,10 +362,12 @@ Description = "Files ending like this will be grepped for private keys."
 MatchLocation = "FileName"
 WordListType = "EndsWith"
 MatchLength = 0
-WordList = ["_rsa", 
+WordList = [
+        "_rsa", 
 "_dsa", 
 "_ed25519", 
-"_ecdsa"]
+"_ecdsa"
+]
 Triage = "Green"
 
 [[ClassifierRules]]

@@ -5,7 +5,7 @@ MatchAction = "Relay"
 RelayTargets = [
     "KeepPyDbConnStrings", # Python-Specific
     "KeepAwsKeysInCode",     # Generic Code Rule
-    "KeepINlinePrivateKey",  # Generic Code Rule
+    "KeepInlinePrivateKey",  # Generic Code Rule
     "KeepPassOrKeyInCode",   # Generic Code Rule
     "KeepSlackTokensInCode", # Generic Code Rule
     "KeepSqlAccountCreation" # Generic Code Rule

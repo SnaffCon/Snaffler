@@ -1,13 +1,11 @@
 [[ClassifierRules]]
 EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepPyDbConnStrings"
+RuleName = "KeepRubyDbConnStrings"
 MatchAction = "Snaffle"
 Description = "Files with contents matching these regexen are very interesting."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
-WordList = [
-    "mysql\\.connector\\.connect\\(", 
-    "psycopg2\\.connect\\(", 
+WordList = ["DBI\\.connect\\(", 
 ]
 Triage = "Red"

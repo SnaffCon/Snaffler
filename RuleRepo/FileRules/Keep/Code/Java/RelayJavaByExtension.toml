@@ -1,28 +1,21 @@
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
-RuleName = "RelayCSharpByExtension"
+RuleName = "RelayJavaByExtension"
 MatchAction = "Relay"
 RelayTargets = [
-    "KeepCSharpDbConnStrings",
-    "KeepCSharpViewstateKeys",
+        "KeepJavaDbConnStrings",
     "KeepAwsKeysInCode",     # Generic Code Rule
     "KeepInlinePrivateKey",  # Generic Code Rule
     "KeepPassOrKeyInCode",   # Generic Code Rule
     "KeepSlackTokensInCode", # Generic Code Rule
     "KeepSqlAccountCreation" # Generic Code Rule
-]
-Description = "Files with these extensions will be searched for CSharp and ASP.NET related strings."
+    ]
+Description = "Files with these extensions will be searched for Java and ColdFusion related strings."
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
-WordList = [
-    "\\.aspx", 
-    "\\.ashx", 
-    "\\.asmx", 
-    "\\.asp", 
-    "\\.cshtml", 
-    "\\.cs", 
-    "\\.ascx",
-    "\\.config"
-]
+WordList = ["\\.jsp", 
+"\\.do", 
+"\\.java", 
+"\\.cfm"]
 Triage = "Green"

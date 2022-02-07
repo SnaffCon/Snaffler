@@ -1,17 +1,16 @@
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
-RuleName = "KeepDbMgtConfigByName"
+RuleName = "KeepRubyByName"
 MatchAction = "Snaffle"
 Description = "Files with these exact names are very interesting."
 MatchLocation = "FileName"
 WordListType = "Exact"
 MatchLength = 0
 WordList = [
-"SqlStudio\\.bin", 
-"\\.mysql_history", 
-"\\.psql_history", 
-"\\.pgpass", 
-"\\.dbeaver-data-sources\\.xml",
-"robomongo\\.json", 
+"database\\.yml", 
+"\\.secret_token\\.rb",
+"knife\\.rb", 
+"carrierwave\\.rb", 
+"omniauth\\.rb", 
 ]
 Triage = "Red"

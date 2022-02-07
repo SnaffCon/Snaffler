@@ -14,4 +14,4 @@ WordList = [
 "\\.irb_history",
 "ConsoleHost_History\\.txt"
 ]
-Triage = "Yellow"
+Triage = "Green"

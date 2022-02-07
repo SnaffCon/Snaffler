@@ -1,28 +1,21 @@
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
-RuleName = "RelayCSharpByExtension"
+RuleName = "RelayCmdByExtension"
 MatchAction = "Relay"
 RelayTargets = [
-    "KeepCSharpDbConnStrings",
-    "KeepCSharpViewstateKeys",
+    "KeepCmdCredentials",
     "KeepAwsKeysInCode",     # Generic Code Rule
     "KeepInlinePrivateKey",  # Generic Code Rule
     "KeepPassOrKeyInCode",   # Generic Code Rule
     "KeepSlackTokensInCode", # Generic Code Rule
     "KeepSqlAccountCreation" # Generic Code Rule
-]
-Description = "Files with these extensions will be searched for CSharp and ASP.NET related strings."
+    ]
+Description = "Files with these extensions will be searched for cmd.exe/batch file related strings."
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
 WordList = [
-    "\\.aspx", 
-    "\\.ashx", 
-    "\\.asmx", 
-    "\\.asp", 
-    "\\.cshtml", 
-    "\\.cs", 
-    "\\.ascx",
-    "\\.config"
+        "\\.bat", 
+        "\\.cmd"
 ]
 Triage = "Green"

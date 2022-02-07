@@ -1,0 +1,85 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepPathContainsRed"
+MatchAction = "Snaffle"
+Description = "Files with a path containing these strings are very interesting."
+MatchLocation = "FilePath"
+WordListType = "Contains"
+MatchLength = 0
+WordList = [
+"\\\\.purple\\\\accounts.xml", 
+"\\\\.gem\\\\credentials", 
+"config\\\\hub", 
+]
+Triage = "Red"
+
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepConfigRegexRed"
+MatchAction = "Snaffle"
+Description = "A description of what a rule does."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = [
+"NVRAM config last updated", 
+"enable password \\.", 
+"simple-bind authenticated encrypt", 
+]
+Triage = "Red"
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepExtExactYellow"
+MatchAction = "Snaffle"
+Description = "Files with these extensions are a little interesting."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [
+"\\.key", 
+"\\.keypair", 
+"\\.jks", 
+"\\.wim", 
+"\\.ova", 
+"\\.ovf"]
+Triage = "Yellow"
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepFilenameExactRed"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [
+"otr\\.private_key", 
+"Favorites\\.plist", 
+"proxy\\.config", 
+"keystore", 
+"keyring", 
+"\\.gitconfig", 
+"\\.dockercfg", 
+"key3\\.db", 
+"key4\\.db", 
+"Login Data"]
+Triage = "Green"
+
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepConfigRegexRed"
+MatchAction = "Snaffle"
+Description = "A description of what a rule does."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = [
+"NVRAM config last updated", 
+"enable password \\.", 
+"simple-bind authenticated encrypt", 
+]
+Triage = "Red"
+
+
+[DfsSharesDict]

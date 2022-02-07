@@ -18,4 +18,4 @@ WordList = [
 "\\.profile", 
 "\\.zshrc", 
 ]
-Triage = "Yellow"
+Triage = "Green"

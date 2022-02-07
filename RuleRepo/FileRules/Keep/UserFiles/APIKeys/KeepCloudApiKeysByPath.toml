@@ -8,6 +8,6 @@ WordListType = "Contains"
 MatchLength = 0
 WordList = [
 "\\\\\\.aws\\\\", 
-"doctl\\\\config.yaml", 
+"doctl\\\\config.yaml",
 ]
 Triage = "Black"

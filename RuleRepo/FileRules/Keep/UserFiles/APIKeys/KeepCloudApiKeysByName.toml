@@ -1,17 +1,12 @@
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
-RuleName = "KeepDbMgtConfigByName"
+RuleName = "KeepCloudApiKeysByName"
 MatchAction = "Snaffle"
 Description = "Files with these exact names are very interesting."
 MatchLocation = "FileName"
 WordListType = "Exact"
 MatchLength = 0
 WordList = [
-"SqlStudio\\.bin", 
-"\\.mysql_history", 
-"\\.psql_history", 
-"\\.pgpass", 
-"\\.dbeaver-data-sources\\.xml",
-"robomongo\\.json", 
+"\\.tugboat",
 ]
-Triage = "Red"
+Triage = "Black"

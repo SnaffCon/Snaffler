@@ -1,13 +1,12 @@
 [[ClassifierRules]]
 EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepPyDbConnStrings"
+RuleName = "KeepCyberArkCredFile"
 MatchAction = "Snaffle"
-Description = "Files with contents matching these regexen are very interesting."
+Description = "A description of what a rule does."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
 WordList = [
-    "mysql\\.connector\\.connect\\(", 
-    "psycopg2\\.connect\\(", 
+        "CredFileType="
 ]
 Triage = "Red"

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using static SnaffCore.Config.Options;
 
-namespace Classifiers
+namespace SnaffCore.Classifiers
 {
     public class TextClassifier
     {

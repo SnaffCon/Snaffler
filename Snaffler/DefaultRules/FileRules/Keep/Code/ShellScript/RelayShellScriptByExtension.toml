@@ -2,7 +2,8 @@
 EnumerationScope = "FileEnumeration"
 RuleName = "RelayShellScriptByExtension"
 MatchAction = "Relay"
-RelayTargets = ["KeepShellScriptCredentials",
+RelayTargets = [
+#"KeepShellScriptCredentials",
 "KeepAwsKeysInCode",
 "KeepInlinePrivateKey",
 "KeepPassOrKeyInCode",  "KeepSlackTokensInCode",

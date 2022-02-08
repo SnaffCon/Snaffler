@@ -8,7 +8,7 @@ using System.IO;
 using System.Security.Cryptography;
 using SnaffCore;
 
-namespace Classifiers
+namespace SnaffCore.Classifiers
 {
     public class ArchiveClassifier
     {

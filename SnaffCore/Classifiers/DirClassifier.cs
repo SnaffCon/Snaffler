@@ -1,6 +1,6 @@
 ﻿using SnaffCore.Concurrency;
 
-namespace Classifiers
+namespace SnaffCore.Classifiers
 {
     public class DirClassifier
     {

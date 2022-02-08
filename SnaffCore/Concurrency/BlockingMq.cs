@@ -1,4 +1,4 @@
-﻿using Classifiers;
+﻿using SnaffCore.Classifiers;
 using System;
 using System.Collections.Concurrent;
 

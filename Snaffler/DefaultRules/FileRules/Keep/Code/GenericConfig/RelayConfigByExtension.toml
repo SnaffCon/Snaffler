@@ -2,10 +2,12 @@
 EnumerationScope = "FileEnumeration"
 RuleName = "RelayConfigByExtension"
 MatchAction = "Relay"
-RelayTargets = ["KeepAwsKeysInCode",
+RelayTargets = [
+"KeepAwsKeysInCode",
 "KeepInlinePrivateKey",
-"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
-"KeepSqlAccountCreation"     ]
+"KeepPassOrKeyInCode",  
+"KeepSlackTokensInCode",
+"KeepSqlAccountCreation"]
 Description = "Files with these extensions will be subjected to a generic search for keys and such."
 MatchLocation = "FileExtension"
 WordListType = "Exact"

@@ -1,0 +1,15 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayPythonByExtension"
+MatchAction = "Relay"
+RelayTargets = ["KeepPyDbConnStrings",
+"KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
+"KeepSqlAccountCreation" ]
+Description = "Files with these extensions will be searched for python related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.py"]
+Triage = "Green"

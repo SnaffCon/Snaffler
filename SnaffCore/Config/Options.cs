@@ -87,12 +87,12 @@ namespace SnaffCore.Config
             "scom",
             "opsmgr",
             "adm",
+            "adcs",
             "MSOL",
             "adsync",
             "thycotic",
             "secretserver",
             "cyberark",
-            "sccm",
             "configmgr"
         };
 

@@ -1,0 +1,10 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepRemoteAccessConfByExtension"
+MatchAction = "Snaffle"
+Description = "Files with these extensions are a little interesting."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.rdg"]
+Triage = "Yellow"

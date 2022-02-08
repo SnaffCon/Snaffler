@@ -1,0 +1,15 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayCertByExtension"
+MatchAction = "CheckForKeys"
+Description = "Files with these extensions will be parsed as x509 certificates to see if they have private keys."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.pem",
+"\\.der",
+"\\.pfx",
+"\\.pk12",
+"\\.p12",
+"\\.pkcs12"]
+Triage = "Red"

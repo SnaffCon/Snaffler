@@ -1,0 +1,28 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayShellScriptByExtension"
+MatchAction = "Relay"
+RelayTargets = ["KeepShellScriptCredentials",
+"KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
+"KeepSqlAccountCreation" ]
+Description = "Files with these extensions will be searched for Bash related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [    "\\.netrc",
+"\\.exports",
+"\\.functions",
+"\\.extra",
+"\\.npmrc",
+"\\.env",
+"\\.bashrc",
+"\\.profile",
+"\\.zshrc",
+"\\.bash_history",
+"\\.zsh_history",
+"\\.sh_history",
+"zhistory",
+"\\.irb_history"]
+Triage = "Green"

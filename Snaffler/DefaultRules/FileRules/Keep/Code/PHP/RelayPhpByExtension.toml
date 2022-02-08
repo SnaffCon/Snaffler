@@ -1,0 +1,20 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayPhpByExtension"
+MatchAction = "Relay"
+RelayTargets = ["KeepPhpDbConnStrings",
+"KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
+"KeepSqlAccountCreation" ]
+Description = "Files with these extensions will be searched for php related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.php",
+"\\.phtml",
+"\\.inc",
+"\\.php3",
+"\\.php5",
+"\\.php7"]
+Triage = "Green"

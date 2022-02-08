@@ -129,7 +129,7 @@ namespace SnaffCore.Config
         }
         public void BuildDefaultClassifiers()
         {
-this.ClassifierRules = new List<ClassifierRule>();
+            this.ClassifierRules = new List<ClassifierRule>();
             BuildShareRules();
             BuildPathRules();
             BuildFileDiscardRules();

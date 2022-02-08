@@ -1,0 +1,10 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepCloudApiKeysByName"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.tugboat"]
+Triage = "Black"

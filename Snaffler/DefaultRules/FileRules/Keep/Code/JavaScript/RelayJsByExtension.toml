@@ -1,0 +1,22 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayJsByExtension"
+MatchAction = "Relay"
+RelayTargets = ["KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
+"KeepSqlAccountCreation" ]
+Description = "Files with these extensions will be searched for JavaScript related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.js",
+"\\.cjs",
+"\\.mjs",
+"\\.cs",
+"\\.ts",
+"\\.tsx",
+"\\.ls",
+"\\.es6",
+"\\.es"]
+Triage = "Green"

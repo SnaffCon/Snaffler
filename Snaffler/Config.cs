@@ -4,7 +4,10 @@ using NLog;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Snaffler
 {
@@ -127,6 +130,34 @@ namespace Snaffler
 
                 if (parsedConfig.ClassifierRules.Count <= 0)
                 {
+                    string[] tomlfiles = Directory.GetFiles("C:\\users\\mike.loss\\desktop\\Snaffler\\snaffler\\DefaultRules", "*.toml", SearchOption.AllDirectories);
+
+                    StringBuilder sb = new StringBuilder();
+
+                    foreach (string path in tomlfiles)
+                    {
+                        try
+                        {
+                            string text = File.ReadAllText(path);
+                            sb.AppendLine(text);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(path);
+                            Console.WriteLine(e.ToString());
+                        }
+                    }
+
+                    string bulktoml = sb.ToString();
+                    Console.WriteLine(bulktoml);
+
+
+                    List<Classifiers.ClassifierRule> classifierRules = Toml.ReadString<List<Classifiers.ClassifierRule>>(bulktoml, settings);
+
+                    Console.WriteLine(classifierRules.Count.ToString() + " classifier rules parsed.");
+
+                    Console.ReadLine();
+
                     parsedConfig.BuildDefaultClassifiers();
                 }
                 // get the args into our config

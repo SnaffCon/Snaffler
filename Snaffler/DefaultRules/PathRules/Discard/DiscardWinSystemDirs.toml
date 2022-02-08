@@ -1,0 +1,28 @@
+[[ClassifierRules]]
+EnumerationScope = "DirectoryEnumeration"
+RuleName = "DiscardWinSystemDirs"
+MatchAction = "Discard"
+Description = "File paths that will be skipped entirely."
+MatchLocation = "FilePath"
+WordListType = "Contains"
+MatchLength = 0
+WordList = ["\\\\winsxs\\\\",
+"\\\\syswow64\\\\",
+"\\\\system32\\\\",
+"\\\\systemapps\\\\",
+"\\\\windows\\\\servicing",
+"\\\\servicing\\\\",
+"Microsoft\\.NET\\\\Framework",
+"windows\\\\immersivecontrolpanel",
+"windows\\\\diagnostics",
+"windows\\\\debug",
+"locale\\\\",
+"chocolatey\\\\helpers",
+"sources\\\\sxs",
+"localization\\\\",
+"\\\\AppData\\\\Local\\\\Microsoft\\\\",
+"\\\\AppData\\\\Roaming\\\\Microsoft\\\\",
+"\\\\wsuscontent",
+"\\\\Application Data\\\\Microsoft\\\\CLR Security Config\\\\",
+"\\\\servicing\\\\LCU\\\\"]
+Triage = "Green"

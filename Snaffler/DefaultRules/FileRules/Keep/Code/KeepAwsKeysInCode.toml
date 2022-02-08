@@ -1,6 +1,6 @@
 [[ClassifierRules]]
 EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepPyAwsKeys"
+RuleName = "KeepAwsKeysInCode"
 MatchAction = "Snaffle"
 Description = "Files with contents matching these regexen are very interesting."
 MatchLocation = "FileContentAsString"

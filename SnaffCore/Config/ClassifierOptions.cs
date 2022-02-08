@@ -1,4 +1,4 @@
-﻿using Classifiers;
+﻿using SnaffCore.Classifiers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -98,43 +98,47 @@ namespace SnaffCore.Config
              * Keep all discard & archive parsing rules.
              * Else, if rule (or child rule, recursive) interest level is lower than provided (0 default), then discard
              */
-            if (classifier.RelayTargets != null)
+            try
             {
-                int max = 0;
-                foreach (string relayTarget in classifier.RelayTargets)
+
+                if (classifier.RelayTargets != null)
                 {
-                    ClassifierRule relayRule = ClassifierRules.First(thing => thing.RuleName == relayTarget);
-                    if (
-                        (relayRule.Triage == Triage.Black && InterestLevel >3) ||
-                        (relayRule.Triage == Triage.Red && InterestLevel > 2) ||
-                    (relayRule.Triage == Triage.Yellow && InterestLevel > 1) ||
-                    (relayRule.Triage == Triage.Green && InterestLevel > 0))
+                    int max = 0;
+                    foreach (string relayTarget in classifier.RelayTargets)
                     {
-                        return true;
+                        ClassifierRule relayRule = ClassifierRules.First(thing => thing.RuleName == relayTarget);
+                        if (
+                            (relayRule.Triage == Triage.Black && InterestLevel > 3) ||
+                            (relayRule.Triage == Triage.Red && InterestLevel > 2) ||
+                        (relayRule.Triage == Triage.Yellow && InterestLevel > 1) ||
+                        (relayRule.Triage == Triage.Green && InterestLevel > 0))
+                        {
+                            return true;
+                        }
                     }
                 }
+
+
+                bool actualThing = !(
+                    (
+                        classifier.MatchAction == MatchAction.Snaffle ||
+                        classifier.MatchAction == MatchAction.CheckForKeys
+                    ) &&
+                    (
+                    (classifier.Triage == Triage.Black && InterestLevel > 3) ||
+                        (classifier.Triage == Triage.Red && InterestLevel > 2) ||
+                        (classifier.Triage == Triage.Yellow && InterestLevel > 1) ||
+                        (classifier.Triage == Triage.Green && InterestLevel > 0)
+                    )
+                );
+                return actualThing;
             }
-            return !(
-                (
-                    classifier.MatchAction == MatchAction.Snaffle ||
-                    classifier.MatchAction == MatchAction.CheckForKeys
-                ) &&
-                (
-                (classifier.Triage == Triage.Black && InterestLevel > 3) ||
-                    (classifier.Triage == Triage.Red && InterestLevel > 2) ||
-                    (classifier.Triage == Triage.Yellow && InterestLevel > 1) ||
-                    (classifier.Triage == Triage.Green && InterestLevel > 0)
-                )
-            );
-        }
-        public void BuildDefaultClassifiers()
-        {
-            this.ClassifierRules = new List<ClassifierRule>();
-            BuildShareRules();
-            BuildPathRules();
-            BuildFileDiscardRules();
-            BuildFileNameRules();
-            BuildFileContentRules();
+            catch (Exception e)
+            {
+                Console.WriteLine(classifier.RuleName);
+                Console.WriteLine(e.ToString());
+            }
+            return true;
         }
     }
 }

@@ -4,10 +4,11 @@ using NLog;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using System;
-using System.Collections.Generic;
+using System.Resources;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 
 namespace Snaffler
 {
@@ -35,6 +36,21 @@ namespace Snaffler
 
             Mq.Info("Parsed args successfully.");
             return options;
+        }
+
+
+        public static string ReadResource(string name)
+        {
+            // Determine path
+            var assembly = Assembly.GetExecutingAssembly();
+            string resourcePath = name;
+            // Format: "{Namespace}.{Folder}.{filename}.{Extension}"
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourcePath))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                return reader.ReadToEnd();
+            }
         }
 
         private static Options ParseImpl(string[] args)
@@ -130,35 +146,28 @@ namespace Snaffler
 
                 if (parsedConfig.ClassifierRules.Count <= 0)
                 {
-                    string[] tomlfiles = Directory.GetFiles("C:\\users\\mike.loss\\desktop\\Snaffler\\snaffler\\DefaultRules", "*.toml", SearchOption.AllDirectories);
-
+                    // get all the embedded toml file resources
+                    string[] resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
                     StringBuilder sb = new StringBuilder();
-
-                    foreach (string path in tomlfiles)
+                    
+                    foreach (string resourceName in resourceNames)
                     {
-                        try
+                        if (resourceName == "Snaffler.Properties.Resources.resources")
                         {
-                            string text = File.ReadAllText(path);
-                            sb.AppendLine(text);
+                            // skip this one as it's just metadata
+                            continue;
                         }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(path);
-                            Console.WriteLine(e.ToString());
-                        }
+                        string ruleFile = ReadResource(resourceName);
+                        sb.AppendLine(ruleFile);
                     }
-
+                    
                     string bulktoml = sb.ToString();
-                    Console.WriteLine(bulktoml);
 
+                    // deserialise the toml to an actual ruleset
+                    RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
 
-                    List<Classifiers.ClassifierRule> classifierRules = Toml.ReadString<List<Classifiers.ClassifierRule>>(bulktoml, settings);
-
-                    Console.WriteLine(classifierRules.Count.ToString() + " classifier rules parsed.");
-
-                    Console.ReadLine();
-
-                    parsedConfig.BuildDefaultClassifiers();
+                    // stick the rules in our config!
+                    parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
                 }
                 // get the args into our config
 
@@ -320,7 +329,6 @@ namespace Snaffler
 
             return parsedConfig;
         }
-
 
 
     }

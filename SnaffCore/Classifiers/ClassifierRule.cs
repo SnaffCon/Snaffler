@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Classifiers
+namespace SnaffCore.Classifiers
 {
     public class ClassifierRule
     {

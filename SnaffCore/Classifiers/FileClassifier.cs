@@ -14,7 +14,7 @@ using System.Text.RegularExpressions;
 using static SnaffCore.Config.Options;
 using SnaffCore.Classifiers.EffectiveAccess;
 
-namespace Classifiers
+namespace SnaffCore.Classifiers
 {
     public class FileClassifier
     {

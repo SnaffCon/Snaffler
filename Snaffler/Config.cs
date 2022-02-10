@@ -152,7 +152,7 @@ namespace Snaffler
                     
                     foreach (string resourceName in resourceNames)
                     {
-                        if (resourceName == "Snaffler.Properties.Resources.resources")
+                        if (!resourceName.EndsWith(".toml"))
                         {
                             // skip this one as it's just metadata
                             continue;

@@ -92,7 +92,8 @@ namespace Snaffler
             SwitchArgument findSharesOnlyArg = new SwitchArgument('a', "sharesonly",
                 "Stops after finding shares, doesn't walk their filesystems.", false);
             ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "Computer (or comma separated list) to target.");
-            // list of letters i haven't used yet: egknpqw
+            ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
+            // list of letters i haven't used yet: egknqw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(configFileArg);
@@ -114,6 +115,7 @@ namespace Snaffler
             parser.Arguments.Add(findSharesOnlyArg);
             parser.Arguments.Add(maxThreadsArg);
             parser.Arguments.Add(compTargetArg);
+            parser.Arguments.Add(ruleDirArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -142,6 +144,23 @@ namespace Snaffler
                         Mq.Info("Read config file from " + configFile);
                         return parsedConfig;
                     }
+                }
+
+                if (ruleDirArg.Parsed && !String.IsNullOrWhiteSpace(ruleDirArg.Value))
+                {
+                    string[] tomlfiles = Directory.GetFiles(ruleDirArg.Value, "*.toml", SearchOption.AllDirectories);
+                    StringBuilder sb = new StringBuilder();
+                    foreach (string tomlfile in tomlfiles)
+                    {
+                        string tomlstring = File.ReadAllText(tomlfile);
+                        sb.AppendLine(tomlstring);
+                    }
+                    string bulktoml = sb.ToString();
+                    // deserialise the toml to an actual ruleset
+                    RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
+
+                    // stick the rules in our config!
+                    parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
                 }
 
                 if (parsedConfig.ClassifierRules.Count <= 0)

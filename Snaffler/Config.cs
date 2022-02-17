@@ -134,60 +134,11 @@ namespace Snaffler
             {
                 parser.ParseCommandLine(args);
 
-                if (configFileArg.Parsed)
-                {
-                    if (!configFileArg.Value.Equals("generate"))
-                    {
-                        string configFile = configFileArg.Value;
-                        parsedConfig = Toml.ReadFile<Options>(configFile, settings);
-                        parsedConfig.PrepareClassifiers();
-                        Mq.Info("Read config file from " + configFile);
-                        return parsedConfig;
-                    }
-                }
-
                 if (ruleDirArg.Parsed && !String.IsNullOrWhiteSpace(ruleDirArg.Value))
                 {
-                    string[] tomlfiles = Directory.GetFiles(ruleDirArg.Value, "*.toml", SearchOption.AllDirectories);
-                    StringBuilder sb = new StringBuilder();
-                    foreach (string tomlfile in tomlfiles)
-                    {
-                        string tomlstring = File.ReadAllText(tomlfile);
-                        sb.AppendLine(tomlstring);
-                    }
-                    string bulktoml = sb.ToString();
-                    // deserialise the toml to an actual ruleset
-                    RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
-
-                    // stick the rules in our config!
-                    parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
+                    parsedConfig.RuleDir = ruleDirArg.Value;
                 }
 
-                if (parsedConfig.ClassifierRules.Count <= 0)
-                {
-                    // get all the embedded toml file resources
-                    string[] resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-                    StringBuilder sb = new StringBuilder();
-                    
-                    foreach (string resourceName in resourceNames)
-                    {
-                        if (!resourceName.EndsWith(".toml"))
-                        {
-                            // skip this one as it's just metadata
-                            continue;
-                        }
-                        string ruleFile = ReadResource(resourceName);
-                        sb.AppendLine(ruleFile);
-                    }
-                    
-                    string bulktoml = sb.ToString();
-
-                    // deserialise the toml to an actual ruleset
-                    RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
-
-                    // stick the rules in our config!
-                    parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
-                }
                 // get the args into our config
 
                 // output args
@@ -324,10 +275,16 @@ namespace Snaffler
                     if (configFileArg.Value.Equals("generate"))
                     {
                         Toml.WriteFile(parsedConfig, ".\\default.toml", settings);
-                        Mq.Info("Wrote default config values to .\\default.toml");
-                        Mq.Terminate();
+                        Console.WriteLine("Wrote config values to .\\default.toml");
                         parsedConfig.LogToConsole = true;
                         Mq.Degub("Enabled logging to stdout.");
+                        Environment.Exit(0);
+                    }
+                    else
+                    {
+                        string configFile = configFileArg.Value;
+                        parsedConfig = Toml.ReadFile<Options>(configFile, settings);
+                        Mq.Info("Read config file from " + configFile);
                     }
                 }
 
@@ -336,6 +293,51 @@ namespace Snaffler
                     Mq.Error(
                         "\nYou didn't enable output to file or to the console so you won't see any results or debugs or anything. Your l0ss.");
                     throw new ArgumentException("Pointless argument combination.");
+                }
+
+                if (parsedConfig.ClassifierRules.Count <= 0)
+                {
+                    if (String.IsNullOrWhiteSpace(parsedConfig.RuleDir))
+                        {
+                        // get all the embedded toml file resources
+                        string[] resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+                        StringBuilder sb = new StringBuilder();
+
+                        foreach (string resourceName in resourceNames)
+                        {
+                            if (!resourceName.EndsWith(".toml"))
+                            {
+                                // skip this one as it's just metadata
+                                continue;
+                            }
+                            string ruleFile = ReadResource(resourceName);
+                            sb.AppendLine(ruleFile);
+                        }
+
+                        string bulktoml = sb.ToString();
+
+                        // deserialise the toml to an actual ruleset
+                        RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
+
+                        // stick the rules in our config!
+                        parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
+                    }
+                    else
+                    {
+                        string[] tomlfiles = Directory.GetFiles(parsedConfig.RuleDir, "*.toml", SearchOption.AllDirectories);
+                        StringBuilder sb = new StringBuilder();
+                        foreach (string tomlfile in tomlfiles)
+                        {
+                            string tomlstring = File.ReadAllText(tomlfile);
+                            sb.AppendLine(tomlstring);
+                        }
+                        string bulktoml = sb.ToString();
+                        // deserialise the toml to an actual ruleset
+                        RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
+
+                        // stick the rules in our config!
+                        parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
+                    }
                 }
 
                 parsedConfig.PrepareClassifiers();

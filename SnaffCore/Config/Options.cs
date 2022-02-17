@@ -18,9 +18,11 @@ namespace SnaffCore.Config
         public int InterestLevel { get; set; } = 0;
         public bool DfsOnly { get; set; } = false;
         public bool DfsShareDiscovery { get; set; } = false;
+        [Nett.TomlIgnore]
         public Dictionary<string, string> DfsSharesDict { get; set; } = new Dictionary<string, string>();
         public List<string> DfsNamespacePaths { get; set; } = new List<string>();
         public string CurrentUser { get; set; } = WindowsIdentity.GetCurrent().Name;
+        public string RuleDir { get; set; }
 
         // Concurrency Options
         public int MaxThreads { get; set; } = 60;

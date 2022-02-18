@@ -1,3 +1,4 @@
 [submodule "Snaffler/SnaffRules"]
 	path = Snaffler/SnaffRules
 	url = https://github.com/SnaffCon/SnaffRules.git
+	branch = main

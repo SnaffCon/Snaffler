@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace Snaffler
 {
@@ -319,6 +320,7 @@ namespace Snaffler
                 {
                     matchedstring = message.FileResult.TextResult.MatchedStrings[0];
                     matchcontext = message.FileResult.TextResult.MatchContext;
+                    matchcontext = Regex.Replace(matchcontext, @"\r\n?|\n", "\\n"); // Replace newlines with \n for consistent log lines
                 }
 
                 return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, canmodify, matchedstring, fileSizeString, modifiedStamp,

@@ -1,0 +1,16 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayCmdByExtension"
+MatchAction = "Relay"
+RelayTargets = ["KeepCmdCredentials",
+"KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
+"KeepSqlAccountCreation"]
+Description = "Files with these extensions will be searched for cmd.exe/batch file related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.bat",
+"\\.cmd"]
+Triage = "Green"

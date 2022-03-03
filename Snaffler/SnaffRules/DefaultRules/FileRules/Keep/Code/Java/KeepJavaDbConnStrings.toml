@@ -1,0 +1,11 @@
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepJavaDbConnStrings"
+MatchAction = "Snaffle"
+Description = "Files with contents matching these regexen are very interesting."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["\\.getConnection\\(\\\"jdbc\\:",
+"passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]...."]
+Triage = "Red"

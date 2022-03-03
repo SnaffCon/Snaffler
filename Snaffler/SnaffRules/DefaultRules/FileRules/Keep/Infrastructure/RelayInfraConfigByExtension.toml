@@ -1,0 +1,22 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayInfraConfigByExtension"
+MatchAction = "Relay"
+RelayTargets = [
+"KeepNetConfigCreds"
+]
+Description = "Files with these extensions will be subjected to a generic search for keys and such."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [
+"\\.xml",
+"\\.json",
+"\\.config",
+"\\.ini",
+"\\.inf",
+"\\.cnf",
+"\\.conf",
+"\\.txt"
+]
+Triage = "Green"

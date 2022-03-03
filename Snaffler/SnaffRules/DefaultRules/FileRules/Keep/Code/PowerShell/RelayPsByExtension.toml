@@ -1,0 +1,20 @@
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayPsByExtension"
+MatchAction = "Relay"
+RelayTargets = ["KeepPsCredentials",
+"KeepCmdCredentials",
+"KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
+"KeepSqlAccountCreation",
+"KeepDbConnStringPw"]
+Description = "Files with these extensions will be searched for PowerShell related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.psd1",
+"\\.psm1",
+"\\.ps1"]
+Triage = "Green"

@@ -1,0 +1,11 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayNetConfigByName"
+MatchAction = "Relay"
+RelayTargets = ["KeepNetConfigCreds"]
+Description = "Files with these name patterns will be searched for Cisco bits."
+MatchLocation = "FileName"
+WordListType = "Contains"
+MatchLength = 0
+WordList = ["cisco","router","firewall","switch"]
+Triage = "Green"

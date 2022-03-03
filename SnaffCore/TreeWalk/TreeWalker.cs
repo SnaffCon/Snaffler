@@ -69,7 +69,7 @@ namespace SnaffCore.TreeWalk
             }
             catch (Exception e)
             {
-                Mq.Trace(e.ToString());
+                Mq.Degub(e.ToString());
                 //continue;
             }
 
@@ -82,6 +82,7 @@ namespace SnaffCore.TreeWalk
 
                     foreach (string dirStr in subDirs)
                     {
+                        bool scanDir = true;
                         foreach (ClassifierRule classifier in MyOptions.DirClassifiers)
                         {
                             try
@@ -89,20 +90,10 @@ namespace SnaffCore.TreeWalk
                                 DirClassifier dirClassifier = new DirClassifier(classifier);
                                 DirResult dirResult = dirClassifier.ClassifyDir(dirStr);
 
-                                if (dirResult.ScanDir)
+                                if (dirResult.ScanDir == false)
                                 {
-                                    TreeTaskScheduler.New(() =>
-                                    {
-                                        try
-                                        {
-                                            WalkTree(dirStr);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Mq.Error("Exception in TreeWalker task for dir " + dirStr);
-                                            Mq.Error(e.ToString());
-                                        }
-                                    });
+                                    scanDir = false;
+                                    break;
                                 }
                             }
                             catch (Exception e)
@@ -110,6 +101,25 @@ namespace SnaffCore.TreeWalk
                                 Mq.Trace(e.ToString());
                                 continue;
                             }
+                        }
+                        if (scanDir == true)
+                        {
+                            TreeTaskScheduler.New(() =>
+                            {
+                                try
+                                {
+                                    WalkTree(dirStr);
+                                }
+                                catch (Exception e)
+                                {
+                                    Mq.Error("Exception in TreeWalker task for dir " + dirStr);
+                                    Mq.Error(e.ToString());
+                                }
+                            });
+                        }
+                        else
+                        {
+                            Mq.Trace("Skipped scanning on " + dirStr + " due to Discard rule match.");
                         }
                     }
                 }

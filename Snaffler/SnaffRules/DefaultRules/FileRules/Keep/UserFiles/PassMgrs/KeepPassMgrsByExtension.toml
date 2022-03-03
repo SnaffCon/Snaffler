@@ -1,0 +1,16 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepPassMgrsByExtension"
+MatchAction = "Snaffle"
+Description = "Files with these extensions are very very interesting."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.kdbx",
+"\\.kdb",
+"\\.psafe3",
+"\\.kwallet",
+"\\.keychain",
+"\\.agilekeychain",
+"\\.cred"]
+Triage = "Black"

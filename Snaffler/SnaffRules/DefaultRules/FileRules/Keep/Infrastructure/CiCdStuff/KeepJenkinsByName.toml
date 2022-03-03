@@ -1,0 +1,11 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepJenkinsByName"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["jenkins\\.plugins\\.publish_over_ssh\\.BapSshPublisherPlugin\\.xml",
+"credentials\\.xml"]
+Triage = "Red"

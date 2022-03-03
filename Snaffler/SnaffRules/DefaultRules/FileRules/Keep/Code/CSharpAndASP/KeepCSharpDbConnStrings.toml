@@ -1,0 +1,24 @@
+
+
+
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepCSharpDbConnStringsYellow"
+MatchAction = "Snaffle"
+Description = "Match SQL connection strings that appear to use integrated security (so no passwords)."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["Data Source=.+Integrated Security=(SSPI|true)","Integrated Security=(SSPI|true);.*Data Source=.+"]
+Triage = "Yellow"
+
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepCSharpDbConnStringsRed"
+MatchAction = "Snaffle"
+Description = "Match SQL connection strings that appear to have a password."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["Data Source=.+(;|)Password=.+(;|)","Password=.+(;|)Data Source=.+(;|)"]  # ["(?!.+Integrated Security)Data Source=.+Password=.+"]
+Triage = "Red"

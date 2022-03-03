@@ -1,0 +1,10 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepSSHFilesByPath"
+MatchAction = "Snaffle"
+Description = "Files with a path containing these strings are very very interesting."
+MatchLocation = "FilePath"
+WordListType = "Contains"
+MatchLength = 0
+WordList = ["\\\\\\.ssh\\\\"]
+Triage = "Black"

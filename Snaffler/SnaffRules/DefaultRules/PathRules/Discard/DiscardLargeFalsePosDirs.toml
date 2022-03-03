@@ -1,0 +1,19 @@
+[[ClassifierRules]]
+EnumerationScope = "DirectoryEnumeration"
+RuleName = "DiscardLargeFalsePosDirs"
+MatchAction = "Discard"
+Description = "File paths that will be skipped entirely."
+MatchLocation = "FilePath"
+WordListType = "Contains"
+MatchLength = 0
+WordList = ["\\\\puppet\\\\share\\\\doc",
+"\\\\lib\\\\ruby",
+"\\\\lib\\\\site-packages",
+"\\\\usr\\\\share\\\\doc",
+"node_modules",
+"vendor\\\\bundle",
+"vendor\\\\cache",
+"\\\\doc\\\\openssl"]
+Triage = "Green"
+
+

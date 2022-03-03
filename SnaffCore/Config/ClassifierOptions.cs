@@ -106,14 +106,22 @@ namespace SnaffCore.Config
                     int max = 0;
                     foreach (string relayTarget in classifier.RelayTargets)
                     {
-                        ClassifierRule relayRule = ClassifierRules.First(thing => thing.RuleName == relayTarget);
-                        if (
-                            (relayRule.Triage == Triage.Black && InterestLevel > 3) ||
-                            (relayRule.Triage == Triage.Red && InterestLevel > 2) ||
-                        (relayRule.Triage == Triage.Yellow && InterestLevel > 1) ||
-                        (relayRule.Triage == Triage.Green && InterestLevel > 0))
+                        try
                         {
-                            return true;
+                            ClassifierRule relayRule = ClassifierRules.First(thing => thing.RuleName == relayTarget);
+
+                            if (
+                                (relayRule.Triage == Triage.Black && InterestLevel > 3) ||
+                                (relayRule.Triage == Triage.Red && InterestLevel > 2) ||
+                            (relayRule.Triage == Triage.Yellow && InterestLevel > 1) ||
+                            (relayRule.Triage == Triage.Green && InterestLevel > 0))
+                            {
+                                return true;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            throw new Exception("You have a misconfigured rule trying to relay to " + relayTarget + " and no such rule exists by that name.");
                         }
                     }
                 }

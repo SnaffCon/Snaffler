@@ -2,7 +2,8 @@
 EnumerationScope = "FileEnumeration"
 RuleName = "RelayCSharpByExtension"
 MatchAction = "Relay"
-RelayTargets = ["KeepCSharpDbConnStrings",
+RelayTargets = ["KeepCSharpDbConnStringsYellow",
+"KeepCSharpDbConnStringsRed",
 "KeepCSharpViewstateKeys",
 "KeepAwsKeysInCode",
 "KeepInlinePrivateKey",

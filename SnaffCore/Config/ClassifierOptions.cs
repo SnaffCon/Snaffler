@@ -81,15 +81,20 @@ namespace SnaffCore.Config
             ShareClassifiers = (from classifier in ClassifierRules
                                 where classifier.EnumerationScope == EnumerationScope.ShareEnumeration
                                 select classifier).ToList();
+            // and sort them by Match type 
+            ShareClassifiers.Sort((x, y) => x.MatchAction.CompareTo(y.MatchAction));
             DirClassifiers = (from classifier in ClassifierRules
                               where classifier.EnumerationScope == EnumerationScope.DirectoryEnumeration
                               select classifier).ToList();
+            DirClassifiers.Sort((x, y) => x.MatchAction.CompareTo(y.MatchAction));
             FileClassifiers = (from classifier in ClassifierRules
                                where classifier.EnumerationScope == EnumerationScope.FileEnumeration
                                select classifier).ToList();
+            FileClassifiers.Sort((x, y) => x.MatchAction.CompareTo(y.MatchAction));
             ContentsClassifiers = (from classifier in ClassifierRules
                                    where classifier.EnumerationScope == EnumerationScope.ContentsEnumeration
                                    select classifier).ToList();
+            ContentsClassifiers.Sort((x, y) => x.MatchAction.CompareTo(y.MatchAction));
         }
 
         private bool IsInterest(ClassifierRule classifier)

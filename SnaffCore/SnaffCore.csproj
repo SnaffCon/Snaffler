@@ -67,7 +67,7 @@
     <Compile Include="ActiveDirectory\LdapTypeEnum.cs" />
     <Compile Include="Classifiers\ArchiveClassifier.cs" />
     <Compile Include="Classifiers\Certificate.cs" />
-    <Compile Include="Classifiers\EffectiveAccess\EffectiveAccess.cs" />
+    <Compile Include="Classifiers\EffectiveAccess.cs" />
     <Compile Include="Classifiers\TextClassifier.cs" />
     <Compile Include="Classifiers\ContentClassifier.cs" />
     <Compile Include="Classifiers\DirClassifier.cs" />

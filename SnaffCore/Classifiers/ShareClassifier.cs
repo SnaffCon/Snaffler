@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using static SnaffCore.Config.Options;
 
-namespace Classifiers
+namespace SnaffCore.Classifiers
 {
     public class ShareClassifier
     {

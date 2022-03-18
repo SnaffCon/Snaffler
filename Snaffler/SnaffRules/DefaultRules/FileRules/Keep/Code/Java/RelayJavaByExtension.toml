@@ -1,0 +1,19 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayJavaByExtension"
+MatchAction = "Relay"
+RelayTargets = ["KeepJavaDbConnStrings",
+"KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
+"KeepSqlAccountCreation",
+"KeepDbConnStringPw" ]
+Description = "Files with these extensions will be searched for Java and ColdFusion related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.jsp",
+"\\.do",
+"\\.java",
+"\\.cfm"]
+Triage = "Green"

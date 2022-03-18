@@ -1,0 +1,23 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayVBScriptByExtension"
+MatchAction = "Relay"
+RelayTargets = ["KeepCmdCredentials",
+"KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
+"KeepSqlAccountCreation",
+"KeepDbConnStringPw",
+"KeepCSharpDbConnStringsRed",
+"KeepCSharpDbConnStringsYellow" ]
+Description = "Files with these extensions will be searched for cmd.exe/batch file related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.vbs",
+"\\.vbe",
+"\\.wsf",
+"\\.wsc",
+"\\.asp",
+"\\.hta"]
+Triage = "Green"

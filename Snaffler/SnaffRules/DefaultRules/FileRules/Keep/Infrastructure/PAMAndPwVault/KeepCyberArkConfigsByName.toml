@@ -1,0 +1,11 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepCyberArkConfigsByName"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [ "Psmapp\\.cred",
+"psmgw\\.cred"]
+Triage = "Black"

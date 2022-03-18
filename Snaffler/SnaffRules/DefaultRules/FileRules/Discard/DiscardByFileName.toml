@@ -1,0 +1,10 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "DiscardByFileName"
+MatchAction = "Discard"
+Description = "Skip any further scanning for files with these names."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["jmxremote\\.password\\.template"]
+Triage = "Green"

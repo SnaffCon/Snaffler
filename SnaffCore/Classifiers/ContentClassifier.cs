@@ -9,7 +9,7 @@ using static SnaffCore.Config.Options;
 using Toxy;
 #endif
 
-namespace Classifiers
+namespace SnaffCore.Classifiers
 {
     public class ContentClassifier
     {

@@ -1,0 +1,11 @@
+[[ClassifierRules]]
+EnumerationScope = "ShareEnumeration"
+RuleName = "KeepDollarShares"
+MatchAction = "Snaffle"
+Description = "Notifies the user that they can read C$ or ADMIN$ or something fun/noisy, but doesn't actually scan inside it."
+MatchLocation = "ShareName"
+WordListType = "EndsWith"
+MatchLength = 0
+WordList = ["\\\\C\\$",
+"\\\\ADMIN\\$"]
+Triage = "Black"

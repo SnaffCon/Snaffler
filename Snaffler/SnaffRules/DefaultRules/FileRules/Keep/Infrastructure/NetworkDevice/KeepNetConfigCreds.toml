@@ -1,0 +1,15 @@
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepNetConfigCreds"
+MatchAction = "Snaffle"
+Description = "A description of what a rule does."
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["NVRAM config last updated", 
+"enable password \\.", 
+"simple-bind authenticated encrypt",
+"pac key [0-7] ",
+"snmp-server community\\s.+\\sRW"]
+Triage = "Red"
+

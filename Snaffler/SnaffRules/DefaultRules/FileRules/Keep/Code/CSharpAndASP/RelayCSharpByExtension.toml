@@ -1,0 +1,28 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayCSharpByExtension"
+MatchAction = "Relay"
+RelayTargets = ["KeepCSharpDbConnStringsYellow",
+"KeepCSharpDbConnStringsRed",
+"KeepCSharpViewstateKeys",
+"KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",
+"KeepSlackTokensInCode",
+"KeepSqlAccountCreation",
+"KeepDbConnStringPw",
+"KeepCSharpDbConnStringsRed",
+"KeepCSharpDbConnStringsYellow"]
+Description = "Files with these extensions will be searched for CSharp and ASP.NET related strings."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.aspx",
+"\\.ashx",
+"\\.asmx",
+"\\.asp",
+"\\.cshtml",
+"\\.cs",
+"\\.ascx",
+"\\.config"]
+Triage = "Green"

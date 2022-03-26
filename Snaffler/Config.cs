@@ -93,7 +93,7 @@ namespace Snaffler
                 "Stops after finding shares, doesn't walk their filesystems.", false);
             ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "Computer (or comma separated list) to target.");
             ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
-            ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain");
+            ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             // list of letters i haven't used yet: egknqw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();

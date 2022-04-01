@@ -35,6 +35,14 @@ namespace SnaffCore.ShareFind
 
             foreach (HostShareInfo hostShareInfo in hostShareInfos)
             {
+
+                // skip IPC$ and PRINT$ shares for #OPSEC!!!
+                List<string> neverScan = new List<string> { "ipc$", "print$" };
+                if (neverScan.Contains(hostShareInfo.shi1_netname.ToLower()))
+                {
+                    continue;
+                }
+
                 string shareName = GetShareName(hostShareInfo, computer);
                 if (!String.IsNullOrWhiteSpace(shareName))
                 {

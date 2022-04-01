@@ -93,6 +93,7 @@ namespace Snaffler
                 "Stops after finding shares, doesn't walk their filesystems.", false);
             ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "Computer (or comma separated list) to target.");
             ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
+            ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             // list of letters i haven't used yet: egknqw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
@@ -116,6 +117,7 @@ namespace Snaffler
             parser.Arguments.Add(maxThreadsArg);
             parser.Arguments.Add(compTargetArg);
             parser.Arguments.Add(ruleDirArg);
+            parser.Arguments.Add(logType);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -133,6 +135,21 @@ namespace Snaffler
             try
             {
                 parser.ParseCommandLine(args);
+
+                if (logType.Parsed && !String.IsNullOrWhiteSpace(logType.Value))
+                {
+                    //Set the default to plain
+                    parsedConfig.LogType = LogType.Plain;
+                    //if they set a different type then replace it with the new type.
+                    if (logType.Value.ToLower() == "json")
+                    {
+                        parsedConfig.LogType = LogType.JSON;
+                    }
+                    else
+                    {
+                        Mq.Info("Invalid type argument passed (" + logType.Value + ") defaulting to plaintext");
+                    }
+                }
 
                 if (ruleDirArg.Parsed && !String.IsNullOrWhiteSpace(ruleDirArg.Value))
                 {

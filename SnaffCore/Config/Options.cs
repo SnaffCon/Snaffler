@@ -4,6 +4,12 @@ using SnaffCore.ActiveDirectory;
 
 namespace SnaffCore.Config
 {
+    public enum LogType
+    {
+        Plain = 0,
+        JSON = 1
+    }
+
     public partial class Options
     {
         public static Options MyOptions { get; set; }
@@ -36,6 +42,7 @@ namespace SnaffCore.Config
         // Logging Options
         public bool LogToFile { get; set; } = false;
         public string LogFilePath { get; set; }
+        public LogType LogType { get; set; }
         public bool LogTSV { get; set; } = false;
         public char Separator { get; set; } = ' ';
         public bool LogToConsole { get; set; } = true;

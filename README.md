@@ -74,6 +74,8 @@ The key incantations are:
 
 `-z`   Path to a config file that defines all of the above, and much much more! See below for more details. Give it `-z generate` to generate a sample config file called `.\default.toml`.
 
+`-t` Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.
+
 ## What does any of this log output mean?
 
 Hopefully this annotated example will help:

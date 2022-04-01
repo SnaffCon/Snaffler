@@ -6,7 +6,7 @@
 
 ## What is it for? 
 
-Snaffler is a tool for **pentesters** to help find delicious candy needles (creds mostly, but it's flexible) in a bunch of horrible boring haystacks (a massive Windows/AD environment).
+Snaffler is a tool for **pentesters** and **red teamers** to help find delicious candy needles (creds mostly, but it's flexible) in a bunch of horrible boring haystacks (a massive Windows/AD environment).
 
 It might also be useful for other people doing other stuff, but it is explicitly NOT meant to be an "audit" tool.
 
@@ -14,7 +14,7 @@ It might also be useful for other people doing other stuff, but it is explicitly
 
 Ugh, fine. But we aren't responsible for the results. We wrote all this other stuff for you, but that's okay. We're not mad, just disappointed.
 
-`snaffler.exe  -s -o snaffler.log`
+`snaffler.exe -s -o snaffler.log`
 
 ## What does it do?
 
@@ -22,11 +22,11 @@ Ugh, fine. But we aren't responsible for the results. We wrote all this other st
 
 Then YET MORE snaffly appendages enumerate all the files in those shares and use **L**EARNED **A**RTIFACTUAL **I**NTELLIGENCE for **M**ACHINES to figure out which ones a grubby little hacker like you might want. 
 
-Actually it doesn't do any ML stuff (yet), because doing that right would require training data, and that would require an enormous amount of time that we don't have.
+Actually it doesn't do any ML stuff, because doing that right would require training data, and that would require an enormous amount of time that we don't have. Instead, like all good "ML" projects, it just uses a shitload of `if` statements and regexen.
 
 ## What does it look like?
 
-Like this! (mostly, this screenshot is a few versions old now)
+Like this!
 
 <p align="center">
   <img src="./snaffler_screenshot.png">
@@ -76,6 +76,10 @@ The key incantations are:
 
 `-t` Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.
 
+`-x` Max number of threads to use. Don't set it below 4 or shit will break.
+
+`-p` Path to a directory full of .toml formatted rules. Snaffler will load all of these in place of the default ruleset.
+
 ## What does any of this log output mean?
 
 Hopefully this annotated example will help:
@@ -100,52 +104,97 @@ This log entry should be read roughly from left to right as:
 
 In this case we've found ASP.NET validationKey and decryptionKey values, which might let us RCE the web app via some deserialisation hackery. Hooray!
 
+Note: after this screenshot was made, Sh3r4 added a thing to prepend the current user and hostname to each line. I don't wanna redo the screenshot tho.
+
 ## How does it decide which files are good and which files are boring?
 
-### The simple answer:
+### The "so simple it's almost a lie" answer:
 Each L.A.I.M. magic file finding method does stuff like:
 
 * Searching by exact file extension match, meaning that any file with an extension that matches the relevant wordlist will be returned. This is meant for **file extensions** that are almost always going to contain candy, e.g. `.kdbx`, `.vmdk`, `.ppk`, etc.
 
- - Searching by (case insensitive) exact filename match. This is meant for **file names** that are almost always going to contain candy, e.g. `id_rsa`, `shadow`, `NTDS.DIT`, etc.
+* Searching by (case insensitive) exact filename match. This is meant for **file names** that are almost always going to contain candy, e.g. `id_rsa`, `shadow`, `NTDS.DIT`, etc.
 
- - Searching by exact file extension match (yet another wordlist) FOLLOWED BY 'grepping' the contents of any matching files for certain key words (yet yet another another wordlist). This is meant for file extensions that **sometimes** contain candy but where you know there's likely to be a bunch of chaff to sift through. For example, `web.config` will sometimes contain database credentials, but will also often contain boring IIS config nonsense and no passwords. This will (for example) find anything ending in `.config`, then will grep through it for strings including but not limited to: `connectionString`, `password`, `PRIVATE KEY`, etc.
+* Searching by exact file extension match (yet another wordlist) FOLLOWED BY 'grepping' the contents of any matching files for certain key words (yet yet another another wordlist). This is meant for file extensions that **sometimes** contain candy but where you know there's likely to be a bunch of chaff to sift through. For example, `web.config` will sometimes contain database credentials, but will also often contain boring IIS config nonsense and no passwords. This will (for example) find anything ending in `.config`, then will grep through it for strings including but not limited to: `connectionString`, `password`, `PRIVATE KEY`, etc.
 
- - Searching by partial filename match (oh god more wordlists). This is mostly meant to find `Jeff's Password File 2019 (Copy).docx` or `Privileged Access Management System Design - As-Built.docx` or whatever, by matching any file where the name contains the substrings `passw`, `handover`, `secret`, `secure`, `as-built`, etc.
+* Searching by partial filename match (oh god more wordlists). This is mostly meant to find `Jeff's Password File 2019 (Copy).docx` or `Privileged Access Management System Design - As-Built.docx` or whatever, by matching any file where the name contains the substrings `passw`, `handover`, `secret`, `secure`, `as-built`, etc.
 
- - There's also a couple of skip-lists to skip all files with certain extensions, or any file with a path containing a given string.
+* There's also skip-lists to skip all files with certain extensions, or any file with a path containing a given string.
 
 ### The real answer:
 
-Snaffler uses a system of 'classifiers', which allow the end-user (you) to define (relatively) simple rules that can be combined and strung together and mangled however you see fit. It comes with a set of default classifiers, which you can see by either looking at the code or by having a look at the config file created by `-z generate`, so the best place to start with making your own is to edit those.
+Snaffler uses a system of "classifiers", each of which examine shares or folders or files or file contents, passing some items downstream to the next classifier, and discarding others. Each classifier uses a set of rules to decide what to do with the items it classifies.
 
-The defaults don't have any rules that will look inside Office docs and PDFs, but you can see some examples in SnaffCore/DefaultRules/FileContentRules.cs that have been commented out. Just uncomment those before you compile and edit the regexen to suit your requirements. *Be warned, this is a lot slower than looking inside good old fashioned text files, and a typical environment will have an absolute mountain of low-value Office docs and PDFs.*
+These rules can be very simple, e.g. "if a file's extension is `.kdbx`, tell me about it", or "if a path contains `windows\sxs` then stop looking at subdirectories and files within that path".
+
+Rules can also use regular expressions, which allow for relatively sophisticated pattern-matching. This is particularly useful when examining file contents, although care should be taken to avoid regexen with a significant performance hit. In large environments these rules may be checked literally millions of times, so minor performance issues can be amplified significantly.
+
+The real power is in Snaffler's ability to chain multiple rules together, and even create branching chains. This allows us to use "cheap" rules like checking file names and extensions to decide when to use "expensive" rules like running regexen across the contents of files, parsing certs to see whether they contain private keys, etc. This is what allows Snaffler to achieve quite deep inspection of files where needed, while also being surprisingly fast for a tool written in a higher-level language like C#.
+
+For example, a very simple ruleset might contain:
+* a rule to discard all files with extensions associated with image files
+* a rule to find all files with the `.dmp` file extension and snaffle them
+* a rule chain where:
+  * the first rule looks for files with the `.ps1` file extension, and sends all matching files to both the second and third rules.
+  * the second rule looks inside files using regexen designed to find hard-coded credentials in PowerShell code.
+  * the third rule looks inside files using regexen designed to find hard-coded credentials in `cmd.exe` commands, as might be found in `.bat` or `.cmd` files, as these are also commonly used within PowerShell scripts.
+
+This approach also lets us maintain a relatively manageable and legible ruleset, and also makes it much easier for the end-user (you) to customise the defaults or develop your own rulesets.
+
+### I don't want to write rules, that sounds hard and boring.
+
+You're right, it was.
+
+Snaffler comes with a set of default rules baked into the `.exe`. You can see them in `./Snaffler/SnaffRules/DefaultRules`.
+
+### I am a mighty titan of tedium, a master of the mundane, I wish to write my own ruleset.
+
+No problem, you enormous weirdo. You have 2 options.
+
+1. Edit or replace the rules in the `DefaultRules` directory, then build a fresh Snaffler. The `.toml` files in that dir will get baked into the `.exe` as resources, and loaded up at runtime whenever you don't specify any other rules to use.
+2. Make a directory and stick a bunch of your own rule files in there, then run Snaffler with `-p .\path\to\rules`. Snaffler will parse all the `.toml` files in that directory and use the resulting ruleset. This will also work if you just have them all in one big `.toml` file.
 
 Here's some annotated examples that will hopefully help to explain things better. If this seems very hard, you can just use our rules and they'll probably find you some good stuff.
 
 This is an example of a rule that will make Snaffler ignore all files and subdirectories below a dir with a certain name.
-```python
-[[Classifiers]]
+
+```toml
+[[ClassifierRules]]
 EnumerationScope = "DirectoryEnumeration" # This defines which phase of the discovery process we're going to apply the rule. 
                                           # In this case, we're looking at directories. 
                                           # Valid values include ShareEnumeration, DirectoryEnumeration, FileEnumeration, ContentsEnumeration
-RuleName = "DiscardFilepathContains" # This can be whatever you want. We've been following a rough "MatchAction, MatchLocation,
-                                     # MatchType" naming scheme, but you can call it "Stinky" if you want. ¯\_(ツ)_/¯
-MatchAction = "Discard" # What to do with things that match the rule. In this case, we want to discard anything that matches this rule.
-                        # Valid options include: Snaffle (keep), Discard, Relay (example of this below), and CheckForKeys (example below).
+RuleName = "DiscardLargeFalsePosDirs" # This can be whatever you want. We've been following a rough naming scheme, but you can call it "Stinky" if you want. ¯\_(ツ)_/¯
+MatchAction = "Discard"# What to do with things that match the rule. In this case, we want to discard anything that matches this rule.
+                        # Valid options include: Snaffle (keep), Discard, Relay (example of this below), and CheckForKeys (example below)
+Description = "File paths that will be skipped entirely." # Not used in the code, just a place for notes really.
 MatchLocation = "FilePath" # What part of the file/dir/share to look at to check for a match. In this case we're looking at the whole path.
                            # Valid options include: ShareName, FilePath, FileName, FileExtension, FileContentAsString, FileContentAsBytes,
                            # although obviously not all of these will apply in all EnumerationScopes.
 WordListType = "Contains" # What matching logic to apply, valid options are: Exact, Contains, EndsWith, StartsWith, or Regex.
-WordList = ["winsxs", "syswow64"] # A list of strings or regex patterns to use to match. If using regex matterns, WordListType must be Regex.
-Triage = "Green" # If we find a match, what severity rating should we give it. Valid values are Black, Red, Yellow, Green. Gets ignored for Discard anyway.
+                          # Under the hood these all get turned into regexen one way or another.
+MatchLength = 0
+WordList = [ 
+  # A list of strings or regex patterns to use to match. If using regex patterns, WordListType must be Regex.
+	"\\\\puppet\\\\share\\\\doc",
+	"\\\\lib\\\\ruby",
+	"\\\\lib\\\\site-packages",
+	"\\\\usr\\\\share\\\\doc",
+	"node_modules",
+	"vendor\\\\bundle",
+	"vendor\\\\cache",
+	"\\\\doc\\\\openssl",
+	"Anaconda3\\\\Lib\\\\test",
+	"WindowsPowerShell\\\\Modules",
+	"Python27\\\\Lib"
+]
+Triage = "Green" # If we find a match, what severity rating should we give it. Valid values are Black, Red, Yellow, Green. This value is ignored for Discard MatchActions.
 ```
 
 This rule on the other hand will look at file extensions, and immediately discard any we don't like.
 
 In this case I'm mostly throwing away fonts, images, CSS, etc.
-```python
-[[Classifiers]]
+```toml
+[[ClassifierRules]]
 EnumerationScope = "FileEnumeration" # We're looking at the actual files, not the shares or dirs or whatever.
 RuleName = "DiscardExtExact" # just a name
 MatchAction = "Discard" # We're discarding these
@@ -155,12 +204,12 @@ WordList = [".bmp", ".eps", ".gif", ".ico", ".jfi", ".jfif", ".jif", ".jpe", ".j
 ```
 
 Here's an example of a really simple rule for stuff we like and want to keep.
-``` python
-[[Classifiers]]
+```toml
+[[ClassifierRules]]
 EnumerationScope = "FileEnumeration" # Still looking at files
 RuleName = "KeepExtExactBlack" # Just a name
-MatchAction = "Snaffle" # This time we are 'snaffling' these. This usually just means send it to the UI, 
-                       # but if you turn on the appropriate option it will also grtab a copy.
+MatchAction = "Snaffle" # This time we are 'snaffling' these. This usually just means send it to the output, 
+                       # but if you turn on the appropriate option it will also grab a copy.
 MatchLocation = "FileExtension" # We're looking at file extensions again
 WordListType = "Exact" # With Exact Matches
 WordList = [".kdbx", ".kdb", ".ppk", ".vmdk", ".vhdx", ".ova", ".ovf", ".psafe3", ".cscfg", ".kwallet", ".tblk", ".ovpn", ".mdf", ".sdf", ".sqldump"] # and a bunch of fun file extensions.
@@ -168,8 +217,8 @@ Triage = "Black" # these are all big wins if we find them, so we're giving them 
 ```
 
 This one is basically the same, but we're looking at the whole file name. Simple!
-``` python
-[[Classifiers]]
+```toml
+[[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
 RuleName = "KeepFilenameExactBlack"
 MatchAction = "Snaffle"
@@ -180,8 +229,8 @@ Triage = "Black"
 ```
 
 This one is a bit nifty, check this out...
-```python
-[[Classifiers]]
+```toml
+[[ClassifierRules]]
 EnumerationScope = "FileEnumeration" # we're looking for files...
 RuleName = "KeepCertContainsPrivKeyRed" 
 MatchLocation = "FileExtension" # specifically, ones with certain file extensions...
@@ -191,23 +240,23 @@ MatchAction = "CheckForKeys" # and any that we find, we're going to parse them a
 Triage = "Red" # cert files aren't very sexy, and you'll get huge numbers of them in most wintel environments, but this check gives us a way better SNR!
 ```
 
-OK, here's where the REALLY powerful stuff comes in. We got a pair of rules in a chain here.
+OK, here's where the powerful stuff comes in. We got a pair of rules in a chain here.
 
 Files with extensions that match the first rule will be sent to second rule, which will "grep" (i.e. String.Contains()) them for stuff in a specific wordlist. 
 
 You can chain these together as much as you like, although I imagine you'll start to see some performance problems if you get too inception-y with it.
-```python
-[[Classifiers]]
+```toml
+[[ClassifierRules]]
 EnumerationScope = "FileEnumeration" # this one looks at files...
 RuleName = "ConfigGrepExtExact"
 MatchLocation = "FileExtension" # specifically the extensions...
 WordListType = "Exact"
 WordList = [".yaml", ".xml", ".json", ".config", ".ini", ".inf", ".cnf", ".conf"] # these ones.
 MatchAction = "Relay" # Then any files that match are handed downstream...
-RelayTarget = "KeepConfigGrepContainsRed" # To the rule with this RuleName!
+RelayTargets = ["KeepConfigGrepContainsRed"] # To the rule with this RuleName! This can also be an array of RuleNames if you want to get real wild and start writing branching rulesets.
 
-[[Classifiers]]
-RuleName = "KeepConfigGrepContainsRed" # which is this one! This is why following a naming convention really helps.
+[[ClassifierRules]]
+RuleName = "KeepConfigGrepContainsRed" # Anyway, this is the target rule. Following a naming convention really helps to make sure you're using the right targets.
 EnumerationScope = "ContentsEnumeration" # this one looks at file content!
 MatchAction = "Snaffle" # it keeps files that match
 MatchLocation = "FileContentAsString" # it's looking at the contents as a string (rather than a byte array)
@@ -215,8 +264,69 @@ WordListType = "Contains" # it's using simple matching
 WordList = ["password=", " connectionString=\"", "sqlConnectionString=\"", "validationKey=", "decryptionKey=", "NVRAM config last updated"]
 Triage = "Red"
 ```
-hopefully you get the idea...
 
+Hopefully this convey the idea. I'd recommend taking some of the default rules and tinkering with them until you feel like you've got a good handle on it.
+
+## WTF is an "UltraSnaffler"???
+
+A lot of people wanted the ability to look inside file formats that weren't just flat text, like Word documents, PDFs, `.eml`, etc. Unfortunately, the easiest library for implementing that functionality blew out the final file size on `Snaffler.exe` by about 1200%, which sucked for a bunch of the popular in-memory execution techniques that had upper limits on how big a file they could be used with.
+
+The solution was UltraSnaffler, which is just a second `.sln` file that enables the required lib and the relevant code. Build `UltraSnaffler.sln`, get UltraSnaffler.
+
+WARNING: Snaffler's default rules don't include any that will look inside Office docs or PDFs, because we found it really difficult to write any that weren't going to just take *years* to finish a run in a typical corporate environment. *Be warned, looking inside these docs is a lot slower than looking inside good old fashioned text files, and a typical environment will have an absolute mountain of low-value Office docs and PDFs.*
+
+## How does the config file thing work?
+
+This is actually really neat IMO.
+
+If you add `-z generate` onto the end of a Snaffler command line, Snaffler will serialise the configuration object (including whatever aspects of the configuration were set by your args) into a `.toml` config file, which you can then hand-edit pretty easily (or not) and then re-use at your leisure
+
+For example, if you do:
+
+`Snaffler.exe -s -o C:\mydir\snaffler.log -v trace -i \\host.lol.domain\share -p C:\users\someguy\myrules -z generate`
+
+Snaffler will parse all your many, many arguments, turn them into a config object, serialise that config object into the following `.toml` config file:
+
+```toml
+PathTargets = ["\\\\host.lol.domain\\share"]
+ComputerTargetsLdapFilter = "(objectClass=computer)"
+ScanSysvol = true
+ScanNetlogon = true
+ScanFoundShares = true
+InterestLevel = 0
+DfsOnly = false
+DfsShareDiscovery = false
+DfsNamespacePaths = []
+CurrentUser = "l0sslab\\l0ss"
+RuleDir = "C:\\users\\someguy\\myrules"
+MaxThreads = 60
+ShareThreads = 20
+TreeThreads = 20
+FileThreads = 20
+MaxFileQueue = 200000
+MaxTreeQueue = 0
+MaxShareQueue = 0
+LogToFile = true
+LogFilePath = "C:\\mydir\\snaffler.log"
+LogType = "Plain"
+LogTSV = false
+Separator = 32
+LogToConsole = true
+LogLevelString = "trace"
+ShareFinderEnabled = false
+LogDeniedShares = false
+DomainUserRules = false
+DomainUserMinLen = 6
+DomainUserNameFormats = ["sAMAccountName"]
+DomainUserMatchStrings = ["sql", "svc", "service", "backup", "ccm", "scom", "opsmgr", "adm", "adcs", "MSOL", "adsync", "thycotic", "secretserver", "cyberark", "configmgr"]
+DomainUsersWordlistRules = ["KeepConfigRegexRed"]
+MaxSizeToGrep = 1000000
+Snaffle = false
+MaxSizeToSnaffle = 10000000
+MatchContextBytes = 200
+```
+
+You may notice that there are many items in here that you didn't pass arguments for. Those values are the default config items, some of which can only be edited easily in the source or via a config file, usually because it didn't seem worth it to add an argument for them.
 
 ## This sucks, do you have plans to make it suck less?
 
@@ -244,8 +354,23 @@ Wordlists were also curated from those found in some other similar-ish tools lik
 
 Pffft, no. It's noisy as fuck.
 
-Look let's put it this way... If it's the kind of environment where you'd feel confident running BloodHound in non-stealth mode, then uhhh, yeah man... It's real stealthy.
+Look let's put it this way... If it's the kind of environment where you'd feel confident running BloodHound in its default mode, then uhhh, yeah man... It's real stealthy.
 
+## I thought you used this thing on red team gigs?
+
+*sigh* 
+
+OK, I'll give you the real answer.
+
+In default mode, Snaffler looks an awful lot like SharpHound, in a lot of ways. It talks a bunch of LDAP to AD, then it goes out and tries to talk SMB to every Windows machine in the domain. This kind of behaviour is pretty much guaranteed to get you busted in an org that has their shit even slightly together.
+
+HOWEVER...
+
+Snaffler's more-targeted options (especially `-i`) are a *lot* less likely to trigger detections. 
+
+I am particularly fond of running `Snaffler.exe -s -i C:\` on a freshly compromised server or workstation, and I've not seen this behaviour get detected. 
+
+Yet.
 
 ## How can I help or get help?
 

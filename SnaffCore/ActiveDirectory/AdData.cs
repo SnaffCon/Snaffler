@@ -153,6 +153,8 @@ namespace SnaffCore.ActiveDirectory
             }
         }
 
+        private static Random random = new Random();
+
         public void SetDomainComputers(string LdapFilter)
         {
             DirectorySearch ds = GetDirectorySearcher();
@@ -165,11 +167,23 @@ namespace SnaffCore.ActiveDirectory
                 {
                     // if we aren't limiting the scan to DFS shares then let's get some computer targets.
 
-                    string[] ldapProperties = new string[] { "name", "dNSHostName", "lastLogonTimeStamp" };
+                    List<string> ldapPropertiesList = new List<string> { "name", "dNSHostName", "lastLogonTimeStamp" };
                     string ldapFilter = LdapFilter;
+
+                    // extremely dirty hack to break a sig I once saw for Snaffler's LDAP queries. ;-)
+                    int num = random.Next(1, 5);
+                    while (num > 0)
+                    {
+                        Guid guid = Guid.NewGuid();
+                        ldapPropertiesList.Add(guid.ToString());
+                        --num;
+                    }
+                    string[] ldapProperties = ldapPropertiesList.ToArray();
 
                     IEnumerable<SearchResultEntry> searchResultEntries = ds.QueryLdap(ldapFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
 
+                    // set a window of "the last 4 months" - if a computer hasn't logged in to the domain in 4 months it's probably gone.
+                    DateTime validLltsWindow = DateTime.Now.AddMonths(-4);
                     foreach (SearchResultEntry resEnt in searchResultEntries)
                     {
                         int uacFlags;
@@ -182,6 +196,24 @@ namespace SnaffCore.ActiveDirectory
                         if (userAccFlags.HasFlag(UserAccountControlFlags.AccountDisabled))
                         {
                             continue;
+                        }
+
+                        try
+                        {
+                            // get the last logon timestamp value as a datetime
+                            string lltsString = resEnt.GetProperty("lastlogontimestamp");
+                            long lltsLong;
+                            long.TryParse(lltsString, out lltsLong);
+                            DateTime lltsDateTime = DateTime.FromFileTime(lltsLong);
+                            // compare it to our window, and if lltsDateTime is older, skip the computer acct.
+                            if (lltsDateTime <= validLltsWindow)
+                            {
+                                continue;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Mq.Error("Error calculating lastLogonTimeStamp for computer account " + resEnt.DistinguishedName);
                         }
 
                         if (!String.IsNullOrEmpty(resEnt.GetProperty("dNSHostName")))

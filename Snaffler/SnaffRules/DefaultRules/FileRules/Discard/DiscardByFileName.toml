@@ -6,5 +6,8 @@ Description = "Skip any further scanning for files with these names."
 MatchLocation = "FileName"
 WordListType = "Exact"
 MatchLength = 0
-WordList = ["jmxremote\\.password\\.template"]
+WordList = [
+	"jmxremote\\.password\\.template",
+	"sceregvl\\.inf"
+]
 Triage = "Green"

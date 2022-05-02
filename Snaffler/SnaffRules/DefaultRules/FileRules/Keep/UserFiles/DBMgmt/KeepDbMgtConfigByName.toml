@@ -12,5 +12,6 @@ WordList = ["SqlStudio\\.bin",
 "\\.pgpass",
 "\\.dbeaver-data-sources\\.xml",
 "credentials-config\\.json",
+"dbvis\\.xml",
 "robomongo\\.json"]
 Triage = "Red"

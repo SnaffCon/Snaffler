@@ -123,7 +123,7 @@ namespace Snaffler
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
             {
                 parser.ShowUsage();
-                Environment.Exit(0);
+                return null; 
             }
 
             TomlSettings settings = TomlSettings.Create(cfg => cfg
@@ -295,7 +295,7 @@ namespace Snaffler
                         Console.WriteLine("Wrote config values to .\\default.toml");
                         parsedConfig.LogToConsole = true;
                         Mq.Degub("Enabled logging to stdout.");
-                        Environment.Exit(0);
+                        return null;
                     }
                     else
                     {

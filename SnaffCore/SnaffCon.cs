@@ -82,7 +82,7 @@ namespace SnaffCore
             StartTime = DateTime.Now;
             // This is the main execution thread.
             Timer statusUpdateTimer =
-                new Timer(TimeSpan.FromMinutes(0.2)
+                new Timer(TimeSpan.FromMinutes(1)
                     .TotalMilliseconds)
                 { AutoReset = true }; // Set the time (1 min in this case)
             statusUpdateTimer.Elapsed += TimedStatusUpdate;

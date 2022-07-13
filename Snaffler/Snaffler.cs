@@ -8,6 +8,7 @@ namespace Snaffler
         {
             SnaffleRunner runner = new SnaffleRunner();
             runner.Run(args);
+            Console.WriteLine("I snaffled 'til the snafflin was done.");
         }
     }
 }

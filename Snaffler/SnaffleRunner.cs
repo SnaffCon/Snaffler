@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Snaffler
 {
@@ -177,12 +178,20 @@ namespace Snaffler
                 }
 
                 controller = new SnaffCon(Options);
-                Task thing = Task.Factory.StartNew(() => { controller.Execute(); });
 
-                while (true)
+                var tokenSource = new CancellationTokenSource();
+                var token = tokenSource.Token;
+                Task thing = Task.Factory.StartNew(() => { controller.Execute(); }, token);
+                bool exit = false;
+
+                while (exit == false)
                 {
-                    HandleOutput();
+                    if (HandleOutput() == true)
+                    {
+                        exit = true;
+                    }
                 }
+                return;
             }
             catch (Exception e)
             {
@@ -203,10 +212,9 @@ namespace Snaffler
             {
                 Console.ReadKey();
             }
-            Environment.Exit(1);
         }
 
-        private void HandleOutput()
+        private bool HandleOutput()
         {
             BlockingMq Mq = BlockingMq.GetMq();
             foreach (SnafflerMessage message in Mq.Q.GetConsumingEnumerable())
@@ -218,8 +226,15 @@ namespace Snaffler
                 else if (Options.LogType == LogType.JSON)
                 {
                     ProcessMessageJSON(message);
-                } 
+                }
+
+                // catch terminating messages and bail out of the master 'while' loop
+                if ((message.Type == SnafflerMessageType.Fatal) || (message.Type == SnafflerMessageType.Finish))
+                {
+                    return true;
+                }
             }
+            return false;
         }
 
         private void ProcessMessage(SnafflerMessage message)
@@ -256,7 +271,6 @@ namespace Snaffler
                     {
                         Console.ReadKey();
                     }
-                    Environment.Exit(1);
                     break;
                 case SnafflerMessageType.Finish:
                     Logger.Info("Snaffler out.");
@@ -266,7 +280,6 @@ namespace Snaffler
                         Console.WriteLine("Press any key to exit.");
                         Console.ReadKey();
                     }
-                    Environment.Exit(0);
                     break;
             }
         }
@@ -313,7 +326,6 @@ namespace Snaffler
                     {
                         Console.ReadKey();
                     }
-                    Environment.Exit(1);
                     break;
                 case SnafflerMessageType.Finish:
                     Logger.Info("Snaffler out.");
@@ -328,7 +340,6 @@ namespace Snaffler
                         Logger.Info("Normalising output, please wait...");
                         FixJSONOutput();
                     }
-                    Environment.Exit(0);
                     break;
             }
         }

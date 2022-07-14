@@ -25,7 +25,7 @@ namespace Snaffler
                 options = ParseImpl(args);
                 if (options == null)
                 {
-                    throw new ArgumentException("Unable to correctly parse arguments.");
+                    return null;
                 }
             }
             catch

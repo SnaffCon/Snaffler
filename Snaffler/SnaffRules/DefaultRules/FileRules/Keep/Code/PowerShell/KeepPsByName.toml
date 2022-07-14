@@ -1,0 +1,17 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepPSHistoryByName"
+MatchAction = "Relay"
+RelayTargets = ["KeepPsCredentials",
+"KeepCmdCredentials",
+"KeepAwsKeysInCode",
+"KeepInlinePrivateKey",
+"KeepPassOrKeyInCode",  "KeepSlackTokensInCode",
+"KeepSqlAccountCreation",
+"KeepDbConnStringPw"]
+Description = "Files with these exact names will be searched for PowerShell related strings."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["ConsoleHost_history\\.txt"]
+Triage = "Green"

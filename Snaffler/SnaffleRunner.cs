@@ -54,6 +54,12 @@ namespace Snaffler
                 // parse cli opts in
                 Options = Config.Parse(args);
 
+                if (Options == null)
+                {
+                    // bail out because the user was just running help
+                    return;
+                }
+
                 // set up the  TSV output if the flag is set
                 if (Options.LogTSV)
                 {

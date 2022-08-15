@@ -8,6 +8,7 @@ WordListType = "Contains"
 MatchLength = 0
 WordList = ["passw",
 "secret",
+"credential",
 "thycotic",
 "cyberark"]
 Triage = "Green"

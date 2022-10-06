@@ -94,9 +94,12 @@ namespace Snaffler
             ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "Computer (or comma separated list) to target.");
             ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
-            // list of letters i haven't used yet: egknqw
+            ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
+                "Interval between status updates (in minutes) also acts as a timeout for AD data to be gathered via LDAP. Turn this knob up if you aren't getting any computers from AD when you run Snaffler through a proxy or other slow link. Default = 5");
+            // list of letters i haven't used yet: gknqw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
+            parser.Arguments.Add(timeOutArg);
             parser.Arguments.Add(configFileArg);
             parser.Arguments.Add(outFileArg);
             parser.Arguments.Add(helpArg);
@@ -135,6 +138,20 @@ namespace Snaffler
             try
             {
                 parser.ParseCommandLine(args);
+
+                if (timeOutArg.Parsed && !String.IsNullOrWhiteSpace(timeOutArg.Value))
+                {
+                    int timeOutVal;
+                    if (int.TryParse(timeOutArg.Value, out timeOutVal))
+                    {
+                        Mq.Info("Set timeout/update interval to " + timeOutVal.ToString() + " minutes.");
+                        parsedConfig.TimeOut = timeOutVal;
+                    }
+                    else
+                    {
+                        Mq.Error("Invalid timeout value passed, defaulting to 5 mins.");
+                    }
+                }
 
                 if (logType.Parsed && !String.IsNullOrWhiteSpace(logType.Value))
                 {

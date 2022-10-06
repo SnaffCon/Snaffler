@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace SnaffCore.ActiveDirectory
 {
-    public class AdData
+    public sealed class AdData
     {
         private List<string> _domainComputers = new List<string>();
         private List<string> _domainUsers = new List<string>();
@@ -21,7 +21,20 @@ namespace SnaffCore.ActiveDirectory
         private string _targetDomain;
         private string _targetDc;
         private string _targetDomainNetBIOSName;
+        private DirectorySearch _directorySearch;
         private BlockingMq Mq { get; set; }
+
+        private static readonly Lazy<AdData> lazy =
+            new Lazy<AdData>(() => new AdData());
+        public static AdData AdDataInstance
+        {
+            get { return lazy.Value; }
+        }
+
+        private AdData()
+        {
+
+        }
 
         public List<string> GetDomainComputers()
         {
@@ -41,6 +54,15 @@ namespace SnaffCore.ActiveDirectory
         public List<string> GetDfsNamespacePaths()
         {
             return _dfsNamespacePaths;
+        }
+
+        public DirectorySearch GetDirectorySearch()
+        {
+            if (_directorySearch == null)
+            {
+                SetDirectorySearch();
+            }
+            return _directorySearch;
         }
 
         public DirectoryContext DirectoryContext { get; set; }
@@ -64,7 +86,7 @@ namespace SnaffCore.ActiveDirectory
         }
 
 
-        private DirectorySearch GetDirectorySearcher()
+        private void SetDirectorySearch()
         {
             Mq = BlockingMq.GetMq();
 
@@ -85,12 +107,13 @@ namespace SnaffCore.ActiveDirectory
             }
 
             _targetDomainNetBIOSName = GetNetBiosDomainName();
-            return new DirectorySearch(_targetDomain, _targetDc);
+            DirectorySearch directorySearch = new DirectorySearch(_targetDomain, _targetDc);
+            _directorySearch = directorySearch;
         }
 
         public void SetDfsPaths()
         {
-            DirectorySearch ds = GetDirectorySearcher();
+            DirectorySearch ds = GetDirectorySearch();
 
             try
             {
@@ -157,7 +180,7 @@ namespace SnaffCore.ActiveDirectory
 
         public void SetDomainComputers(string LdapFilter)
         {
-            DirectorySearch ds = GetDirectorySearcher();
+            DirectorySearch ds = GetDirectorySearch();
 
             List<string> domainComputers = new List<string>();
 
@@ -234,7 +257,7 @@ namespace SnaffCore.ActiveDirectory
 
         public void SetDomainUsers()
         {
-            DirectorySearch ds = GetDirectorySearcher();
+            DirectorySearch ds = GetDirectorySearch();
             List<string> domainUsers = new List<string>();
 
             string[] ldapProperties = new string[] { "name", "adminCount", "sAMAccountName", "userAccountControl","servicePrincipalName","userPrincipalName"};

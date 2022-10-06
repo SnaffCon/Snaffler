@@ -18,13 +18,14 @@ namespace SnaffCore.ActiveDirectory.LDAP
     {
         private readonly string _domainController;
         private readonly string _domainName;
-        private readonly Domain _domain;
+        private Domain _domain;
         private readonly string _ldapUsername;
         private readonly string _ldapPassword;
         private readonly int _ldapPort;
         private readonly bool _secureLdap;
         private Dictionary<string, string> _domainGuidMap;
         private bool _isFaulted;
+        private DirectoryContext _context;
 
         private readonly string _baseLdapPath;
         //Thread-safe storage for our Ldap Connection Pool
@@ -36,7 +37,6 @@ namespace SnaffCore.ActiveDirectory.LDAP
         public DirectorySearch(string domainName, string domainController, string baseLdapPath, string ldapUserName = null, string ldapPassword = null, int ldapPort = 0, bool secureLdap = false)
         {
             _domainName = domainName;
-            _domain = GetDomain();
             _baseLdapPath = baseLdapPath;
             _domainController = domainController;
             _domainGuidMap = new Dictionary<string, string>();
@@ -44,7 +44,17 @@ namespace SnaffCore.ActiveDirectory.LDAP
             _ldapPassword = ldapPassword;
             _ldapPort = ldapPort;
             _secureLdap = secureLdap;
-            CreateSchemaMap();
+            //CreateSchemaMap();
+        }
+
+        public string GetDomainName()
+        {
+            if (_domainName == null)
+            {
+                SetDomainName();
+            }
+
+            return _domainName;
         }
 
         /// <summary>
@@ -258,20 +268,29 @@ namespace SnaffCore.ActiveDirectory.LDAP
         /// Gets the System.DirectoryServices domain object associated with this DirectorySearcher
         /// </summary>
         /// <returns></returns>
-        private Domain GetDomain()
+        private void SetDomainName()
         {
             try
             {
                 if (_domainName == null)
-                    return Domain.GetCurrentDomain();
+                    _domain = Domain.GetCurrentDomain();
 
-                var context = new DirectoryContext(DirectoryContextType.Domain, _domainName);
-                return Domain.GetDomain(context);
+                if ((_ldapPassword != null) && (_ldapUsername != null))
+                {
+                    _context = new DirectoryContext(DirectoryContextType.Domain, _domainName, _ldapUsername,
+                        _ldapPassword);
+                }
+                else
+                {
+                    _context = new DirectoryContext(DirectoryContextType.Domain, _domainName);
+                }
+
+                _domain = Domain.GetDomain(_context);
             }
-            catch
+            catch (Exception e)
             {
+                //Console.WriteLine(e.ToString());
                 _isFaulted = true;
-                return null;
             }
         }
 
@@ -344,14 +363,18 @@ namespace SnaffCore.ActiveDirectory.LDAP
             return request;
         }
 
+        /*
         private void CreateSchemaMap()
         {
+            Domain domain = GetDomain();
+
             var map = new Dictionary<string, string>();
             if (_isFaulted)
                 return;
 
+
             // AD Schema is defined at forest-level so we use forest DN as LDAP search base
-            var path = _domain.Forest.Schema.Name;
+            var path = domain.Forest.Schema.Name;
             
             foreach (var result in QueryLdap("(schemaIDGUID=*)", new[] { "schemaidguid", "name" }, SearchScope.Subtree, path))
             {
@@ -370,6 +393,7 @@ namespace SnaffCore.ActiveDirectory.LDAP
 
             _domainGuidMap = map;
         }
+        */
 
         ~DirectorySearch()
         {

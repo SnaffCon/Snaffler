@@ -32,6 +32,8 @@ namespace SnaffCore
         private static TreeWalker TreeWalker;
         private static FileScanner FileScanner;
 
+        private AdData _adData = AdData.AdDataInstance;
+
         private DateTime StartTime { get; set; }
 
         public SnaffCon(Options options)
@@ -82,7 +84,7 @@ namespace SnaffCore
             StartTime = DateTime.Now;
             // This is the main execution thread.
             Timer statusUpdateTimer =
-                new Timer(TimeSpan.FromMinutes(1)
+                new Timer(TimeSpan.FromMinutes(MyOptions.TimeOut)
                     .TotalMilliseconds)
                 { AutoReset = true }; // Set the time (1 min in this case)
             statusUpdateTimer.Elapsed += TimedStatusUpdate;
@@ -159,26 +161,22 @@ namespace SnaffCore
         private void DomainDfsDiscovery()
         {
             Dictionary<string, string> dfsSharesDict = null;
-            AdData adData = null;
 
             Mq.Info("Getting DFS paths from AD.");
 
-            adData = new AdData();
-
-            adData.SetDfsPaths();
-            dfsSharesDict = adData.GetDfsSharesDict();
+            _adData.SetDfsPaths();
+            dfsSharesDict = _adData.GetDfsSharesDict();
 
             // if we found some actual dfsshares
             if (dfsSharesDict.Count >= 1)
             {
                 MyOptions.DfsSharesDict = dfsSharesDict;
-                MyOptions.DfsNamespacePaths = adData.GetDfsNamespacePaths();
+                MyOptions.DfsNamespacePaths = _adData.GetDfsNamespacePaths();
             }
         }
 
         private void DomainTargetDiscovery()
         {
-            AdData adData = null;
             List<string> targetComputers;
 
 
@@ -199,15 +197,9 @@ namespace SnaffCore
                 // We do this single threaded cos it's fast and not easily divisible.
                 Mq.Info("Getting computers from AD.");
 
-                // The AdData class set/get semantics have gotten wonky here.  Leaving as-is to minimize breakage/changes, but needs another look.
-                // initialize it if we didn't already
-                if(adData == null)
-                {
-                    adData = new AdData();
-                }
-                adData.SetDomainComputers(MyOptions.ComputerTargetsLdapFilter);
+                _adData.SetDomainComputers(MyOptions.ComputerTargetsLdapFilter);
 
-                targetComputers = adData.GetDomainComputers();
+                targetComputers = _adData.GetDomainComputers();
                 Mq.Info(string.Format("Got {0} computers from AD.", targetComputers.Count));
 
                 // if we're only scanning DFS shares then we can skip the SMB sharefinder and work from the list in AD, then jump to FileDiscovery().
@@ -246,11 +238,9 @@ namespace SnaffCore
             Mq.Info("Getting interesting users from AD.");
             // We do this single threaded cos it's fast and not easily divisible.
 
-            // The AdData class set/get semantics have gotten wonky here.  Leaving as-is to minimize breakage/changes, but needs another look.
-            AdData adData = new AdData();
-            adData.SetDomainUsers();
+            _adData.SetDomainUsers();
 
-            foreach (string user in adData.GetDomainUsers())
+            foreach (string user in _adData.GetDomainUsers())
             {
                 MyOptions.DomainUsersToMatch.Add(user);
             }

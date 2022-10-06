@@ -30,6 +30,8 @@ namespace SnaffCore.Config
         public string CurrentUser { get; set; } = WindowsIdentity.GetCurrent().Name;
         public string RuleDir { get; set; }
 
+        public int TimeOut { get; set; } = 5;
+
         // Concurrency Options
         public int MaxThreads { get; set; } = 60;
         public int ShareThreads { get; set; }

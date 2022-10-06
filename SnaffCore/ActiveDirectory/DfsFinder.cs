@@ -25,13 +25,13 @@ namespace SnaffCore.ActiveDirectory
             Mq = BlockingMq.GetMq();
         }
 
-        public List<DFSShare> FindDfsShares(DirectorySearch domainSearcher)
+        public List<DFSShare> FindDfsShares(DirectorySearch directorySearch)
         {
-            List<DFSShare> dfsShares = Get_DomainDFSShare(domainSearcher);
+            List<DFSShare> dfsShares = Get_DomainDFSShare(directorySearch);
             return dfsShares;
         }
 
-        private List<DFSShare> Get_DomainDFSShareV1(DirectorySearch _directorySearch)
+        private List<DFSShare> Get_DomainDFSShareV1(DirectorySearch directorySearch)
         {
                 var DFSShares = new List<DFSShare>();
                 string[] properties = new string[] { "remoteservername", "pkt", "cn", "name" };
@@ -39,7 +39,7 @@ namespace SnaffCore.ActiveDirectory
 
             try
             {
-                IEnumerable<SearchResultEntry> searchResultEntries = _directorySearch.QueryLdap(filter, properties, System.DirectoryServices.Protocols.SearchScope.Subtree);
+                IEnumerable<SearchResultEntry> searchResultEntries = directorySearch.QueryLdap(filter, properties, System.DirectoryServices.Protocols.SearchScope.Subtree);
                 int count = searchResultEntries.Count();
 
                 foreach (SearchResultEntry resEnt in searchResultEntries)

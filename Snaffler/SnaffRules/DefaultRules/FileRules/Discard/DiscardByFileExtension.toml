@@ -27,5 +27,6 @@ WordList = ["\\.bmp",
 "\\.otf",
 "\\.lock",
 "\\.css",
-"\\.less"]
+"\\.less",
+"\\.xsd"]
 Triage = "Green"

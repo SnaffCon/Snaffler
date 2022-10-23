@@ -238,6 +238,27 @@ namespace SnaffCore.Classifiers
                                 }
                             }
                         }
+
+                        try
+                        {
+                            if (filesysInfo.GetType() == typeof(FileInfo))
+                            {
+                                new FileStream(filesysInfo.FullName, FileMode.Open, FileAccess.Read).Dispose();
+                            }
+
+                            rwStatus.CanRead = true;
+                        }
+                        catch (Exception e)
+                        {
+                            // can't read i guess
+                        }
+
+                        if (rwStatus.CanModify)
+                        {
+                            rwStatus.CanWrite = true;
+                        }
+
+
                         fsAclResult.RwStatus = rwStatus;
                         return fsAclResult;
                     }

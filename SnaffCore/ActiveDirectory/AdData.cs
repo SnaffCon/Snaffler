@@ -92,7 +92,8 @@ namespace SnaffCore.ActiveDirectory
             // get user's distinguishedName
             string userFilter = "(samaccountname=" + domainUser + ")";//"(&(objectCategory=user)(objectClass=user)(|(userPrincipalName={0})(cn=" + domainUser + ")))";
             var ldapProperties = new string[] { "distinguishedName", "objectsid", "cn" };
-            IEnumerable<SearchResultEntry> userSearchResultEntries = _directorySearch.QueryLdap(userFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
+            DirectorySearch directorySearch = GetDirectorySearch();
+            IEnumerable<SearchResultEntry> userSearchResultEntries = directorySearch.QueryLdap(userFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
 
             // check we got something
             if (userSearchResultEntries.Count() > 0)

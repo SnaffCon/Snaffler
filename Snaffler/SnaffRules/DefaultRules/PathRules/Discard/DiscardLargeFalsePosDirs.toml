@@ -17,7 +17,8 @@ WordList = [
 	"\\\\doc\\\\openssl",
 	"Anaconda3\\\\Lib\\\\test",
 	"WindowsPowerShell\\\\Modules",
-	"Python27\\\\Lib"
+	"Python27\\\\Lib",
+	"PolicyDefinitions"
 ]
 Triage = "Green"
 

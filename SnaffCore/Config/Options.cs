@@ -29,8 +29,10 @@ namespace SnaffCore.Config
         public List<string> DfsNamespacePaths { get; set; } = new List<string>();
         public string CurrentUser { get; set; } = WindowsIdentity.GetCurrent().Name;
         public string RuleDir { get; set; }
-
         public int TimeOut { get; set; } = 5;
+        public bool AclEnum { get; set; } = true;
+        public string TargetUser { get; set; } = WindowsIdentity.GetCurrent().Name;
+        [Nett.TomlIgnore] public AclOptions AclOptions { get; set; } = new AclOptions();
 
         // Concurrency Options
         public int MaxThreads { get; set; } = 60;

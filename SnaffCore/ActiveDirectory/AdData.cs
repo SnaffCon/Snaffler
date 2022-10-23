@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using SnaffCore.Concurrency;
 using System.Collections.Generic;
 using System.DirectoryServices;
@@ -85,6 +86,65 @@ namespace SnaffCore.ActiveDirectory
             return null;
         }
 
+        public List<Trustee> GetUsersGroupsRecursive(string domainUser)
+        {
+            List<Trustee> results = new List<Trustee>();
+            // get user's distinguishedName
+            string userFilter = "(samaccountname=" + domainUser + ")";//"(&(objectCategory=user)(objectClass=user)(|(userPrincipalName={0})(cn=" + domainUser + ")))";
+            var ldapProperties = new string[] { "distinguishedName", "objectsid", "cn" };
+            IEnumerable<SearchResultEntry> userSearchResultEntries = _directorySearch.QueryLdap(userFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
+
+            // check we got something
+            if (userSearchResultEntries.Count() > 0)
+            {
+                SearchResultEntry userDn = userSearchResultEntries.First();
+                // get user's direct group memberships
+                string groupFilter = "(&(objectClass=group)(member=" + userDn.GetProperty("distinguishedName") + "))";
+                // stick user in result list
+                results.Add(new Trustee() { DistinguishedName = userDn.DistinguishedName, Sid = userDn.GetSid(), DisplayName = userDn.GetProperty("cn") });
+                IEnumerable<SearchResultEntry> groupSearchResultEntries = _directorySearch.QueryLdap(groupFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
+
+                ConcurrentBag<Trustee> workingGroups = new ConcurrentBag<Trustee>();
+                //add first round results into bag and list
+                foreach (SearchResultEntry srcGroup in groupSearchResultEntries)
+                {
+                    Trustee groupDn = new Trustee() { DistinguishedName = srcGroup.DistinguishedName, DisplayName = srcGroup.GetProperty("cn"), Sid = srcGroup.GetSid() };
+                    Mq.Degub("Added " + groupDn.DisplayName + " to Target Trustees");
+                    workingGroups.Add(groupDn);
+                    results.Add(groupDn);
+                }
+                // iterate while bag is not empty
+                while (!workingGroups.IsEmpty)
+                {
+                    Trustee subGroupDn;
+                    // grab one from the working bag
+                    workingGroups.TryTake(out subGroupDn);
+                    // find the groups it's a member of
+                    string subGroupFilter = "(&(objectClass=group)(member=" + subGroupDn.DistinguishedName + "))";
+                    IEnumerable<SearchResultEntry> subGroupSearchResultEntries = _directorySearch.QueryLdap(subGroupFilter, ldapProperties, System.DirectoryServices.Protocols.SearchScope.Subtree);
+
+                    foreach (SearchResultEntry srcGroup in subGroupSearchResultEntries)
+                    {
+                        string nextGroupDn = srcGroup.DistinguishedName;
+                        // if we don't already have them, add them to working and result vars.
+                        IEnumerable<Trustee> matches = results.Where(group => group.DistinguishedName == nextGroupDn);
+                        if (!matches.Any())
+                        {
+                            Mq.Degub("Added " + nextGroupDn + " to Target Trustees");
+
+                            workingGroups.Add(new Trustee() { DistinguishedName = srcGroup.DistinguishedName, DisplayName = srcGroup.GetProperty("cn"), Sid = srcGroup.GetSid() });
+                            results.Add(new Trustee() { DistinguishedName = srcGroup.DistinguishedName, DisplayName = srcGroup.GetProperty("cn"), Sid = srcGroup.GetSid() });
+                        }
+                    }
+                }
+                return results;
+            }
+            else
+            {
+                Mq.Error("Failed to find target user in domain, ACL checks are likely to be inaccurate.");
+                return new List<Trustee>() { new Trustee() { DisplayName = domainUser, Sid = "" } };
+            }
+        }
 
         private void SetDirectorySearch()
         {

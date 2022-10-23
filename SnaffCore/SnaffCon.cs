@@ -104,6 +104,79 @@ namespace SnaffCore
                 DomainDfsDiscovery();
             }
 
+            if (MyOptions.AclEnum == true)
+            {
+                Mq.Trace("Enumerating target/current user's name and group memberships.");
+
+                string targetUserName = MyOptions.TargetUser;
+
+                List<Trustee> currentUserAndGroups;
+
+                if (targetUserName.Contains("\\"))
+                {
+                    targetUserName = targetUserName.Split('\\')[1];
+                }
+
+                try
+                {
+                    currentUserAndGroups = _adData.GetUsersGroupsRecursive(targetUserName);
+                }
+                catch (Exception e)
+                {
+                    currentUserAndGroups = new List<Trustee>();
+                    foreach (TrusteeOption trusteeOption in MyOptions.AclOptions.TrusteeOptions)
+                    {
+                        if (trusteeOption.LowPriv)
+                        {
+                            currentUserAndGroups.Add(new Trustee(trusteeOption.DisplayName, false));
+                        }
+                    }
+
+                    currentUserAndGroups.Add(new Trustee(targetUserName, false));
+                }
+
+
+                foreach (Trustee uog in currentUserAndGroups)
+                {
+                    bool match = false;
+                    // check match on both SID and displayname
+                    IEnumerable<TrusteeOption> dispMatches = MyOptions.AclOptions.TrusteeOptions.Where(trustee => trustee.DisplayName == uog.DisplayName);
+                    if (dispMatches.Any())
+                    {
+                        match = true;
+                        // if we are a member of a well-known group it should be targeted
+                        dispMatches.First().Target = true;
+                    }
+                    IEnumerable<TrusteeOption> sidMatches = MyOptions.AclOptions.TrusteeOptions.Where(trustee => trustee.SID == uog.Sid);
+                    if (sidMatches.Any())
+                    {
+                        match = true;
+                        // if we are a member of a well-known group it should be targeted
+                        sidMatches.First().Target = true;
+                    }
+                    if (!match)
+                    {
+                        // if it's not already in the list of well-known principals, add it to TrusteeOptions
+                        MyOptions.AclOptions.TrusteeOptions.Add(new TrusteeOption()
+                        {
+                            SID = uog.Sid,
+                            DisplayName = uog.DisplayName,
+                            Target = true
+                        });
+                    }
+                }
+
+                // if the user has defined some custom trustee(s) to target:
+                if (MyOptions.AclOptions.TargetTrustees != null)
+                {
+                    foreach (TrusteeOption trusteeOption in MyOptions.AclOptions.TargetTrustees)
+                    {
+                        trusteeOption.Target = true;
+                        MyOptions.AclOptions.TrusteeOptions.Add(trusteeOption);
+                    }
+                }
+            }
+
             if (MyOptions.PathTargets.Count == 0 && MyOptions.ComputerTargets == null)
             {
                 if (MyOptions.DfsSharesDict.Count == 0)

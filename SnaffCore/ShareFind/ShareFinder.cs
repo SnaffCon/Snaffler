@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using SnaffCore.ActiveDirectory;
 using SnaffCore.Classifiers.EffectiveAccess;
+using SnaffCore.Config;
 using static SnaffCore.Config.Options;
 
 
@@ -20,12 +21,15 @@ namespace SnaffCore.ShareFind
         private BlockingStaticTaskScheduler TreeTaskScheduler { get; set; }
         private TreeWalker TreeWalker { get; set; }
         //private EffectivePermissions effectivePermissions { get; set; } = new EffectivePermissions(MyOptions.CurrentUser);
+        private FsAclAnalyser _fsAclAnalyser { get; set; }
+        private AclOptions _options { get; set; }
 
         public ShareFinder()
         {
             Mq = BlockingMq.GetMq();
             TreeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
             TreeWalker = SnaffCon.GetTreeWalker();
+            _fsAclAnalyser = new FsAclAnalyser(MyOptions.AclOptions);
         }
 
         internal void GetComputerShares(string computer)
@@ -96,37 +100,7 @@ namespace SnaffCore.ShareFind
                             SharePath = shareName,
                             ShareComment = hostShareInfo.shi1_remark.ToString()
                         };
-
-                        // Try to find this computer+share in the list of DFS targets
-
-
-                        /*
-                                                foreach (DFSShare dfsShare in MyOptions.DfsShares)
-                                                {
-                                                    ///TODO: Add some logic to match cases where short hostnames is used in DFS target list
-                                                    if (dfsShare.RemoteServerName.Equals(computer, StringComparison.OrdinalIgnoreCase) &&
-                                                        dfsShare.Name.Equals(hostShareInfo.shi1_netname, StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        // why the not operator?   if (!MyOptions.DfsNamespacePaths.Contains(dfsShare.DfsNamespacePath))
-                                                        if (MyOptions.DfsNamespacePaths.Contains(dfsShare.DfsNamespacePath))
-                                                        {
-                                                            // remove the namespace path to make sure we don't kick it off again.
-                                                            MyOptions.DfsNamespacePaths.Remove(dfsShare.DfsNamespacePath);
-                                                            // sub out the \\computer\share path for the dfs namespace path. this makes sure we hit the most efficient endpoint. 
-                                                            shareName = dfsShare.DfsNamespacePath;
-                                                        }
-                                                        else // if that dfs namespace has already been removed from our list, skip further scanning of that share.
-                                                        {
-                                                            skip = true;
-                                                        }
-
-                                                        // Found DFS target matching this computer+share - no further comparisons needed
-                                                        break;
-                                                    }
-                                                }
-                        */
-
-
+                        
                         // If this path can be accessed via DFS
                         if (MyOptions.DfsSharesDict.ContainsKey(shareName))
                         {                            

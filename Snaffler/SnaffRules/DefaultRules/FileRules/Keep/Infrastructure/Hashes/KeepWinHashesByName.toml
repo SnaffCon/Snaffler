@@ -1,0 +1,21 @@
+﻿[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepNTDS"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [ "NTDS.DIT"]
+Triage = "Black"
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepWinLocalHashesByName"
+MatchAction = "Snaffle"
+Description = "Files with these exact names are very interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [ "SECURITY", "SAM", "SYSTEM"]
+Triage = "Red"

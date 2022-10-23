@@ -19,10 +19,12 @@ namespace SnaffCore.Classifiers
     public class FileClassifier
     {
         private ClassifierRule ClassifierRule { get; set; }
+        private FsAclAnalyser _fsAclAnalyser { get; set; }
 
-        public FileClassifier(ClassifierRule inRule)
+        public FileClassifier(ClassifierRule inRule, FsAclAnalyser fsAclAnalyser)
         {
             this.ClassifierRule = inRule;
+            this._fsAclAnalyser = fsAclAnalyser;
         }
 
         public bool ClassifyFile(FileInfo fileInfo)
@@ -93,12 +95,15 @@ namespace SnaffCore.Classifiers
                     // chuck it.
                     return true;
                 case MatchAction.Snaffle:
+                    FsAclResult fsAclResult = _fsAclAnalyser.AnalyseFsAcl(fileInfo);
+
                     // snaffle that bad boy
                     fileResult = new FileResult(fileInfo)
                     {
                         MatchedRule = ClassifierRule,
                         TextResult = textResult
                     };
+                    fileResult.RwStatus = fsAclResult.RwStatus;
                     // if the file was list-only, don't bother sending a result back to the user.
                     if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return false; };
                     Mq.FileResult(fileResult);
@@ -156,7 +161,7 @@ namespace SnaffCore.Classifiers
                             }
                             else if (nextRule.EnumerationScope == EnumerationScope.FileEnumeration)
                             {
-                                FileClassifier nextFileClassifier = new FileClassifier(nextRule);
+                                FileClassifier nextFileClassifier = new FileClassifier(nextRule, _fsAclAnalyser);
                                 nextFileClassifier.ClassifyFile(fileInfo);
                             }
                             else

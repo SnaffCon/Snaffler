@@ -39,13 +39,16 @@ namespace SnaffCore.Classifiers
     public enum MatchLoc
     {
         ShareName,
+        ShareAcl,
+        DirAcl,
         FilePath,
         FileName,
         FileExtension,
         FileContentAsString,
         FileContentAsBytes,
         FileLength,
-        FileMD5
+        FileMD5,
+        FileAcl
     }
 
     public enum MatchListType

@@ -9,10 +9,12 @@ namespace SnaffCore.FileScan
     public class FileScanner
     {
         private BlockingMq Mq { get; set; }
+        private FsAclAnalyser _fsAclAnalyser { get; set; }
 
         public FileScanner()
         {
             Mq = BlockingMq.GetMq();
+            _fsAclAnalyser = new FsAclAnalyser(MyOptions.AclOptions);
         }
         public void ScanFile(string file)
         {
@@ -22,7 +24,7 @@ namespace SnaffCore.FileScan
                 // send the file to all the classifiers.
                 foreach (ClassifierRule classifier in MyOptions.FileClassifiers)
                 {
-                    FileClassifier fileClassifier = new FileClassifier(classifier);
+                    FileClassifier fileClassifier = new FileClassifier(classifier, _fsAclAnalyser);
                     if (fileClassifier.ClassifyFile(fileInfo))
                     {
                         return;

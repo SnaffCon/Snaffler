@@ -52,13 +52,16 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Portable.System.ValueTuple, Version=1.0.1.1, Culture=neutral, PublicKeyToken=0007e0f1797b6946, processorArchitecture=MSIL">
+      <HintPath>..\packages\Portable.System.ValueTuple.1.0.1\lib\net45\Portable.System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.Protocols" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.XML" />
-	    <Reference Include="Nett, Version=0.15.0.0, Culture=neutral, PublicKeyToken=605dcfe7a1d3365b, processorArchitecture=MSIL">
+    <Reference Include="Nett, Version=0.15.0.0, Culture=neutral, PublicKeyToken=605dcfe7a1d3365b, processorArchitecture=MSIL">
       <HintPath>..\packages\Nett.0.15.0\lib\net40\Nett.dll</HintPath>
     </Reference>
     <Reference Include="Nett.Coma, Version=0.15.0.0, Culture=neutral, PublicKeyToken=605dcfe7a1d3365b, processorArchitecture=MSIL">
@@ -66,6 +69,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActiveDirectory\Users.cs" />
+    <Compile Include="Config\AclOptions.cs" />
+    <Compile Include="Config\Trustees.cs" />
+    <Compile Include="Sddl.Parser\Ace.cs" />
+    <Compile Include="Sddl.Parser\Acl.cs" />
+    <Compile Include="Sddl.Parser\Acm.cs" />
     <Compile Include="ActiveDirectory\DfsFinder.cs" />
     <Compile Include="ActiveDirectory\DirectorySearch.cs" />
     <Compile Include="ActiveDirectory\Extensions.cs" />
@@ -74,6 +83,8 @@
     <Compile Include="Classifiers\ArchiveClassifier.cs" />
     <Compile Include="Classifiers\Certificate.cs" />
     <Compile Include="Classifiers\EffectiveAccess.cs" />
+    <Compile Include="Classifiers\FsAclAnalyser.cs" />
+    <Compile Include="Classifiers\SddlAnalyser.cs" />
     <Compile Include="Classifiers\TextClassifier.cs" />
     <Compile Include="Classifiers\ContentClassifier.cs" />
     <Compile Include="Classifiers\DirClassifier.cs" />
@@ -87,9 +98,17 @@
     <Compile Include="Config\ClassifierOptions.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Classifiers\ClassifierRule.cs" />
+    <Compile Include="Sddl.Parser\Errors.cs" />
+    <Compile Include="Sddl.Parser\Format.cs" />
+    <Compile Include="Sddl.Parser\Match.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sddl.Parser\Sddl.cs" />
+    <Compile Include="Sddl.Parser\SecurableObjectType.cs" />
     <Compile Include="ShareFind\ShareFinder.cs" />
     <Compile Include="FileScan\FileScanner.cs" />
+    <Compile Include="Sddl.Parser\Sid.cs" />
+    <Compile Include="Sddl.Parser\StringBuilderExtensions.cs" />
+    <Compile Include="Sddl.Parser\StringLengthComparer.cs" />
     <Compile Include="TreeWalk\TreeWalker.cs" />
     <Compile Include="SnaffCon.cs" />
   </ItemGroup>

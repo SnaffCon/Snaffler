@@ -1,0 +1,11 @@
+﻿[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "RelayExecutableByExt"
+MatchAction = "Relay"
+RelayTargets = ["KeepExecutableByAcl"]
+Description = "Files with these extensions will be checked for writability."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["exe","dll","vbs","ps1","bat","aspx","config","php","jsp","py"]
+Triage = "Green"

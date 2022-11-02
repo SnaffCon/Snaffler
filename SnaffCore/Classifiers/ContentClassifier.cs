@@ -24,6 +24,7 @@ namespace SnaffCore.Classifiers
         {
             BlockingMq Mq = BlockingMq.GetMq();
             FileResult fileResult;
+
             try
             {
                 if (MyOptions.MaxSizeToGrep >= fileInfo.Length)

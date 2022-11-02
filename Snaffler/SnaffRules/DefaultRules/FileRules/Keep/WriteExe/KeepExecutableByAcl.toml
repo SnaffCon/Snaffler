@@ -1,0 +1,9 @@
+﻿[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepExecutableByAcl"
+MatchAction = "Snaffle"
+Description = "Files with these extensions that are writable are very interesting."
+MatchLocation = "FileAcl"
+WordListType = "Exact"
+WordList = ["Write", "Modify"]
+Triage = "Yellow"

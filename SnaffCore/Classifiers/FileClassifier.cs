@@ -203,10 +203,20 @@ namespace SnaffCore.Classifiers
         public X509Certificate2 parseCert(string certPath, string password = null)
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            // IT TURNS OUT THAT new X509Certificate2() actually writes a file to a temp path and if you
+            // IT TURNS OUT THAT new X509Certificate2() actually writes a file to a temp path no matter what you do, and if you
             // don't manage it yourself it hits 65,000 temp files and hangs.
 
             var tempfile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            try
+            {
+                new FileStream(certPath, FileMode.Open, FileAccess.Read).Dispose();
+            }
+            catch (Exception e)
+            {
+                Mq.Degub("Exception when trying to read certificate file " + certPath);
+                return null;
+            }
+
             File.Copy(certPath, tempfile);
             X509Certificate2 parsedCert = null;
 

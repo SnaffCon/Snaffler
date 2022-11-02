@@ -8,7 +8,6 @@ WordListType = "Exact"
 MatchLength = 0
 WordList = [
 "\\.mdf",
-"\\.sdf",
 "\\.sqldump",
 "\\.bak"]
 Triage = "Yellow"

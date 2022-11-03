@@ -93,10 +93,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <EmbeddedResource Include="SnaffRules\DefaultRules\FileRules\Keep\Infrastructure\WinHashes\KeepWinHashesByName.toml" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <EmbeddedResource Include="SnaffRules\DefaultRules\**\*.toml" />
   </ItemGroup>

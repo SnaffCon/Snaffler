@@ -1,12 +1,15 @@
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
-RuleName = "RelayCyberArkByExtension"
-MatchAction = "Relay"
-RelayTargets = ["KeepCyberArkCredFile"]
+RuleName = "KeepCyberArkByExtension"
+MatchAction = "Snaffle"
 Description = "Files with these extensions are QUITE interesting."
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
-WordList = [ "\\.cred"]
+WordList = [ 
+	"\\.cred",
+	"\\.pass",
+
+]
 Triage = "Red"
 

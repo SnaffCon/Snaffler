@@ -6,6 +6,15 @@ Description = "Files with these exact names are very very interesting."
 MatchLocation = "FileName"
 WordListType = "Exact"
 MatchLength = 0
-WordList = [ "Psmapp\\.cred",
-"psmgw\\.cred"]
+WordList = [ 
+	"Psmapp\\.cred",
+	"psmgw\\.cred",
+	"backup\\.key",
+	"MasterReplicationUser\\.pass",
+	"RecPrv\\.key",
+	"ReplicationUser\\.pass",
+	"Server\\.key",
+	"VaultEmergency\\.pass",
+	"VaultUser\\.pass"
+	]
 Triage = "Black"

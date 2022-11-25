@@ -15,6 +15,10 @@ WordList = [
 	"ReplicationUser\\.pass",
 	"Server\\.key",
 	"VaultEmergency\\.pass",
-	"VaultUser\\.pass"
+	"VaultUser\\.pass",
+	"Vault\\.ini",
+	"PADR\\.ini",
+	"PARAgent\\.ini",
+	"CACPMScanner\\.exe\\.config"
 	]
 Triage = "Black"

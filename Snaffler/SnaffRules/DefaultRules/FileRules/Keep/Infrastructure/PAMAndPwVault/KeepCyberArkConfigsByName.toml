@@ -19,6 +19,7 @@ WordList = [
 	"Vault\\.ini",
 	"PADR\\.ini",
 	"PARAgent\\.ini",
-	"CACPMScanner\\.exe\\.config"
+	"CACPMScanner\\.exe\\.config",
+	"PVConfiguration\\.xml"
 	]
 Triage = "Black"

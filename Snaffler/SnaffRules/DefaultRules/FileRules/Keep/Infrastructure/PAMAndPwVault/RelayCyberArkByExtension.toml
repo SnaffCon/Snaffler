@@ -8,8 +8,7 @@ WordListType = "Exact"
 MatchLength = 0
 WordList = [ 
 	"\\.cred",
-	"\\.pass",
-
+	"\\.pass"
 ]
 Triage = "Red"
 

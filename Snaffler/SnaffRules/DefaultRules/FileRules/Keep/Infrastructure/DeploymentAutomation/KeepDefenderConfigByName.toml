@@ -1,0 +1,10 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepDefenderConfigByName"
+MatchAction = "Snaffle"
+Description = "Files containing Defender Configs are very interesting."
+MatchLocation = "FileName"
+WordListType = "Equals"
+MatchLength = 0
+WordList = ["SensorConfiguration.json"]
+Triage = "Yellow"

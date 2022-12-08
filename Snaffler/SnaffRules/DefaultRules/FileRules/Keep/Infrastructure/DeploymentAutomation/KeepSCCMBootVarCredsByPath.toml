@@ -6,5 +6,8 @@ Description = "Files with a path containing these strings are very interesting."
 MatchLocation = "FilePath"
 WordListType = "Regex"
 MatchLength = 0
-WordList = ["REMINST\\\\SMSTemp\\\\.*\\.var"]
+WordList = ["REMINST\\\\SMSTemp\\\\.*\\.var",
+			"SMS\\\\data\\\\Variables.dat",
+			"SMS\\\\data\\\\Policy.xml"
+		]
 Triage = "Red"

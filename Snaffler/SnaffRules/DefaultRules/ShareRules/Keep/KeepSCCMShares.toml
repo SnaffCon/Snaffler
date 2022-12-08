@@ -1,0 +1,10 @@
+[[ClassifierRules]]
+EnumerationScope = "ShareEnumeration"
+RuleName = "KeepSCCMShares"
+MatchAction = "Snaffle"
+Description = "Notifies the user that they can read SCCMContentLib$ so they can take CMLoot for a spin."
+MatchLocation = "ShareName"
+WordListType = "EndsWith"
+MatchLength = 0
+WordList = ["\\\\SCCMContentLib\\$"]
+Triage = "Yellow"

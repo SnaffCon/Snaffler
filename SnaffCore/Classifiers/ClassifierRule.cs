@@ -33,7 +33,8 @@ namespace SnaffCore.Classifiers
         ShareEnumeration,
         DirectoryEnumeration,
         FileEnumeration,
-        ContentsEnumeration
+        ContentsEnumeration,
+        PostMatch
     }
 
     public enum MatchLoc

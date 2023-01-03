@@ -58,12 +58,6 @@
     <Reference Include="System.DirectoryServices.Protocols" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.XML" />
-	    <Reference Include="Nett, Version=0.15.0.0, Culture=neutral, PublicKeyToken=605dcfe7a1d3365b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nett.0.15.0\lib\net40\Nett.dll</HintPath>
-    </Reference>
-    <Reference Include="Nett.Coma, Version=0.15.0.0, Culture=neutral, PublicKeyToken=605dcfe7a1d3365b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nett.Coma.0.15.0\lib\net40\Nett.Coma.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveDirectory\DfsFinder.cs" />
@@ -94,8 +88,9 @@
     <Compile Include="SnaffCon.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="Nett.Coma">
+      <Version>0.15.0</Version>
+    </PackageReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

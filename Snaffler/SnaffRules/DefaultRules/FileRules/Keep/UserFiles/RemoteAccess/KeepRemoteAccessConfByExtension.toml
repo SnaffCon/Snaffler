@@ -6,5 +6,5 @@ Description = "Files with these extensions are a little interesting."
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
-WordList = ["\\.rdg","\\.rtsz","\\.rtsx","\\.ovpn"]
+WordList = ["\\.rdg","\\.rtsz","\\.rtsx","\\.ovpn","\\.tvopt"]
 Triage = "Yellow"

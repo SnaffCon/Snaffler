@@ -6,8 +6,12 @@ Description = "Files with contents matching these regexen are very interesting."
 MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
-WordList = ["passwo?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
-"[_\\-\\.]?api[_\\-\\.]?key",
-"[_\\-\\.]oauth\\s*=",
-"client_secret"]
+WordList = ["passw?o?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
+"api[Kk]ey\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
+"passw?o?r?d?>\\s*[^\\s<]+\\s*<",
+"api[kK]ey>\\s*[^\\s<]+\\s*<",
+"[_\\-\\.]oauth\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
+"client_secret\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
+"<ExtendedMatchKey>ClientAuth"
+]
 Triage = "Red"

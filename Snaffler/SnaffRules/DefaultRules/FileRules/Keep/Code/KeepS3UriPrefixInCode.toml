@@ -1,6 +1,6 @@
 [[ClassifierRules]]
 EnumerationScope = "ContentsEnumeration"
-RuleName = "KeepS3URIPrefixInCode"
+RuleName = "KeepS3UriPrefixInCode"
 MatchAction = "Snaffle"
 Description = "Files with content matching an AWS S3 or Apache Hadoop S3A URI Prefix"
 MatchLocation = "FileContentAsString"

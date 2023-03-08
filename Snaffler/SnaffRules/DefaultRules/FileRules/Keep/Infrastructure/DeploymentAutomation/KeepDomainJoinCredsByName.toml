@@ -1,0 +1,10 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepDomainJoinCredsByName"
+MatchAction = "Snaffle"
+Description = "Files containing Domain Join Credes are quite interesting."
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["customsettings.ini"]
+Triage = "Yellow"

@@ -131,7 +131,12 @@ namespace SnaffCore.ActiveDirectory
                                     {
                                         var DFSroot = Target.Split('\\')[3];
                                         string ShareName = resEnt.GetProperty(@"msdfs-linkpathv2").Replace("/","\\");
-                                        DFSShares.Add(new DFSShare { Name = $@"{DFSroot}{ShareName}", RemoteServerName = Target.Split('\\')[2], DFSNamespace = dfsnamespace });
+                                        // FIX  DFS V2 shares have the share name in the DFSroot, don't double-up
+                                        DFSShares.Add(new DFSShare {
+                                            Name = $@"{DFSroot}",
+                                            RemoteServerName = Target.Split('\\')[2],
+                                            DFSNamespace = dfsnamespace }
+                                        );
                                     }
                                 }
                                 catch (Exception e)

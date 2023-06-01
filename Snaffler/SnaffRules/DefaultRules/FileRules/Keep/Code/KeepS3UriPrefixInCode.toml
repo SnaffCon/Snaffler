@@ -1,0 +1,10 @@
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepS3UriPrefixInCode"
+MatchAction = "Snaffle"
+Description = "Files with content matching an AWS S3 or Apache Hadoop S3A URI Prefix"
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["s3[a]?:\\/\\/[a-zA-Z0-9\\-\\+\\/]{2,16}"]
+Triage = "Yellow"

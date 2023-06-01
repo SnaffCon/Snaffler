@@ -129,13 +129,8 @@ namespace SnaffCore.ActiveDirectory
                                     var Target = babbynode.InnerText;
                                     if (Target.Contains(@"\"))
                                     {
-                                        var DFSroot = Target.Split('\\')[3];
-                                                                                
+                                        var DFSroot = Target.Split('\\')[3];                                                                                
                                         string ShareName = resEnt.GetProperty(@"msdfs-linkpathv2").Replace("/","\\");                                        
-                                        if(ShareName == "\\ITPDocs")
-                                        {
-                                            Console.WriteLine("Found {0}", ShareName);
-                                        }
 
                                         // FIX  DFS V2 shares have the share name in the DFSroot, don't double-up
                                         DFSShares.Add(new DFSShare {

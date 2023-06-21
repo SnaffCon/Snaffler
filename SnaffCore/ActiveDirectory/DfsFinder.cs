@@ -115,7 +115,7 @@ namespace SnaffCore.ActiveDirectory
 
                     var target_list = resEnt.GetPropertyAsBytes(@"msdfs-targetlistv2");
                     var xml = new XmlDocument();
-                    string thing = System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray());
+                    //string thing = System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray());
                     xml.LoadXml(System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray()));
 
                     if (xml.FirstChild != null)
@@ -126,12 +126,18 @@ namespace SnaffCore.ActiveDirectory
                             {
                                 try
                                 {
-                                    var Target = node.InnerText;
+                                    var Target = babbynode.InnerText;
                                     if (Target.Contains(@"\"))
                                     {
-                                        var DFSroot = Target.Split('\\')[3];
-                                        string ShareName = resEnt.GetProperty(@"msdfs-linkpathv2").Replace("/","\\");
-                                        DFSShares.Add(new DFSShare { Name = $@"{DFSroot}{ShareName}", RemoteServerName = Target.Split('\\')[2], DFSNamespace = dfsnamespace });
+                                        var DFSroot = Target.Split('\\')[3];                                                                                
+                                        string ShareName = resEnt.GetProperty(@"msdfs-linkpathv2").Replace("/","\\");                                        
+
+                                        // FIX  DFS V2 shares have the share name in the DFSroot, don't double-up
+                                        DFSShares.Add(new DFSShare {
+                                            Name = $@"{DFSroot}",
+                                            RemoteServerName = Target.Split('\\')[2],
+                                            DFSNamespace = dfsnamespace }
+                                        );
                                     }
                                 }
                                 catch (Exception e)

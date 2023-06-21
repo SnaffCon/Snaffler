@@ -130,7 +130,7 @@ namespace SnaffCore.ActiveDirectory
                 {
                     // Construct the UNC path to this DFS share and add it to the list.  
                     // We use this structure as a to-do list in the ShareFinder code, skipping DFS shares that have already been processed
-                    string dfsShareNamespacePath = @"\\" + _targetDomain + @"\" + dfsShare.DFSNamespace;
+                    string dfsShareNamespacePath = @"\\" + _targetDomain + @"\" + dfsShare.DFSFolderPath;
                     List<string> hostnames = new List<string>();
 
                     if (!_dfsNamespacePaths.Contains(dfsShareNamespacePath))
@@ -156,7 +156,7 @@ namespace SnaffCore.ActiveDirectory
                     // Add these paths as keys in the dictionary
                     foreach (string h in hostnames)
                     {
-                        realPath = String.Format(@"\\{0}\{1}", h, dfsShare.Name);
+                        realPath = String.Format(@"\\{0}\{1}", h, dfsShare.RemoteShareName);
 
                         if (!_dfsSharesDict.ContainsKey(realPath))
                         {

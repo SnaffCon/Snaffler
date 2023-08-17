@@ -11,9 +11,9 @@ namespace SnaffCore.ActiveDirectory
 {
     public class DFSShare
     {
-        public string Name { get; set; }
+        public string RemoteShareName { get; set; }
         public string RemoteServerName { get; set; }
-        public string DFSNamespace { get; set; }
+        public string DFSFolderPath { get; set; }
     }
 
     class DfsFinder
@@ -61,9 +61,9 @@ namespace SnaffCore.ActiveDirectory
 
                                     DFSShares.Add(new DFSShare
                                     {
-                                        Name = resEnt.GetProperty("name"),
+                                        RemoteShareName = resEnt.GetProperty("name"),
                                         RemoteServerName = name.Split(new char[] { '\\' })[2],
-                                        DFSNamespace = dfsnamespace
+                                        DFSFolderPath = dfsnamespace
                                     });
                                 }
                             }
@@ -115,7 +115,6 @@ namespace SnaffCore.ActiveDirectory
 
                     var target_list = resEnt.GetPropertyAsBytes(@"msdfs-targetlistv2");
                     var xml = new XmlDocument();
-                    string thing = System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray());
                     xml.LoadXml(System.Text.Encoding.Unicode.GetString(target_list.Skip(2).Take(target_list.Length - 1 + 1 - 2).ToArray()));
 
                     if (xml.FirstChild != null)
@@ -126,12 +125,18 @@ namespace SnaffCore.ActiveDirectory
                             {
                                 try
                                 {
-                                    var Target = node.InnerText;
-                                    if (Target.Contains(@"\"))
+                                    var target = babbynode.InnerText;
+                                    if (target.Contains(@"\"))
                                     {
-                                        var DFSroot = Target.Split('\\')[3];
-                                        string ShareName = resEnt.GetProperty(@"msdfs-linkpathv2").Replace("/","\\");
-                                        DFSShares.Add(new DFSShare { Name = $@"{DFSroot}{ShareName}", RemoteServerName = Target.Split('\\')[2], DFSNamespace = dfsnamespace });
+                                        var targetShareName = target.Split('\\')[3];                                                                                
+                                        string dfsLeafName = resEnt.GetProperty(@"msdfs-linkpathv2").Replace("/","\\");                                        
+
+                                        DFSShares.Add(new DFSShare {
+                                                RemoteShareName = $@"{targetShareName}",
+                                                RemoteServerName = target.Split('\\')[2],
+                                                DFSFolderPath = $@"{dfsnamespace}{dfsLeafName}"
+                                            }
+                                        );
                                     }
                                 }
                                 catch (Exception e)
@@ -343,8 +348,8 @@ namespace SnaffCore.ActiveDirectory
                             var share = new DFSShare();
 
                             string[] target_parts = target.Split(new char[] { '\\' });
-                            share.DFSNamespace = dfsns;
-                            share.Name = target_parts[3];
+                            share.DFSFolderPath = dfsns;
+                            share.RemoteShareName = target_parts[3];
                             share.RemoteServerName = target_parts[2];
 
                             shares.Add(share);

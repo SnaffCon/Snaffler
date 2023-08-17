@@ -1,0 +1,16 @@
+[[ClassifierRules]]
+EnumerationScope = "PostMatch"
+RuleName = "DiscardPostMatchByName"
+MatchAction = "Discard"
+Description = "Post-match check for specific filenames"
+MatchLocation = "FileName"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [
+	"credentialprovider\\.idl",
+	"pspasswd64\\.exe",
+	"pspasswd\\.exe",
+	"psexec\\.exe",
+	"psexec64\\.exe"
+]
+Triage = "Green"

@@ -1,0 +1,16 @@
+[[ClassifierRules]]
+EnumerationScope = "PostMatch"
+RuleName = "DiscardPostMatchByPath"
+MatchAction = "Discard"
+Description = "Post-match check for specific path elements"
+MatchLocation = "FilePath"
+WordListType = "Contains"
+MatchLength = 0
+WordList = [
+	"Windows Kits\\\\10",
+    "Git\\\\mingw64",
+    "Git\\\\usr\\\\lib",
+    "ProgramData\\\\Microsoft\\\\NetFramework\\\\BreadcrumbStore",
+    "\\.MSSQLSERVER\\\\MSSQL\\\\Binn\\\\Templates"
+]
+Triage = "Green"

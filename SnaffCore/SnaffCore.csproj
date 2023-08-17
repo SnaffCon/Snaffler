@@ -68,6 +68,8 @@
     <Compile Include="Classifiers\ArchiveClassifier.cs" />
     <Compile Include="Classifiers\Certificate.cs" />
     <Compile Include="Classifiers\EffectiveAccess.cs" />
+    <Compile Include="Classifiers\FileResult.cs" />
+    <Compile Include="Classifiers\PostMatchClassifier.cs" />
     <Compile Include="Classifiers\TextClassifier.cs" />
     <Compile Include="Classifiers\ContentClassifier.cs" />
     <Compile Include="Classifiers\DirClassifier.cs" />

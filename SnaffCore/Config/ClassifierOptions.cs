@@ -18,6 +18,8 @@ namespace SnaffCore.Config
         public List<ClassifierRule> FileClassifiers { get; set; } = new List<ClassifierRule>();
         [Nett.TomlIgnore]
         public List<ClassifierRule> ContentsClassifiers { get; set; } = new List<ClassifierRule>();
+        [Nett.TomlIgnore]
+        public List<ClassifierRule> PostMatchClassifiers { get; set; } = new List<ClassifierRule>();
 
         public void PrepareClassifiers()
         {
@@ -95,6 +97,9 @@ namespace SnaffCore.Config
                                    where classifier.EnumerationScope == EnumerationScope.ContentsEnumeration
                                    select classifier).ToList();
             ContentsClassifiers.Sort((x, y) => x.MatchAction.CompareTo(y.MatchAction));
+            PostMatchClassifiers = (from classifier in ClassifierRules
+                where classifier.EnumerationScope == EnumerationScope.PostMatch
+                select classifier).ToList();
         }
 
         private bool IsInterest(ClassifierRule classifier)

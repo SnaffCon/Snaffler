@@ -15,6 +15,7 @@ using System.Threading;
 using System.Timers;
 using static SnaffCore.Config.Options;
 using Timer = System.Timers.Timer;
+using System.Net;
 
 namespace SnaffCore
 {

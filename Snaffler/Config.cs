@@ -9,6 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Security;
+using System.Collections.Generic;
 
 namespace Snaffler
 {
@@ -53,6 +55,12 @@ namespace Snaffler
             }
         }
 
+        public static bool isIP(string host)
+        {
+            IPAddress ip;
+            return IPAddress.TryParse(host, out ip);
+        }
+
         private static Options ParseImpl(string[] args)
         {
             BlockingMq Mq = BlockingMq.GetMq();
@@ -91,12 +99,13 @@ namespace Snaffler
             SwitchArgument dfsArg = new SwitchArgument('f', "dfs", "Limits Snaffler to finding file shares via DFS, for \"OPSEC\" reasons.", false);
             SwitchArgument findSharesOnlyArg = new SwitchArgument('a', "sharesonly",
                 "Stops after finding shares, doesn't walk their filesystems.", false);
+            ValueArgument<string> compExclusionArg = new ValueArgument<string>('k', "exclusions", "Path to a file containing a list of computers to exclude from scanning.");
             ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "Computer (or comma separated list) to target.");
             ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
                 "Interval between status updates (in minutes) also acts as a timeout for AD data to be gathered via LDAP. Turn this knob up if you aren't getting any computers from AD when you run Snaffler through a proxy or other slow link. Default = 5");
-            // list of letters i haven't used yet: gknqw
+            // list of letters i haven't used yet: gnqw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(timeOutArg);
@@ -121,6 +130,7 @@ namespace Snaffler
             parser.Arguments.Add(compTargetArg);
             parser.Arguments.Add(ruleDirArg);
             parser.Arguments.Add(logType);
+            parser.Arguments.Add(compExclusionArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -187,7 +197,43 @@ namespace Snaffler
                 {
                     parsedConfig.DfsOnly = dfsArg.Value;
                 }
-
+                if (compExclusionArg.Parsed)
+                {
+                    List<string> compExclusions = new List<string>();
+                    string[] fileLines = File.ReadAllLines(compExclusionArg.Value);
+                    foreach (string line in fileLines)
+                    {
+                        if (isIP(line))
+                        {
+                            compExclusions.Add(line);
+                        }
+                        else
+                        {
+                            try
+                            {
+                                IPHostEntry result = Dns.GetHostEntry(line);
+                                foreach (IPAddress ipAddress in result.AddressList)
+                                {
+                                    compExclusions.Add(ipAddress.ToString());
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                continue;
+                            }
+                        }
+                    }
+                    if (compExclusions.Count > 0)
+                    {
+                        parsedConfig.ComputerExclusions = compExclusions.ToArray();
+                        parsedConfig.ComputerExclusionFile = compExclusionArg.Value;
+                    }
+                    else
+                    {
+                        throw new Exception("Failed to get a valid list of excluded computers from the excluded computers list.");
+                    }
+                }
                 if (compTargetArg.Parsed)
                 {
                     string[] compTargets = null;
@@ -384,6 +430,7 @@ namespace Snaffler
 
             return parsedConfig;
         }
+
 
 
     }

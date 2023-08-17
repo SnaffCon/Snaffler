@@ -179,7 +179,6 @@ namespace SnaffCore
         {
             List<string> targetComputers;
 
-
             // Give preference to explicit targets in the options file over LDAP computer discovery
             if (MyOptions.ComputerTargets != null)  
             {
@@ -290,6 +289,11 @@ namespace SnaffCore
             Mq.Info("Starting to look for readable shares...");
             foreach (string computer in computerTargets)
             {
+                if (CheckExclusions(computer))
+                {
+                    // skip any that are in the exclusion list
+                    continue;
+                }
                 // ShareFinder Task Creation - this kicks off the rest of the flow
                 Mq.Trace("Creating a ShareFinder task for " + computer);
                 ShareTaskScheduler.New(() =>
@@ -307,6 +311,57 @@ namespace SnaffCore
                 });
             }
             Mq.Info("Created all sharefinder tasks.");
+        }
+
+        public static bool isIP(string host)
+        {
+            IPAddress ip;
+            return IPAddress.TryParse(host, out ip);
+        }
+
+        private bool CheckExclusions(string computer)
+        {
+            // check if it's an IP already
+            if (isIP(computer))
+            {
+                // check if it's in the exclusions list
+                if (MyOptions.ComputerExclusions.Contains(computer))
+                {
+                    // if so, skip it
+                    Mq.Degub("Excluded " + computer);
+                    return true;
+                }
+            }
+            else { 
+                try
+                {
+                    // resolve it
+                    IPHostEntry result = Dns.GetHostEntry(computer);
+                    // handle multiple IPs in response
+                    foreach (IPAddress ipAddress in result.AddressList)
+                    {
+                        // if any of them is in the exclusion list
+                        if (MyOptions.ComputerExclusions.Contains(ipAddress.ToString()))
+                        {
+                            Mq.Degub("Excluded " + computer + " at " + ipAddress);
+
+                            // exclude it
+                            return true;
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // fail safe
+                    Mq.Degub(ex.Message);
+                    //Console.WriteLine(ex.Message);
+                    Mq.Degub("Excluded " + computer);
+                    return true; ;
+                }
+            }
+            Mq.Degub("Included " + computer);
+
+            return false;
         }
 
         private void FileDiscovery(string[] pathTargets)

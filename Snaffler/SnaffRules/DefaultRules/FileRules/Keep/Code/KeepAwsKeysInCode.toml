@@ -7,5 +7,5 @@ MatchLocation = "FileContentAsString"
 WordListType = "Regex"
 MatchLength = 0
 WordList = ["aws[_\\-\\.]?key",
-"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}(\\s|\\'|\\\"|$)"]
+"(\\s|\\'|\\\"|\\^|=)(A3T[A-Z0-9]|AKIA|AGPA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z2-7]{12,16}(\\s|\\'|\\\"|$)"]
 Triage = "Red"

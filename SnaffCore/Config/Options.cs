@@ -18,6 +18,8 @@ namespace SnaffCore.Config
         public List<string> PathTargets { get; set; } = new List<string>();
         public string[] ComputerTargets { get; set; }
         public string ComputerTargetsLdapFilter { get; set; } = "(objectClass=computer)";
+        public string ComputerExclusionFile { get; set; }
+        public string[] ComputerExclusions { get; set; }
         public bool ScanSysvol { get; set; } = true;
         public bool ScanNetlogon { get; set; } = true;
         public bool ScanFoundShares { get; set; } = true;

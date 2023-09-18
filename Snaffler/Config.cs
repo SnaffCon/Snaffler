@@ -227,7 +227,7 @@ namespace Snaffler
                     }
                     if (compExclusions.Count > 0)
                     {
-                        parsedConfig.ComputerExclusions = compExclusions.ToArray();
+                        parsedConfig.ComputerExclusions = compExclusions;
                         parsedConfig.ComputerExclusionFile = compExclusionArg.Value;
                     }
                     else

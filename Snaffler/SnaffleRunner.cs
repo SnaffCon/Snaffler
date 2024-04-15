@@ -140,14 +140,28 @@ namespace Snaffler
                             }
                         }
                     };
-                    nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logconsole);
+                    if (LogLevel == LogLevel.Warn)
+                    {
+                        nlogConfig.AddRule(LogLevel.Warn, LogLevel.Warn, logconsole);
+                    }
+                    else
+                    {
+                        nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logconsole);
+                    }
                     logconsole.Layout = "${message}";
                 }
 
                 if (Options.LogToFile)
                 {
                     logfile = new FileTarget("logfile") { FileName = Options.LogFilePath };
-                    nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logfile);
+                    if (LogLevel == LogLevel.Warn)
+                    {
+                        nlogConfig.AddRule(LogLevel.Warn, LogLevel.Warn, logfile);
+                    }
+                    else
+                    {
+                        nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logfile);
+                    }
                     if (Options.LogType == LogType.Plain)
                     {
                         logfile.Layout = "${message}";

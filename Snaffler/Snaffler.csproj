@@ -110,8 +110,6 @@
       <Version>4.7.15</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="SnaffRules\DefaultRules\PostMatchRules\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -106,7 +106,9 @@ namespace Snaffler
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
                 "Interval between status updates (in minutes) also acts as a timeout for AD data to be gathered via LDAP. Turn this knob up if you aren't getting any computers from AD when you run Snaffler through a proxy or other slow link. Default = 5");
-            // list of letters i haven't used yet: gnqw
+            ValueArgument<string> timeFrame = new ValueArgument<string>('g', "timeframe", "Specify a range (YYYY-MM-DD,YYYY-MM-DD) to return files from");
+
+            // list of letters i haven't used yet: nqw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(timeOutArg);
@@ -132,6 +134,8 @@ namespace Snaffler
             parser.Arguments.Add(ruleDirArg);
             parser.Arguments.Add(logType);
             parser.Arguments.Add(compExclusionArg);
+            parser.Arguments.Add(timeFrame);
+
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -182,6 +186,12 @@ namespace Snaffler
                 if (ruleDirArg.Parsed && !String.IsNullOrWhiteSpace(ruleDirArg.Value))
                 {
                     parsedConfig.RuleDir = ruleDirArg.Value;
+                }
+
+                //Does not verify/validate the ranges. Assumes operator is competent
+                if (timeFrame.Parsed)
+                {
+                    parsedConfig.Timeframe = timeFrame.Value;
                 }
 
                 // get the args into our config

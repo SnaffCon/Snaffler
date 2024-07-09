@@ -62,6 +62,7 @@ namespace SnaffCore.Config
         public bool DomainUserRules { get; set; } = false;
         public int DomainUserMinLen { get; set; } = 6;
         public DomainUserNamesFormat[] DomainUserNameFormats { get; set; } = new DomainUserNamesFormat[] { DomainUserNamesFormat.sAMAccountName };
+        public string Timeframe { get; set; }
 
         // passwords to try on certs that require one
         public List<string> CertPasswords = new List<string>()

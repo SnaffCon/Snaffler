@@ -13,5 +13,6 @@ Description = "Files with these exact names will be searched for PowerShell rela
 MatchLocation = "FileName"
 WordListType = "Exact"
 MatchLength = 0
-WordList = ["ConsoleHost_history\\.txt"]
+WordList = ["ConsoleHost_history\\.txt",
+"Visual Studio Code Host_history\\.txt"]
 Triage = "Green"

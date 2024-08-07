@@ -265,16 +265,17 @@ namespace Snaffler
             switch (message.Type)
             {
                 case SnafflerMessageType.Trace:
-                    Logger.Trace("[Trace]" + Options.Separator + message.Message);
+                    Logger.Trace(datetime + "[Trace]" + Options.Separator + message.Message);
                     break;
                 case SnafflerMessageType.Degub:
-                    Logger.Debug("[Degub]" + Options.Separator + message.Message);
+                    Logger.Debug(datetime + "[Degub]" + Options.Separator + message.Message);
                     break;
                 case SnafflerMessageType.Info:
-                    Logger.Info("[Info]" + Options.Separator + message.Message);
+                    Logger.Info(datetime + "[Info]" + Options.Separator + message.Message);
                     break;
                 // I think I can add the check for the file in here
                 case SnafflerMessageType.FileResult:
+                    //Logger.Warn(datetime + "[File]" + Options.Separator + FileResultLogFromMessage(message));
                     if (message.FileResult.FileInfo.Length == 0)
                     {
                         break;
@@ -306,19 +307,19 @@ namespace Snaffler
                     }
 
 
-                    Logger.Warn("[File]" + Options.Separator + FileResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[File]" + Options.Separator + FileResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.DirResult:
-                    Logger.Warn("[Dir]" + Options.Separator + DirResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[Dir]" + Options.Separator + DirResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.ShareResult:
-                    Logger.Warn("[Share]" + Options.Separator + ShareResultLogFromMessage(message));
+                    Logger.Warn(datetime + "[Share]" + Options.Separator + ShareResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.Error:
-                    //Logger.Error("[Error]" + Options.Separator + message.Message);
+                    Logger.Error(datetime + "[Error]" + Options.Separator + message.Message);
                     break;
                 case SnafflerMessageType.Fatal:
-                    Logger.Fatal("[Fatal]" + Options.Separator + message.Message);
+                    Logger.Fatal(datetime + "[Fatal]" + Options.Separator + message.Message);
                     if (Debugger.IsAttached)
                     {
                         Console.ReadKey();

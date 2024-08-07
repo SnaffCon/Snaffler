@@ -13,6 +13,7 @@ WordList = ["passw?o?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
 "api[kK]ey>\\s*[^\\s<]+\\s*<",
 "[_\\-\\.]oauth\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
 "client_secret\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
+"GIUserPassword",
 "<ExtendedMatchKey>ClientAuth"
 ]
 Triage = "Red"

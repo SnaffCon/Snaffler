@@ -305,8 +305,12 @@ namespace Snaffler
                 if (dirTargetArg.Parsed)
                 {
                     parsedConfig.ShareFinderEnabled = false;
-                    Console.WriteLine(dirTargetArg.Value);
-                    string pathTarget = dirTargetArg.Value.TrimEnd('\\');
+                    //Console.WriteLine(dirTargetArg.Value);
+                    string pathTarget = dirTargetArg.Value;
+                    if (dirTargetArg.Value.Length > 4)
+                    {
+                        pathTarget = dirTargetArg.Value.TrimEnd('\\');
+                    }
                     parsedConfig.PathTargets.Add(pathTarget);
                     Console.WriteLine(parsedConfig.PathTargets[0]);
                     Mq.Degub("Disabled finding shares.");

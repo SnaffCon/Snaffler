@@ -312,7 +312,7 @@ namespace Snaffler
                         pathTarget = dirTargetArg.Value.TrimEnd('\\');
                     }
                     parsedConfig.PathTargets.Add(pathTarget);
-                    Console.WriteLine(parsedConfig.PathTargets[0]);
+                    //Console.WriteLine(parsedConfig.PathTargets[0]);
                     Mq.Degub("Disabled finding shares.");
                     Mq.Degub("Target path is " + dirTargetArg.Value);
                 }

@@ -79,7 +79,7 @@ namespace Snaffler
                 // set up new fangled logging
                 //------------------------------------------
                 LoggingConfiguration nlogConfig = new LoggingConfiguration();
-
+                nlogConfig.Variables["encoding"] = "utf8";
                 ColoredConsoleTarget logconsole = null;
                 FileTarget logfile = null;
 

@@ -44,7 +44,7 @@ The key incantations are:
 
 `-s`   Enables outputting results to stdout as soon as they're found. You probably want this if you're not using `-o`.
 
-`-v`   Controls verbosity level, options are Trace (most verbose), Degub (less verbose, less gubs), Info (less verbose still, default), and Data (results only). e.g `-v debug` 
+`-v`   Controls verbosity level, options are Trace (most verbose), Debug (less verbose, less gubs), Info (less verbose still, default), and Data (results only). e.g `-v debug` 
 
 `-m`   Enables and assigns an output dir for snaffler to automatically take a copy of (or Snaffle... if you will) any found files that it likes.
 

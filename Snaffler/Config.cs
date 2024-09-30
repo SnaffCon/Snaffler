@@ -101,7 +101,7 @@ namespace Snaffler
             SwitchArgument findSharesOnlyArg = new SwitchArgument('a', "sharesonly",
                 "Stops after finding shares, doesn't walk their filesystems.", false);
             ValueArgument<string> compExclusionArg = new ValueArgument<string>('k', "exclusions", "Path to a file containing a list of computers to exclude from scanning.");
-            ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "List of computers in a file, a single Computer (or comma separated list) to target.");
+            ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "List of computers in a file(e.g C:\targets.txt), a single Computer (or comma separated list) to target.");
             ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
@@ -235,29 +235,7 @@ namespace Snaffler
                         throw new Exception("Failed to get a valid list of excluded computers from the excluded computers list.");
                     }
                 }
-                //if (compTargetArg.Parsed)
-                //{
-                //    // string[] compTargets = null;
-                //    List<string> compTargets = new List<string>();
-                //    if (compTargetArg.Value.Contains(Path.DirectorySeparatorChar))
-                //    {
-                //        string[] fileLines = File.ReadAllLines(compTargetArg.Value);
-                //        foreach (string line in fileLines)
-                //        {
-                //            compTargets.Add(line.Trim());
-                //        }
-                //    }
-                //    else if (compTargetArg.Value.Contains(","))
-                //    {
-                //        compTargets = compTargetArg.Value.Split(',');
-
-                //    }
-                //    else
-                //    {
-                //        compTargets = new string[] { compTargetArg.Value };
-                //    }
-                //    parsedConfig.ComputerTargets = compTargets;
-                //}
+                
                 if (compTargetArg.Parsed)
                 {
                     List<string> compTargets = new List<string>();

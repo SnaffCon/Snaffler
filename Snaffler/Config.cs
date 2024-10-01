@@ -1,4 +1,4 @@
-﻿using CommandLineParser.Arguments;
+using CommandLineParser.Arguments;
 using Nett;
 using NLog;
 using SnaffCore.Concurrency;
@@ -101,7 +101,7 @@ namespace Snaffler
             SwitchArgument findSharesOnlyArg = new SwitchArgument('a', "sharesonly",
                 "Stops after finding shares, doesn't walk their filesystems.", false);
             ValueArgument<string> compExclusionArg = new ValueArgument<string>('k', "exclusions", "Path to a file containing a list of computers to exclude from scanning.");
-            ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "Computer (or comma separated list) to target.");
+            ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "List of computers in a file(e.g C:\targets.txt), a single Computer (or comma separated list) to target.");
             ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
@@ -235,19 +235,23 @@ namespace Snaffler
                         throw new Exception("Failed to get a valid list of excluded computers from the excluded computers list.");
                     }
                 }
+                
                 if (compTargetArg.Parsed)
                 {
-                    string[] compTargets = null;
-                    if (compTargetArg.Value.Contains(","))
+                    List<string> compTargets = new List<string>();
+                    if (compTargetArg.Value.Contains(Path.DirectorySeparatorChar))
                     {
-                        compTargets = compTargetArg.Value.Split(',');
-                        
+                        compTargets.AddRange(File.ReadLines(compTargetArg.Value).Select(line => line.Trim()));
+                    }
+                    else if (compTargetArg.Value.Contains(","))
+                    {
+                        compTargets.AddRange(compTargetArg.Value.Split(',').Select(x => x.Trim()));
                     }
                     else
                     {
-                        compTargets = new string[] { compTargetArg.Value };
+                        compTargets.Add(compTargetArg.Value.Trim());
                     }
-                    parsedConfig.ComputerTargets = compTargets;
+                    parsedConfig.ComputerTargets = compTargets.ToArray();
                 }
 
                 if (findSharesOnlyArg.Parsed)

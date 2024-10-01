@@ -52,7 +52,7 @@ The key incantations are:
 
 `-i`   Disables computer and share discovery, requires a path to a directory in which to perform file discovery.
 
-`-n`   Disables computer discovery, takes a comma-separated list of hosts to do share and file discovery on.
+`-n`   Disables computer discovery, takes a comma-separated list of hosts or input file to do share and file discovery on. Note if supplying a file, the input needs to be a path so C:\targets.txt or .\targets.txt as an example.
 
 `-y`   TSV-formats the output.
 

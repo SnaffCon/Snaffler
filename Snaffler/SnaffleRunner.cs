@@ -273,7 +273,40 @@ namespace Snaffler
                 case SnafflerMessageType.Info:
                     Logger.Info(datetime + "[Info]" + Options.Separator + message.Message);
                     break;
+                // I think I can add the check for the file in here
                 case SnafflerMessageType.FileResult:
+                    //Logger.Warn(datetime + "[File]" + Options.Separator + FileResultLogFromMessage(message));
+                    if (message.FileResult.FileInfo.Length == 0)
+                    {
+                        break;
+                    }
+
+                    if (Options.Timeframe != null)
+                    {
+
+                        // Split into two dates
+                        String[] dateParts = (Options.Timeframe).Split(',');
+
+                        // Convert each into two datetimes
+                        DateTime after;
+                        DateTime before;
+                        if (DateTime.TryParse(dateParts[0], out after) && DateTime.TryParse(dateParts[1], out before))
+                        {
+                            DateTime modifiedStamp = message.FileResult.FileInfo.LastWriteTime.ToUniversalTime();
+                            if (after > modifiedStamp || modifiedStamp > before)
+                            {
+                                // Ignore the files not within the timeframe
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Check your date format. Exiting...");
+                            Environment.Exit(1);
+                        }
+                    }
+
+
                     Logger.Warn(datetime + "[File]" + Options.Separator + FileResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.DirResult:
@@ -294,7 +327,7 @@ namespace Snaffler
                     break;
                 case SnafflerMessageType.Finish:
                     Logger.Info("Snaffler out.");
-                    
+
                     if (Debugger.IsAttached)
                     {
                         Console.WriteLine("Press any key to exit.");
@@ -324,7 +357,30 @@ namespace Snaffler
                     Logger.Info(datetime + "[Info]" + Options.Separator + message.Message, message);
                     break;
                 case SnafflerMessageType.FileResult:
-                    //Logger.Warn(message);
+                    if (Options.Timeframe != null)
+                    {
+
+                        // Split into two dates
+                        String[] dateParts = (Options.Timeframe).Split(',');
+
+                        // Convert each into two datetimes
+                        DateTime after;
+                        DateTime before;
+                        if (DateTime.TryParse(dateParts[0], out after) && DateTime.TryParse(dateParts[1], out before))
+                        {
+                            DateTime modifiedStamp = message.FileResult.FileInfo.LastWriteTime.ToUniversalTime();
+                            if (after > modifiedStamp || modifiedStamp > before)
+                            {
+                                // Ignore the files not within the timeframe
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Check your date format. Exiting...");
+                            Environment.Exit(1);
+                        }
+                    }
                     Logger.Warn(datetime + "[File]" + Options.Separator + FileResultLogFromMessage(message), message);
                     break;
                 case SnafflerMessageType.DirResult:
@@ -355,7 +411,7 @@ namespace Snaffler
                         Console.WriteLine("Press any key to exit.");
                         Console.ReadKey();
                     }
-                    if (Options.LogType == LogType.JSON) 
+                    if (Options.LogType == LogType.JSON)
                     {
                         Logger.Info("Normalising output, please wait...");
                         FixJSONOutput();

@@ -12,7 +12,7 @@ WordList = ["passw?o?r?d\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
 "passw?o?r?d?>.{3,2000}</pass",
 "api[kK]ey>\\s*[^\\s<]+\\s*<",
 "[_\\-\\.]oauth\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
-"client_secret\\s*=\\s*[\\'\\\"][^\\'\\\"]....",
+"client_secret\\s*=*\\s*",
 "<ExtendedMatchKey>ClientAuth",
 "GIUserPassword"
 ]

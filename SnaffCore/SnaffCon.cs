@@ -5,7 +5,6 @@ using SnaffCore.Config;
 using SnaffCore.ShareFind;
 using SnaffCore.TreeWalk;
 using SnaffCore.FileScan;
-using SnaffCore.ArchiveScanner;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

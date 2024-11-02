@@ -1,12 +1,6 @@
-﻿using SnaffCore.Classifiers;
-using SnaffCore.Concurrency;
-using SnaffCore.Config;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SnaffCore.Concurrency;
 using static SnaffCore.Config.Options;
 using Microsoft.CST.RecursiveExtractor;
 

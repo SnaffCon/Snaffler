@@ -9,6 +9,7 @@ using System.Text;
 using static SnaffCore.Config.Options;
 using SnaffCore.Classifiers.EffectiveAccess;
 using Microsoft.CST.RecursiveExtractor;
+using SnaffCore.TreeWalk;
 
 namespace SnaffCore.Classifiers
 {
@@ -189,7 +190,7 @@ namespace SnaffCore.Classifiers
                 case MatchAction.EnterArchive:
                     // TODO check to make sure the file isn't too big 
                     var ArchiveWalkerTaskScheduler = SnaffCon.GetArchiveWalkerTaskScheduler();
-                    var ArchiveWalker = new ArchiveScanner.ArchiveWalker();
+                    var ArchiveWalker = new ArchiveWalker();
                     ArchiveWalkerTaskScheduler.New(() =>
                     {
                         try

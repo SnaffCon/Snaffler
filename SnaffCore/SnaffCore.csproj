@@ -65,7 +65,6 @@
     <Compile Include="ActiveDirectory\Extensions.cs" />
     <Compile Include="ActiveDirectory\Helpers.cs" />
     <Compile Include="ActiveDirectory\LdapTypeEnum.cs" />
-    <Compile Include="ArchiveScanner\ArchiveWalker.cs" />
     <Compile Include="Classifiers\ArchiveClassifier.cs" />
     <Compile Include="Classifiers\Certificate.cs" />
     <Compile Include="Classifiers\EffectiveAccess.cs" />
@@ -84,16 +83,17 @@
     <Compile Include="Config\ClassifierOptions.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Classifiers\ClassifierRule.cs" />
-    <Compile Include="ArchiveScanner\ArchiveFileScanner.cs" />
+    <Compile Include="FileScan\ArchiveFileScanner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShareFind\ShareFinder.cs" />
     <Compile Include="FileScan\FileScanner.cs" />
+    <Compile Include="TreeWalk\ArchiveWalker.cs" />
     <Compile Include="TreeWalk\TreeWalker.cs" />
     <Compile Include="SnaffCon.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CST.RecursiveExtractor">
-      <Version>1.2.26</Version>
+      <Version>1.2.32</Version>
     </PackageReference>
     <PackageReference Include="Nett.Coma">
       <Version>0.15.0</Version>

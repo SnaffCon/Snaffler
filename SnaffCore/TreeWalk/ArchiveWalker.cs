@@ -1,21 +1,11 @@
-﻿using SnaffCore.Classifiers;
-using SnaffCore.Concurrency;
-using SnaffCore.Config;
-using SnaffCore.FileScan;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using SnaffCore.Classifiers;
 using SnaffCore.Concurrency;
 using SnaffCore.FileScan;
-using System;
-using System.IO;
 using static SnaffCore.Config.Options;
-using System.Threading.Tasks;
 using Microsoft.CST.RecursiveExtractor;
-using System.Reflection;
 
-namespace SnaffCore.ArchiveScanner
+namespace SnaffCore.TreeWalk
 {
     public class ArchiveWalker
     {

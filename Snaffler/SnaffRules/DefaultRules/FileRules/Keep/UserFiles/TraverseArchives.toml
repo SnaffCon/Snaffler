@@ -1,0 +1,10 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "TraverseArchives"
+MatchAction = "EnterArchive"
+Description = "Archives"
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = ["\\.zip","\\.7z","\\.7zip","\\.ar","\\.rar","\\.vmdk"]
+Triage = "Black"

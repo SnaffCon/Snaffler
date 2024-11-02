@@ -5,6 +5,7 @@ using SnaffCore.Config;
 using SnaffCore.ShareFind;
 using SnaffCore.TreeWalk;
 using SnaffCore.FileScan;
+using SnaffCore.ArchiveScanner;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,9 +29,13 @@ namespace SnaffCore
         private static BlockingStaticTaskScheduler ShareTaskScheduler;
         private static BlockingStaticTaskScheduler TreeTaskScheduler;
         private static BlockingStaticTaskScheduler FileTaskScheduler;
+        private static BlockingStaticTaskScheduler ArchiveWalkerTaskScheduler;
+        private static BlockingStaticTaskScheduler ArchiveFileTaskScheduler;
         
         private static ShareFinder ShareFinder;
         private static TreeWalker TreeWalker;
+        private static ArchiveWalker ArchiveWalker;
+        private static ArchiveFileScanner ArchiveFileScanner;
         private static FileScanner FileScanner;
 
         private AdData _adData = AdData.AdDataInstance;
@@ -44,14 +49,20 @@ namespace SnaffCore
 
             int shareThreads = MyOptions.ShareThreads;
             int treeThreads = MyOptions.TreeThreads;
+            int archiveThreads = MyOptions.ArchiveThreads;
+            int archiveFileThreads = MyOptions.ArchiveFileThreads;
             int fileThreads = MyOptions.FileThreads;
 
             ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, MyOptions.MaxShareQueue);
             TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, MyOptions.MaxTreeQueue);
+            ArchiveWalkerTaskScheduler = new BlockingStaticTaskScheduler(archiveThreads, MyOptions.MaxArchiveQueue);
+            ArchiveFileTaskScheduler = new BlockingStaticTaskScheduler(archiveFileThreads, MyOptions.MaxArchiveFileQueue);
             FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, MyOptions.MaxFileQueue);
 
             FileScanner = new FileScanner();
             TreeWalker = new TreeWalker();
+            ArchiveWalker = new ArchiveWalker();
+            ArchiveFileScanner = new ArchiveFileScanner();
             ShareFinder = new ShareFinder();
         }
 
@@ -62,6 +73,14 @@ namespace SnaffCore
         public static TreeWalker GetTreeWalker()
         {
             return TreeWalker;
+        }
+        public static ArchiveWalker GetArchiveWalker()
+        {
+            return ArchiveWalker; 
+        }
+        public static ArchiveFileScanner GetArchiveFileScanner()
+        {
+            return ArchiveFileScanner;
         }
         public static FileScanner GetFileScanner()
         {
@@ -74,6 +93,14 @@ namespace SnaffCore
         public static BlockingStaticTaskScheduler GetTreeTaskScheduler()
         {
             return TreeTaskScheduler;
+        }
+        public static BlockingStaticTaskScheduler GetArchiveWalkerTaskScheduler()
+        {
+            return ArchiveWalkerTaskScheduler;
+        }
+        public static BlockingStaticTaskScheduler GetArchiveFileTaskScheduler()
+        {
+            return ArchiveFileTaskScheduler;
         }
         public static BlockingStaticTaskScheduler GetFileTaskScheduler()
         {

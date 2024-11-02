@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using static SnaffCore.Config.Options;
 using SnaffCore.Classifiers.EffectiveAccess;
+using Microsoft.CST.RecursiveExtractor;
 
 namespace SnaffCore.Classifiers
 {
@@ -186,10 +187,22 @@ namespace SnaffCore.Classifiers
                     }
                     return false;
                 case MatchAction.EnterArchive:
-                    // do a special looking inside archive files dance using
-                    // https://github.com/adamhathcock/sharpcompress
-                    // TODO FUUUUUCK
-                    throw new NotImplementedException("Haven't implemented walking dir structures inside archives.");
+                    // TODO check to make sure the file isn't too big 
+                    var ArchiveWalkerTaskScheduler = SnaffCon.GetArchiveWalkerTaskScheduler();
+                    var ArchiveWalker = new ArchiveScanner.ArchiveWalker();
+                    ArchiveWalkerTaskScheduler.New(() =>
+                    {
+                        try
+                        {
+                            ArchiveWalker.WalkArchive(fileInfo.FullName);
+                        }
+                        catch (Exception e)
+                        {
+                            Mq.Error("Exception in ArchiveFileWalker task for file " + fileInfo.FullName);
+                            Mq.Trace(e.ToString());
+                        }
+                    });
+                    return false;
                 default:
                     Mq.Error("You've got a misconfigured file ClassifierRule named " + ClassifierRule.RuleName + ".");
                     return false;

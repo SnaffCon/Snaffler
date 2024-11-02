@@ -1,23 +1,32 @@
 ﻿using SnaffCore.Classifiers;
 using SnaffCore.Concurrency;
+using SnaffCore.Config;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using static SnaffCore.Config.Options;
+using Microsoft.CST.RecursiveExtractor;
 
 namespace SnaffCore.FileScan
 {
-    public class FileScanner
+    public class ArchiveFileScanner
     {
         private BlockingMq Mq { get; set; }
 
-        public FileScanner()
+        public ArchiveFileScanner()
         {
             Mq = BlockingMq.GetMq();
         }
-        public void ScanFile(string file)
+        public void ScanArchiveFile(FileEntry fileEntry)
         {
             try
             {
+                Console.WriteLine(fileEntry.FullPath);
+                /*
+                // WHOOPS DO STUFF HERE
                 FileInfo fileInfo = new FileInfo(file);
                 // send the file to all the classifiers.
                 foreach (ClassifierRule classifier in MyOptions.FileClassifiers)
@@ -29,6 +38,7 @@ namespace SnaffCore.FileScan
                         return;
                     };
                 }
+                */
             }
             catch (FileNotFoundException e)
             {
@@ -45,7 +55,7 @@ namespace SnaffCore.FileScan
             }
             catch (PathTooLongException)
             {
-                Mq.Trace(file + " path was too long for me to look at.");
+                Mq.Trace(fileEntry.FullPath + " path was too long for me to look at.");
                 return;
             }
             catch (Exception e)

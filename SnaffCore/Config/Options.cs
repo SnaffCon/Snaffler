@@ -39,6 +39,10 @@ namespace SnaffCore.Config
         public int ShareThreads { get; set; }
         public int TreeThreads { get; set; }
         public int FileThreads { get; set; }
+        public int ArchiveThreads { get; set; } = 5;
+        public int ArchiveFileThreads { get; set; } = 5;
+        public int MaxArchiveFileQueue { get; set; } = 200000;
+        public int MaxArchiveQueue { get; set; } = 20000;
         public int MaxFileQueue { get; set; } = 200000;
         public int MaxTreeQueue { get; set; } = 0;
         public int MaxShareQueue { get; set; } = 0;
@@ -118,6 +122,7 @@ namespace SnaffCore.Config
 
         // this sets the maximum size of file to look inside.
         public long MaxSizeToGrep { get; set; } = 1000000;
+        public long MaxArchiveSizeToOpen { get; set; } = 1000000;
 
         // these enable or disable automated downloading of files that match the criteria
         public bool Snaffle { get; set; } = false;

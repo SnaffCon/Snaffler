@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SnaffCore</RootNamespace>
     <AssemblyName>SnaffCore</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -65,6 +65,7 @@
     <Compile Include="ActiveDirectory\Extensions.cs" />
     <Compile Include="ActiveDirectory\Helpers.cs" />
     <Compile Include="ActiveDirectory\LdapTypeEnum.cs" />
+    <Compile Include="ArchiveScanner\ArchiveWalker.cs" />
     <Compile Include="Classifiers\ArchiveClassifier.cs" />
     <Compile Include="Classifiers\Certificate.cs" />
     <Compile Include="Classifiers\EffectiveAccess.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Config\ClassifierOptions.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Classifiers\ClassifierRule.cs" />
+    <Compile Include="ArchiveScanner\ArchiveFileScanner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShareFind\ShareFinder.cs" />
     <Compile Include="FileScan\FileScanner.cs" />
@@ -90,6 +92,9 @@
     <Compile Include="SnaffCon.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CST.RecursiveExtractor">
+      <Version>1.2.26</Version>
+    </PackageReference>
     <PackageReference Include="Nett.Coma">
       <Version>0.15.0</Version>
     </PackageReference>

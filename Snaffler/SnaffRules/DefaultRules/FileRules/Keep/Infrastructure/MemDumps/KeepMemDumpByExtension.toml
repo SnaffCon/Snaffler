@@ -7,4 +7,4 @@ MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
 WordList = ["\\.dmp"]
-Triage = "Red"
+Triage = "Yellow"

@@ -295,19 +295,27 @@ namespace SnaffCore
                     // skip any that are in the exclusion list
                     continue;
                 }
-                // Reverse DNS lookup
+                // Perform reverse lookup if the computer is an IP address
                 var computerName = "";
-                try
+                if (isIP(computer))
                 {
-                    Mq.Trace("Performing reverse lookup for " + computer);
-                    IPHostEntry result = Dns.GetHostEntry(computer);
-                    computerName = result.HostName;
-                    Mq.Trace("Got DNSName " + computerName + " for " + computer);
+                    try
+                    {
+                        Mq.Trace("Performing reverse lookup for " + computer);
+                        IPHostEntry result = Dns.GetHostEntry(computer);
+                        computerName = result.HostName;
+                        Mq.Trace("Got DNSName " + computerName + " for " + computer);
+                    }
+                    catch (Exception e)
+                    {
+                        Mq.Degub(e.Message);
+                        // Keep IP if Reverse Lookup fails
+                        computerName = computer;
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    Mq.Degub(e.Message);
-                    // Keep IP if Reverse Lookup fails
+                    // Use the provided computer name if it's not an IP address
                     computerName = computer;
                 }
                 // ShareFinder Task Creation - this kicks off the rest of the flow

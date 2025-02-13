@@ -295,18 +295,41 @@ namespace SnaffCore
                     // skip any that are in the exclusion list
                     continue;
                 }
+                // Perform reverse lookup if the computer is an IP address
+                var computerName = "";
+                if (isIP(computer))
+                {
+                    try
+                    {
+                        Mq.Trace("Performing reverse lookup for " + computer);
+                        IPHostEntry result = Dns.GetHostEntry(computer);
+                        computerName = result.HostName;
+                        Mq.Trace("Got DNSName " + computerName + " for " + computer);
+                    }
+                    catch (Exception e)
+                    {
+                        Mq.Degub(e.Message);
+                        // Keep IP if Reverse Lookup fails
+                        computerName = computer;
+                    }
+                }
+                else
+                {
+                    // Use the provided computer name if it's not an IP address
+                    computerName = computer;
+                }
                 // ShareFinder Task Creation - this kicks off the rest of the flow
-                Mq.Trace("Creating a ShareFinder task for " + computer);
+                Mq.Trace("Creating a ShareFinder task for " + computerName);
                 ShareTaskScheduler.New(() =>
                 {
                     try
                     {
                         ShareFinder shareFinder = new ShareFinder();
-                        shareFinder.GetComputerShares(computer);
+                        shareFinder.GetComputerShares(computerName);
                     }
                     catch (Exception e)
                     {
-                        Mq.Error("Exception in ShareFinder task for host " + computer);
+                        Mq.Error("Exception in ShareFinder task for host " + computerName);
                         Mq.Error(e.ToString());
                     }
                 });

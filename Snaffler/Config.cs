@@ -108,6 +108,9 @@ namespace Snaffler
                 "Interval between status updates (in minutes) also acts as a timeout for AD data to be gathered via LDAP. Turn this knob up if you aren't getting any computers from AD when you run Snaffler through a proxy or other slow link. Default = 5");
             // list of letters i haven't used yet: gnqw
 
+            ValueArgument<string> UsernameArg = new ValueArgument<string>("username");
+            ValueArgument<string> PasswordArg = new ValueArgument<string>("password");
+
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(timeOutArg);
             parser.Arguments.Add(configFileArg);
@@ -132,6 +135,8 @@ namespace Snaffler
             parser.Arguments.Add(ruleDirArg);
             parser.Arguments.Add(logType);
             parser.Arguments.Add(compExclusionArg);
+            parser.Arguments.Add(UsernameArg);
+            parser.Arguments.Add(PasswordArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -378,6 +383,16 @@ namespace Snaffler
                         parsedConfig = Toml.ReadFile<Options>(configFile, settings);
                         Mq.Info("Read config file from " + configFile);
                     }
+                }
+
+                if (UsernameArg.Parsed)
+                {
+                    parsedConfig.Username = UsernameArg.Value;
+                }
+
+                if (PasswordArg.Parsed)
+                {
+                    parsedConfig.Password = PasswordArg.Value;
                 }
 
                 if (!parsedConfig.LogToConsole && !parsedConfig.LogToFile)

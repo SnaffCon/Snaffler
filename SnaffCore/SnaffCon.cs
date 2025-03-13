@@ -82,6 +82,8 @@ namespace SnaffCore
 
         public void Execute()
         {
+            Impersonator.StartImpersonating();
+
             StartTime = DateTime.Now;
             // This is the main execution thread.
             Timer statusUpdateTimer =
@@ -157,6 +159,8 @@ namespace SnaffCore
             Mq.Info("Finished at " + finished.ToLocalTime());
             Mq.Info("Snafflin' took " + runSpan);
             Mq.Finish();
+
+            Impersonator.StopImpersonating();
         }
 
         private void DomainDfsDiscovery()

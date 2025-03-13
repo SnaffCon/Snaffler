@@ -192,6 +192,13 @@ namespace Snaffler
 
                 //-------------------------------------------
 
+                // Check if user credentials were specified
+                if ((Options.TargetDomain != null) && (Options.Username != null) && (Options.Password != null))
+                {
+                    Impersonator.Login(Options.TargetDomain, Options.Username, Options.Password);
+                    Impersonator.StartImpersonating();
+                }
+
                 if (Options.Snaffle && (Options.SnafflePath.Length > 4))
                 {
                     Directory.CreateDirectory(Options.SnafflePath);
@@ -217,6 +224,11 @@ namespace Snaffler
             {
                 Console.WriteLine(e.ToString());
                 DumpQueue();
+            }
+            finally
+            {
+                Impersonator.StopImpersonating();
+                Impersonator.Free();
             }
         }
 

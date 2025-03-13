@@ -62,7 +62,21 @@ namespace SnaffCore.Concurrency
                     // okay, let's add the thing
                     proceed = true;
 
-                    _taskFactory.StartNew(action, _cancellationSource.Token);
+                    void actionWithImpersonation()
+                    {
+                        Impersonator.StartImpersonating();
+
+                        try
+                        {
+                            action();
+                        }
+                        finally
+                        {
+                            Impersonator.StopImpersonating();
+                        }
+                    }
+
+                    _taskFactory.StartNew(actionWithImpersonation, _cancellationSource.Token);
                 }
             }
         }

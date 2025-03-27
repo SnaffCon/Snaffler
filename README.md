@@ -80,6 +80,10 @@ The key incantations are:
 
 `-p` Path to a directory full of .toml formatted rules. Snaffler will load all of these in place of the default ruleset.
 
+`--username` Username of an account that you want to impersonate
+
+`--password` Password of an account that you want to impersonate
+
 ## What does any of this log output mean?
 
 Hopefully this annotated example will help:

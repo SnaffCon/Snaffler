@@ -193,9 +193,10 @@ namespace Snaffler
                 //-------------------------------------------
 
                 // Check if user credentials were specified
-                if ((Options.TargetDomain != null) && (Options.Username != null) && (Options.Password != null))
+                if (Options.Username != null)
                 {
-                    Impersonator.Login(Options.TargetDomain, Options.Username, Options.Password);
+                    Mq.Info($"Impersonating {Options.Username}.");
+                    Impersonator.Login(Options.TargetDomain ?? Environment.UserDomainName, Options.Username, Options.Password ?? "");
                     Impersonator.StartImpersonating();
                 }
 

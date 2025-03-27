@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using SnaffCore.Config;
 
 namespace SnaffCore
 {
     public class Impersonator
     {
         private static IntPtr _userHandle = IntPtr.Zero;
+        private static string _username = string.Empty;
 
         public static bool Login(string domain, string username, string password)
         {
@@ -19,6 +15,7 @@ namespace SnaffCore
                 return true;
             }
 
+            _username = username;
             return LogonUser(username, domain, password, 2, 0, ref _userHandle);
         }
 
@@ -52,6 +49,11 @@ namespace SnaffCore
             return CloseHandle(_userHandle);
         }
 
+        public static string GetUsername()
+        {
+            return _username;
+        }
+
         [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern bool LogonUser(
             string lpszUsername,
@@ -62,7 +64,7 @@ namespace SnaffCore
             ref IntPtr phToken
         );
 
-        [DllImport("advapi32.dll", CharSet = CharSet.Unicode)]
+        [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern bool ImpersonateLoggedOnUser(IntPtr hToken);
 
         [DllImport("advapi32.dll", CharSet = CharSet.Auto)]

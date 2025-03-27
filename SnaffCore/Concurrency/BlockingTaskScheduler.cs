@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -64,7 +65,12 @@ namespace SnaffCore.Concurrency
 
                     void actionWithImpersonation()
                     {
-                        Impersonator.StartImpersonating();
+                        bool impersonateResult = Impersonator.StartImpersonating();
+                        if (!impersonateResult)
+                        {
+                            int errorCode = Marshal.GetLastWin32Error();
+                            throw new Exception($"[Error Code {errorCode}] Failed to impersonate {Impersonator.GetUsername()}.");
+                        }
 
                         try
                         {

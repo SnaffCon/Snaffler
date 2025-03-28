@@ -23,7 +23,7 @@ namespace SnaffCore
         {
             if (_userHandle == IntPtr.Zero)
             {
-                return false;
+                return true;
             }
 
             return ImpersonateLoggedOnUser(_userHandle);

@@ -7,7 +7,8 @@ namespace SnaffCore.Config
     public enum LogType
     {
         Plain = 0,
-        JSON = 1
+        JSON = 1,
+        HTML = 2
     }
 
     public partial class Options

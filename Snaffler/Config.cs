@@ -173,6 +173,10 @@ namespace Snaffler
                     {
                         parsedConfig.LogType = LogType.JSON;
                     }
+                    else if (logType.Value.ToLower() == "html")
+                    {
+                        parsedConfig.LogType = LogType.HTML;
+                    }
                     else
                     {
                         Mq.Info("Invalid type argument passed (" + logType.Value + ") defaulting to plaintext");

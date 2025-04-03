@@ -72,7 +72,7 @@ namespace SnaffCore.ActiveDirectory
         {
             string ldapBase = $"CN=Partitions,CN=Configuration,DC={_targetDomain.Replace(".", ",DC=")}";
 
-            DirectorySearch ds = new DirectorySearch(_targetDomain, _targetDc, ldapBase, null, null, 0, false);
+            DirectorySearch ds = new DirectorySearch(_targetDomain, _targetDc, ldapBase, MyOptions.Username, MyOptions.Password, 0, false);
 
             string[] ldapProperties = new string[] { "netbiosname"};
             string ldapFilter = string.Format("(&(objectcategory=Crossref)(dnsRoot={0})(netBIOSName=*))",_targetDomain);
@@ -107,7 +107,7 @@ namespace SnaffCore.ActiveDirectory
             }
 
             _targetDomainNetBIOSName = GetNetBiosDomainName();
-            DirectorySearch directorySearch = new DirectorySearch(_targetDomain, _targetDc);
+            DirectorySearch directorySearch = new DirectorySearch(_targetDomain, _targetDc, null, MyOptions.Username, MyOptions.Password);
             _directorySearch = directorySearch;
         }
 

@@ -23,6 +23,8 @@ namespace SnaffCore.Config
         public bool ScanSysvol { get; set; } = true;
         public bool ScanNetlogon { get; set; } = true;
         public bool ScanFoundShares { get; set; } = true;
+        public bool ScanFoundFiles { get; set; } = true;
+        public bool LogEverything { get; set; } = false;
         public int InterestLevel { get; set; } = 0;
         public bool DfsOnly { get; set; } = false;
         public bool DfsShareDiscovery { get; set; } = false;

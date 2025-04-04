@@ -65,7 +65,7 @@ namespace Snaffler
                 {
                     fileResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6}" + Options.Separator + "{7:u}" + Options.Separator + "{8}" + Options.Separator + "{9}";
                     shareResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}";
-                    dirResultTemplate = "{0}" + Options.Separator + "{1}";
+                    dirResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{3}";
                 }
                 // otherwise just do the normal thing
                 else
@@ -73,7 +73,7 @@ namespace Snaffler
                     // treat all as strings except LastWriteTime {6}
                     fileResultTemplate = "{{{0}}}<{1}|{2}{3}{4}|{5}|{6}|{7:u}>({8}) {9}";
                     shareResultTemplate = "{{{0}}}<{1}>({2}) {3}";
-                    dirResultTemplate = "{{{0}}}({1})";
+                    dirResultTemplate = "{{{0}}}<{1}>({2})";
                 }
                 //------------------------------------------
                 // set up new fangled logging
@@ -371,15 +371,15 @@ namespace Snaffler
             string shareComment = message.ShareResult.ShareComment;
 
             string rwString = "";
-            if (message.ShareResult.RootReadable)
+            if (message.ShareResult.RwStatus.CanRead)
             {
                 rwString = rwString + "R";
             }
-            if (message.ShareResult.RootWritable)
+            if (message.ShareResult.RwStatus.CanWrite)
             {
                 rwString = rwString + "W";
             }
-            if (message.ShareResult.RootModifyable)
+            if (message.ShareResult.RwStatus.CanModify)
             {
                 rwString = rwString + "M";
             }
@@ -391,7 +391,22 @@ namespace Snaffler
         {
             string sharePath = message.DirResult.DirPath;
             string triage = message.DirResult.Triage.ToString();
-            return string.Format(dirResultTemplate, triage, sharePath);
+
+            string rwString = "";
+            if (message.DirResult.RwStatus.CanRead)
+            {
+                rwString = rwString + "R";
+            }
+            if (message.DirResult.RwStatus.CanWrite)
+            {
+                rwString = rwString + "W";
+            }
+            if (message.DirResult.RwStatus.CanModify)
+            {
+                rwString = rwString + "M";
+            }
+
+            return string.Format(dirResultTemplate, triage, sharePath, rwString);
         }
 
         public string FileResultLogFromMessage(SnafflerMessage message)

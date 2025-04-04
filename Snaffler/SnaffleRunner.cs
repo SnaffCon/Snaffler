@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.ComponentModel;
 
 namespace Snaffler
 {
@@ -185,6 +186,10 @@ namespace Snaffler
                         };
                         logfile.Layout = jsonLayout;
                     }
+                    else if (Options.LogType == LogType.HTML)
+                    {
+                        logfile.Layout = "<tr><td>${longdate}</td><td>${event-properties:htmlFields:objectPath=DateTime}</td><td>${level}</td><td>${event-properties:htmlFields:objectPath=Type}</td><td>${message}</td></tr>";
+                    }
                 }
 
                 // Apply config           
@@ -246,6 +251,10 @@ namespace Snaffler
                 else if (Options.LogType == LogType.JSON)
                 {
                     ProcessMessageJSON(message);
+                }
+                else if (Options.LogType == LogType.HTML)
+                {
+                    ProcessMessageHTML(message);
                 }
 
                 // catch terminating messages and bail out of the master 'while' loop
@@ -359,6 +368,73 @@ namespace Snaffler
                     {
                         Logger.Info("Normalising output, please wait...");
                         FixJSONOutput();
+                    }
+                    break;
+            }
+        }
+
+        private void ProcessMessageHTML(SnafflerMessage message)
+        {
+            //  standardized time formatting,  UTC
+            string datetime = String.Format("{1}{0}{2:u}{0}", Options.Separator, hostString(), message.DateTime.ToUniversalTime());
+
+            //  get a more user friendly name for a type variant if provided
+            var typeVariantField = message.Type.GetType().GetField(message.Type.ToString());
+            var typeVariantAttribute = (DescriptionAttribute)Attribute.GetCustomAttribute(typeVariantField, typeof(DescriptionAttribute));
+            string userReadableType = typeVariantAttribute == null ? message.Type.ToString() : typeVariantAttribute.Description;
+
+            var htmlFields = new { DateTime = datetime, Type = userReadableType };
+
+            switch (message.Type)
+            {
+                case SnafflerMessageType.Trace:
+                    //Logger.Trace(message);
+                    Logger.WithProperty("htmlFields", htmlFields).Trace(message.Message);
+                    break;
+                case SnafflerMessageType.Degub:
+                    //Logger.Debug(message);
+                    Logger.WithProperty("htmlFields", htmlFields).Debug(message.Message);
+                    break;
+                case SnafflerMessageType.Info:
+                    //Logger.Info(message);
+                    Logger.WithProperty("htmlFields", htmlFields).Info(message.Message);
+                    break;
+                case SnafflerMessageType.FileResult:
+                    //Logger.Warn(message);
+                    Logger.WithProperty("htmlFields", htmlFields).Warn(FileResultLogFromMessage(message));
+                    break;
+                case SnafflerMessageType.DirResult:
+                    //Logger.Warn(message);
+                    Logger.WithProperty("htmlFields", htmlFields).Warn(DirResultLogFromMessage(message));
+                    break;
+                case SnafflerMessageType.ShareResult:
+                    //Logger.Warn(message);
+                    Logger.WithProperty("htmlFields", htmlFields).Warn(ShareResultLogFromMessage(message));
+                    break;
+                case SnafflerMessageType.Error:
+                    //Logger.Error(message);
+                    Logger.WithProperty("htmlFields", htmlFields).Error(message.Message);
+                    break;
+                case SnafflerMessageType.Fatal:
+                    //Logger.Fatal(message);
+                    Logger.WithProperty("htmlFields", htmlFields).Fatal(message.Message);
+                    if (Debugger.IsAttached)
+                    {
+                        Console.ReadKey();
+                    }
+                    break;
+                case SnafflerMessageType.Finish:
+                    Logger.Info("Snaffler out.");
+
+                    if (Debugger.IsAttached)
+                    {
+                        Console.WriteLine("Press any key to exit.");
+                        Console.ReadKey();
+                    }
+                    if (Options.LogType == LogType.HTML)
+                    {
+                        Logger.Info("Normalising output, please wait...");
+                        FixHTMLOutput();
                     }
                     break;
             }
@@ -592,6 +668,33 @@ namespace Snaffler
             //Close the file
             file.Close();
             //Delete the temporary file.
+            File.Delete(Options.LogFilePath + ".tmp");
+        }
+
+        private void FixHTMLOutput()
+        {
+            //Rename the log file temporarily
+            File.Move(Options.LogFilePath, Options.LogFilePath + ".tmp");
+
+            //Prepare the normalised file
+            using (StreamWriter file = new StreamWriter(Options.LogFilePath))
+            {
+                //Write the start of the surrounding template that we need
+                file.Write("<!doctypehtml><html lang=en><meta charset=UTF-8><meta content=\"width=device-width,initial-scale=1\"name=viewport><title>Snaffler Logs</title><style>table{border-collapse:collapse}td,th{border:2px solid #000;padding:5px;vertical-align:text-top}</style><div><table><thead><tr><th>Timestamp<th>DateTime<th>Level<th>Type<th>Message<tbody>");
+
+                //Open the original file
+                using (FileStream sourceStream = new FileStream(Options.LogFilePath + ".tmp", FileMode.Open, FileAccess.Read))
+                using (StreamReader sourceReader = new StreamReader(sourceStream))
+                {
+                    //Write the original content
+                    file.Write(sourceReader.ReadToEnd());
+                }
+
+                //Write the end of the surrounding template that we need
+                file.Write("</table></div>");
+            }
+
+            //Delete the temporary file
             File.Delete(Options.LogFilePath + ".tmp");
         }
     }

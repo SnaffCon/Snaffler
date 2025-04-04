@@ -1,4 +1,7 @@
-﻿using SnaffCore.Concurrency;
+﻿using System.IO;
+using SnaffCore.Classifiers.EffectiveAccess;
+using SnaffCore.Concurrency;
+using static SnaffCore.Config.Options;
 
 namespace SnaffCore.Classifiers
 {
@@ -20,6 +23,11 @@ namespace SnaffCore.Classifiers
                 Triage = ClassifierRule.Triage,
                 ScanDir = true,
             };
+
+            DirectoryInfo dirInfo = new DirectoryInfo(dir);
+            EffectivePermissions effPerms = new EffectivePermissions(MyOptions.CurrentUser);
+            dirResult.RwStatus = effPerms.CanRw(dirInfo);
+
             // check if it matches
             TextClassifier textClassifier = new TextClassifier(ClassifierRule);
             TextResult textResult = textClassifier.TextMatch(dir);
@@ -30,6 +38,10 @@ namespace SnaffCore.Classifiers
                 {
                     case MatchAction.Discard:
                         dirResult.ScanDir = false;
+                        if (MyOptions.LogEverything)
+                        {
+                            Mq.DirResult(dirResult);
+                        }
                         return dirResult;
                     case MatchAction.Snaffle:
                         dirResult.Triage = ClassifierRule.Triage;
@@ -40,6 +52,12 @@ namespace SnaffCore.Classifiers
                         return null;
                 }
             }
+
+            if (MyOptions.LogEverything)
+            {
+                Mq.DirResult(dirResult);
+            }
+
             return dirResult;
         }
     }
@@ -48,6 +66,7 @@ namespace SnaffCore.Classifiers
     {
         public bool ScanDir { get; set; }
         public string DirPath { get; set; }
+        public RwStatus RwStatus { get; set; }
         public Triage Triage { get; set; }
     }
 }

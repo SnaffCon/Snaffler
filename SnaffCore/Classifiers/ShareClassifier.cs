@@ -1,4 +1,5 @@
-﻿using SnaffCore.Concurrency;
+﻿using SnaffCore.Classifiers.EffectiveAccess;
+using SnaffCore.Concurrency;
 using System;
 using System.IO;
 using static SnaffCore.Config.Options;
@@ -76,9 +77,7 @@ namespace SnaffCore.Classifiers
         public string SharePath { get; set; }
         public string ShareComment { get; set; }
         public bool Listable { get; set; }
-        public bool RootWritable { get; set; }
-        public bool RootReadable { get; set; }
-        public bool RootModifyable { get; set; }
+        public RwStatus RwStatus { get; set; }
         public Triage Triage { get; set; } = Triage.Gray; 
     }
 }

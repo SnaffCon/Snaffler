@@ -27,52 +27,55 @@ namespace SnaffCore.TreeWalk
         {
              // Walks a tree checking files and generating results as it goes.
              
-             if (!Directory.Exists(currentDir))
-             {
-                 return;
-             }
-
-            try
+            if (!Directory.Exists(currentDir))
             {
-                string[] files = Directory.GetFiles(currentDir);
-                // check if we actually like the files
-                foreach (string file in files)
+                return;
+            }
+
+            if (MyOptions.ScanFoundFiles)
+            {
+                try
                 {
-                    FileTaskScheduler.New(() =>
+                    string[] files = Directory.GetFiles(currentDir);
+                    // check if we actually like the files
+                    foreach (string file in files)
                     {
-                        try
+                        FileTaskScheduler.New(() =>
                         {
-                            FileScanner.ScanFile(file);
-                        }
-                        catch (Exception e)
-                        {
-                            Mq.Error("Exception in FileScanner task for file " + file);
-                            Mq.Trace(e.ToString());
-                        }
-                    });
+                            try
+                            {
+                                FileScanner.ScanFile(file);
+                            }
+                            catch (Exception e)
+                            {
+                                Mq.Error("Exception in FileScanner task for file " + file);
+                                Mq.Trace(e.ToString());
+                            }
+                        });
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    //Mq.Trace(e.ToString());
+                    //continue;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    //Mq.Trace(e.ToString());
+                    //continue;
+                }
+                catch (IOException)
+                {
+                    //Mq.Trace(e.ToString());
+                    //continue;
+                }
+                catch (Exception e)
+                {
+                    Mq.Degub(e.ToString());
+                    //continue;
                 }
             }
-            catch (UnauthorizedAccessException)
-            {
-                //Mq.Trace(e.ToString());
-                //continue;
-            }
-            catch (DirectoryNotFoundException)
-            {
-                //Mq.Trace(e.ToString());
-                //continue;
-            }
-            catch (IOException)
-            {
-                //Mq.Trace(e.ToString());
-                //continue;
-            }
-            catch (Exception e)
-            {
-                Mq.Degub(e.ToString());
-                //continue;
-            }
-
+           
             try
             {
                 string[] subDirs = Directory.GetDirectories(currentDir);

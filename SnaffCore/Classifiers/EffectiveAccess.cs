@@ -12,6 +12,17 @@ namespace SnaffCore.Classifiers.EffectiveAccess
         public bool CanRead { get; set; }
         public bool CanWrite { get; set; }
         public bool CanModify { get; set; }
+
+        public override string ToString()
+        {
+            char[] rwChars = { '-', '-', '-' };
+
+            if (CanRead) rwChars[0] = 'R';
+            if (CanWrite) rwChars[1] = 'W';
+            if (CanModify) rwChars[2] = 'M';
+
+            return new string(rwChars);
+        }
     }
 
     public class EffectivePermissions
@@ -31,14 +42,14 @@ namespace SnaffCore.Classifiers.EffectiveAccess
             {
                 if (rule.IdentityReference.Value.Equals(_username, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (((rule.FileSystemRights & FileSystemRights.Read) == FileSystemRights.Read) ||
+                    if ((rwStatus.CanRead != true) && (((rule.FileSystemRights & FileSystemRights.Read) == FileSystemRights.Read) ||
                         ((rule.FileSystemRights & FileSystemRights.ReadAndExecute) == FileSystemRights.ReadAndExecute) ||
                         ((rule.FileSystemRights & FileSystemRights.ReadData) == FileSystemRights.ReadData) ||
-                        ((rule.FileSystemRights & FileSystemRights.ListDirectory) == FileSystemRights.ListDirectory))
+                        ((rule.FileSystemRights & FileSystemRights.ListDirectory) == FileSystemRights.ListDirectory)))
                     {
                         rwStatus.CanRead = true;
                     }
-                    if (((rule.FileSystemRights & FileSystemRights.Write) == FileSystemRights.Write) ||
+                    if ((rwStatus.CanWrite != true) && (((rule.FileSystemRights & FileSystemRights.Write) == FileSystemRights.Write) ||
                         ((rule.FileSystemRights & FileSystemRights.Modify) == FileSystemRights.Modify) ||
                         ((rule.FileSystemRights & FileSystemRights.FullControl) == FileSystemRights.FullControl) ||
                         ((rule.FileSystemRights & FileSystemRights.TakeOwnership) == FileSystemRights.TakeOwnership) ||
@@ -46,14 +57,14 @@ namespace SnaffCore.Classifiers.EffectiveAccess
                         ((rule.FileSystemRights & FileSystemRights.AppendData) == FileSystemRights.AppendData) ||
                         ((rule.FileSystemRights & FileSystemRights.WriteData) == FileSystemRights.WriteData) ||
                         ((rule.FileSystemRights & FileSystemRights.CreateFiles) == FileSystemRights.CreateFiles) ||
-                        ((rule.FileSystemRights & FileSystemRights.CreateDirectories) == FileSystemRights.CreateDirectories))
+                        ((rule.FileSystemRights & FileSystemRights.CreateDirectories) == FileSystemRights.CreateDirectories)))
                     {
                         rwStatus.CanWrite = true;
                     }
-                    if (((rule.FileSystemRights & FileSystemRights.Modify) == FileSystemRights.Modify) ||
+                    if ((rwStatus.CanModify != true) && (((rule.FileSystemRights & FileSystemRights.Modify) == FileSystemRights.Modify) ||
                         ((rule.FileSystemRights & FileSystemRights.FullControl) == FileSystemRights.FullControl) ||
                         ((rule.FileSystemRights & FileSystemRights.TakeOwnership) == FileSystemRights.TakeOwnership) ||
-                        ((rule.FileSystemRights & FileSystemRights.ChangePermissions) == FileSystemRights.ChangePermissions))
+                        ((rule.FileSystemRights & FileSystemRights.ChangePermissions) == FileSystemRights.ChangePermissions)))
                     {
                         rwStatus.CanModify = true;
                     }

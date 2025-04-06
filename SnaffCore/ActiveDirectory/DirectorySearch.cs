@@ -31,13 +31,10 @@ namespace SnaffCore.ActiveDirectory.LDAP
         //Thread-safe storage for our Ldap Connection Pool
         private readonly ConcurrentBag<LdapConnection> _connectionPool = new ConcurrentBag<LdapConnection>();
 
-        public DirectorySearch(string domainName, string domainController, string ldapUserName = null, string ldapPassword = null, int ldapPort = 0, bool secureLdap = false) :
-            this(domainName, domainController, $"DC={domainName.Replace(".", ",DC=")}", ldapUserName, ldapPassword, ldapPort, secureLdap){ }
-
-        public DirectorySearch(string domainName, string domainController, string baseLdapPath, string ldapUserName = null, string ldapPassword = null, int ldapPort = 0, bool secureLdap = false)
+        public DirectorySearch(string domainName, string domainController, string baseLdapPath = null, string ldapUserName = null, string ldapPassword = null, int ldapPort = 0, bool secureLdap = false)
         {
             _domainName = domainName;
-            _baseLdapPath = baseLdapPath;
+            _baseLdapPath = baseLdapPath ?? $"DC={domainName.Replace(".", ",DC=")}";
             _domainController = domainController;
             _domainGuidMap = new Dictionary<string, string>();
             _ldapUsername = ldapUserName;

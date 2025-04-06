@@ -74,7 +74,7 @@ The key incantations are:
 
 `-z`   Path to a config file that defines all of the above, and much much more! See below for more details. Give it `-z generate` to generate a sample config file called `.\default.toml`.
 
-`-t` Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.
+`-t` Type of log you would like to output. Currently supported options are plain, JSON, and HTML. Defaults to plain.
 
 `-x` Max number of threads to use. Don't set it below 4 or shit will break.
 

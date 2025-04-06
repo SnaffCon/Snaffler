@@ -211,6 +211,8 @@ namespace Snaffler
                         int errorCode = Marshal.GetLastWin32Error();
                         throw new Exception($"[Error Code {errorCode}] Failed to impersonate {Impersonator.GetUsername()}.");
                     }
+
+                    Options.CurrentUser = Options.Username;
                 }
 
                 if (Options.Snaffle && (Options.SnafflePath.Length > 4))

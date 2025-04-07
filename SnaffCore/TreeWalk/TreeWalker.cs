@@ -10,8 +10,8 @@ namespace SnaffCore.TreeWalk
     public class TreeWalker
     {
         private BlockingMq Mq { get; set; }
-        private BlockingStaticTaskScheduler FileTaskScheduler { get; set; }
-        private BlockingStaticTaskScheduler TreeTaskScheduler { get; set; }
+        private FileTaskScheduler FileTaskScheduler { get; set; }
+        private TreeTaskScheduler TreeTaskScheduler { get; set; }
         private FileScanner FileScanner { get; set; }
 
         public TreeWalker()
@@ -38,18 +38,19 @@ namespace SnaffCore.TreeWalk
                 // check if we actually like the files
                 foreach (string file in files)
                 {
-                    FileTaskScheduler.New(() =>
-                    {
-                        try
-                        {
-                            FileScanner.ScanFile(file);
-                        }
-                        catch (Exception e)
-                        {
-                            Mq.Error("Exception in FileScanner task for file " + file);
-                            Mq.Trace(e.ToString());
-                        }
-                    });
+                    FileTaskScheduler.New(FileScanner.ScanFile, file);
+                    //FileTaskScheduler.New(() =>
+                    //{
+                    //    try
+                    //    {
+                    //        FileScanner.ScanFile(file);
+                    //    }
+                    //    catch (Exception e)
+                    //    {
+                    //        Mq.Error("Exception in FileScanner task for file " + file);
+                    //        Mq.Trace(e.ToString());
+                    //    }
+                    //});
                 }
             }
             catch (UnauthorizedAccessException)
@@ -104,18 +105,19 @@ namespace SnaffCore.TreeWalk
                         }
                         if (scanDir == true)
                         {
-                            TreeTaskScheduler.New(() =>
-                            {
-                                try
-                                {
-                                    WalkTree(dirStr);
-                                }
-                                catch (Exception e)
-                                {
-                                    Mq.Error("Exception in TreeWalker task for dir " + dirStr);
-                                    Mq.Error(e.ToString());
-                                }
-                            });
+                            TreeTaskScheduler.New(WalkTree, dirStr);
+                            //TreeTaskScheduler.New(() =>
+                            //{
+                            //    try
+                            //    {
+                            //        WalkTree(dirStr);
+                            //    }
+                            //    catch (Exception e)
+                            //    {
+                            //        Mq.Error("Exception in TreeWalker task for dir " + dirStr);
+                            //        Mq.Error(e.ToString());
+                            //    }
+                            //});
                         }
                         else
                         {

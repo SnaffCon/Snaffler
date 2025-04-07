@@ -14,6 +14,10 @@ namespace SnaffCore.Config
     {
         public static Options MyOptions { get; set; }
 
+        // Pause and resume functionality
+        public string TaskFile { get; set; }
+        public string ResumeFrom { get; set; }
+
         // Manual Targeting Options
         public List<string> PathTargets { get; set; } = new List<string>();
         public string[] ComputerTargets { get; set; }

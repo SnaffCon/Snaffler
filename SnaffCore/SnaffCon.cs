@@ -16,6 +16,8 @@ using System.Timers;
 using static SnaffCore.Config.Options;
 using Timer = System.Timers.Timer;
 using System.Net;
+using System.IO;
+using Nett;
 
 namespace SnaffCore
 {
@@ -25,10 +27,10 @@ namespace SnaffCore
 
         private BlockingMq Mq { get; set; }
 
-        private static BlockingStaticTaskScheduler ShareTaskScheduler;
-        private static BlockingStaticTaskScheduler TreeTaskScheduler;
-        private static BlockingStaticTaskScheduler FileTaskScheduler;
-        
+        private static ShareTaskScheduler ShareTaskScheduler;
+        private static TreeTaskScheduler TreeTaskScheduler;
+        private static FileTaskScheduler FileTaskScheduler;
+
         private static ShareFinder ShareFinder;
         private static TreeWalker TreeWalker;
         private static FileScanner FileScanner;
@@ -46,10 +48,10 @@ namespace SnaffCore
             int treeThreads = MyOptions.TreeThreads;
             int fileThreads = MyOptions.FileThreads;
 
-            ShareTaskScheduler = new BlockingStaticTaskScheduler(shareThreads, MyOptions.MaxShareQueue);
-            TreeTaskScheduler = new BlockingStaticTaskScheduler(treeThreads, MyOptions.MaxTreeQueue);
-            FileTaskScheduler = new BlockingStaticTaskScheduler(fileThreads, MyOptions.MaxFileQueue);
-
+            ShareTaskScheduler = new ShareTaskScheduler(shareThreads, MyOptions.MaxShareQueue);
+            TreeTaskScheduler = new TreeTaskScheduler(treeThreads, MyOptions.MaxTreeQueue);
+            FileTaskScheduler = new FileTaskScheduler(fileThreads, MyOptions.MaxFileQueue);
+            
             FileScanner = new FileScanner();
             TreeWalker = new TreeWalker();
             ShareFinder = new ShareFinder();
@@ -67,15 +69,15 @@ namespace SnaffCore
         {
             return FileScanner;
         }
-        public static BlockingStaticTaskScheduler GetShareTaskScheduler()
+        public static ShareTaskScheduler GetShareTaskScheduler()
         {
             return ShareTaskScheduler;
         }
-        public static BlockingStaticTaskScheduler GetTreeTaskScheduler()
+        public static TreeTaskScheduler GetTreeTaskScheduler()
         {
             return TreeTaskScheduler;
         }
-        public static BlockingStaticTaskScheduler GetFileTaskScheduler()
+        public static FileTaskScheduler GetFileTaskScheduler()
         {
             return FileTaskScheduler;
         }
@@ -91,72 +93,107 @@ namespace SnaffCore
             statusUpdateTimer.Elapsed += TimedStatusUpdate;
             statusUpdateTimer.Start();
 
-
-            // If we want to hunt for user IDs, we need data from the running user's domain.
-            // Future - walk trusts
-            if ( MyOptions.DomainUserRules)
+            if (MyOptions.TaskFile != null && MyOptions.TaskFile.Length > 0)
             {
-                DomainUserDiscovery();
+                ResumingTaskScheduler.SetTaskFile(MyOptions.TaskFile);
             }
 
-            // Explicit folder setting overrides DFS
-            if (MyOptions.PathTargets.Count != 0 && (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly))
+            if (MyOptions.ResumeFrom != null && MyOptions.ResumeFrom.Length > 0)
             {
-                DomainDfsDiscovery();
-            }
+                // parse task file into structured data
+                TaskFileEntry[] taskFileEntries = File.ReadAllLines(MyOptions.ResumeFrom).Select(line => new TaskFileEntry(line)).ToArray();
 
-            if (MyOptions.PathTargets.Count == 0 && MyOptions.ComputerTargets == null)
-            {
-                if (MyOptions.DfsSharesDict.Count == 0)
+                TaskFileEntry[] completedTasks = taskFileEntries.Where(entry => entry.status == TaskFileEntryStatus.Completed).ToArray();
+                TaskFileEntry[] pendingTasks = taskFileEntries.Where(entry => (entry.status == TaskFileEntryStatus.Pending && !completedTasks.Any(completedEntry => completedEntry.guid == entry.guid))).ToArray();
+
+                foreach (TaskFileEntry pendingFileTask in pendingTasks)
                 {
-                    Mq.Info("Invoking DFS Discovery because no ComputerTargets or PathTargets were specified");
+                    switch (pendingFileTask.type)
+                    {
+                        case TaskType.Share:
+                            ShareFinder shareFinder = new ShareFinder();
+                            ShareTaskScheduler.New(shareFinder.GetComputerShares, pendingFileTask.input);
+                            break;
+                        case TaskType.Tree:
+                            TreeTaskScheduler.New(TreeWalker.WalkTree, pendingFileTask.input);
+                            break;
+                        case TaskType.File:
+                            FileTaskScheduler.New(FileScanner.ScanFile, pendingFileTask.input);
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                // If we want to hunt for user IDs, we need data from the running user's domain.
+                // Future - walk trusts
+                if (MyOptions.DomainUserRules)
+                {
+                    DomainUserDiscovery();
+                }
+
+                // Explicit folder setting overrides DFS
+                if (MyOptions.PathTargets.Count != 0 && (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly))
+                {
                     DomainDfsDiscovery();
                 }
 
-                if (!MyOptions.DfsOnly)
+                if (MyOptions.PathTargets.Count == 0 && MyOptions.ComputerTargets == null)
                 {
-                    Mq.Info("Invoking full domain computer discovery.");
-                    DomainTargetDiscovery();
-                }
-                else
-                {
-                    Mq.Info("Skipping domain computer discovery.");
-                    foreach (string share in MyOptions.DfsSharesDict.Keys)
+                    if (MyOptions.DfsSharesDict.Count == 0)
                     {
-                        if (!MyOptions.PathTargets.Contains(share))
-                        {
-                            MyOptions.PathTargets.Add(share);
-                        }
+                        Mq.Info("Invoking DFS Discovery because no ComputerTargets or PathTargets were specified");
+                        DomainDfsDiscovery();
                     }
-                    Mq.Info("Starting TreeWalker tasks on DFS shares.");
+
+                    if (!MyOptions.DfsOnly)
+                    {
+                        Mq.Info("Invoking full domain computer discovery.");
+                        DomainTargetDiscovery();
+                    }
+                    else
+                    {
+                        Mq.Info("Skipping domain computer discovery.");
+                        foreach (string share in MyOptions.DfsSharesDict.Keys)
+                        {
+                            if (!MyOptions.PathTargets.Contains(share))
+                            {
+                                MyOptions.PathTargets.Add(share);
+                            }
+                        }
+                        Mq.Info("Starting TreeWalker tasks on DFS shares.");
+                        FileDiscovery(MyOptions.PathTargets.ToArray());
+                    }
+                }
+                // otherwise we should have a set of path targets...
+                else if (MyOptions.PathTargets.Count != 0)
+                {
                     FileDiscovery(MyOptions.PathTargets.ToArray());
                 }
-            }
-            // otherwise we should have a set of path targets...
-            else if (MyOptions.PathTargets.Count != 0)
-            {
-                FileDiscovery(MyOptions.PathTargets.ToArray());
-            }
-            // or we've been told what computers to hit...
-            else if (MyOptions.ComputerTargets != null)
-            {
-                ShareDiscovery(MyOptions.ComputerTargets);
-            }
+                // or we've been told what computers to hit...
+                else if (MyOptions.ComputerTargets != null)
+                {
+                    ShareDiscovery(MyOptions.ComputerTargets);
+                }
 
-            // but if that hasn't been done, something has gone wrong.
-            else
-            {
-                Mq.Error("OctoParrot says: AWK! I SHOULDN'T BE!");
+                // but if that hasn't been done, something has gone wrong.
+                else
+                {
+                    Mq.Error("OctoParrot says: AWK! I SHOULDN'T BE!");
+                }
             }
 
             waitHandle.WaitOne();
+            ResumingTaskScheduler.CloseTaskFile();
 
             StatusUpdate();
+
             DateTime finished = DateTime.Now;
             TimeSpan runSpan = finished.Subtract(StartTime);
             Mq.Info("Finished at " + finished.ToLocalTime());
             Mq.Info("Snafflin' took " + runSpan);
             Mq.Finish();
+
         }
 
         private void DomainDfsDiscovery()
@@ -297,19 +334,21 @@ namespace SnaffCore
                 }
                 // ShareFinder Task Creation - this kicks off the rest of the flow
                 Mq.Trace("Creating a ShareFinder task for " + computer);
-                ShareTaskScheduler.New(() =>
-                {
-                    try
-                    {
-                        ShareFinder shareFinder = new ShareFinder();
-                        shareFinder.GetComputerShares(computer);
-                    }
-                    catch (Exception e)
-                    {
-                        Mq.Error("Exception in ShareFinder task for host " + computer);
-                        Mq.Error(e.ToString());
-                    }
-                });
+                ShareFinder shareFinder = new ShareFinder();
+                ShareTaskScheduler.New(shareFinder.GetComputerShares, computer);
+                //ShareTaskScheduler.New(() =>
+                //{
+                //    try
+                //    {
+                //        ShareFinder shareFinder = new ShareFinder();
+                //        shareFinder.GetComputerShares(computer);
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        Mq.Error("Exception in ShareFinder task for host " + computer);
+                //        Mq.Error(e.ToString());
+                //    }
+                //});
             }
             Mq.Info("Created all sharefinder tasks.");
         }
@@ -371,18 +410,19 @@ namespace SnaffCore
             {
                 // TreeWalker Task Creation - this kicks off the rest of the flow
                 Mq.Info("Creating a TreeWalker task for " + pathTarget);
-                TreeTaskScheduler.New(() =>
-                {
-                    try
-                    {
-                        TreeWalker.WalkTree(pathTarget);
-                    }
-                    catch (Exception e)
-                    {
-                        Mq.Error("Exception in TreeWalker task for path " + pathTarget);
-                        Mq.Error(e.ToString());
-                    }
-                });
+                TreeTaskScheduler.New(TreeWalker.WalkTree, pathTarget);
+                //TreeTaskScheduler.New(() =>
+                //{
+                //    try
+                //    {
+                //        TreeWalker.WalkTree(pathTarget);
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        Mq.Error("Exception in TreeWalker task for path " + pathTarget);
+                //        Mq.Error(e.ToString());
+                //    }
+                //});
             }
 
             Mq.Info("Created all TreeWalker tasks.");

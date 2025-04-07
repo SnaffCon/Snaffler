@@ -106,6 +106,8 @@ namespace Snaffler
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
                 "Interval between status updates (in minutes) also acts as a timeout for AD data to be gathered via LDAP. Turn this knob up if you aren't getting any computers from AD when you run Snaffler through a proxy or other slow link. Default = 5");
+            ValueArgument<string> taskFile = new ValueArgument<string>('1', "taskfile", "Save tasks as they are created to a file to allow for resuming mid-operation.");
+            ValueArgument<string> resumeFrom = new ValueArgument<string>('2', "resumefrom", "Resume tasks from a file generated with --taskfile.");
             // list of letters i haven't used yet: gnqw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
@@ -132,6 +134,8 @@ namespace Snaffler
             parser.Arguments.Add(ruleDirArg);
             parser.Arguments.Add(logType);
             parser.Arguments.Add(compExclusionArg);
+            parser.Arguments.Add(taskFile);
+            parser.Arguments.Add(resumeFrom);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -149,6 +153,16 @@ namespace Snaffler
             try
             {
                 parser.ParseCommandLine(args);
+
+                if (taskFile.Parsed)
+                {
+                    parsedConfig.TaskFile = taskFile.Value;
+                }
+
+                if (resumeFrom.Parsed)
+                {
+                    parsedConfig.ResumeFrom = resumeFrom.Value;
+                }
 
                 if (timeOutArg.Parsed && !String.IsNullOrWhiteSpace(timeOutArg.Value))
                 {

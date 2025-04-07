@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Numerics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,6 +37,8 @@ namespace SnaffCore.Concurrency
             Scheduler.RecalculateCounters();
             TaskCounters taskCounters = Scheduler.GetTaskCounters();
 
+            Console.WriteLine($"Checking if done - queued: {taskCounters.CurrentTasksQueued}, done: {taskCounters.CurrentTasksRunning}");
+
             if ((taskCounters.CurrentTasksQueued + taskCounters.CurrentTasksRunning == 0))
             {
                 return true;
@@ -65,6 +70,177 @@ namespace SnaffCore.Concurrency
                     _taskFactory.StartNew(action, _cancellationSource.Token);
                 }
             }
+        }
+    }
+
+    public enum TaskType
+    {
+        None = 0,
+        Share = 1,
+        Tree = 2,
+        File = 3
+    }
+
+    public struct TaskFileEntry
+    {
+        public TaskFileEntryStatus status;
+        public string guid;
+        public TaskType type;
+        public string input;
+
+        public TaskFileEntry(string entryLine)
+        {
+            string[] lineParts = entryLine.Split('|');
+
+            status = (TaskFileEntryStatus)Enum.Parse(typeof(TaskFileEntryStatus), lineParts[0]);
+            guid = lineParts[1];
+
+            if (status == TaskFileEntryStatus.Pending)
+            {
+                type = (TaskType)Enum.Parse(typeof(TaskType), lineParts[2]);
+                input = lineParts[3];
+            }
+            else
+            {
+                type = TaskType.None;
+                input = null;
+            }
+        }
+    }
+
+    public enum TaskFileEntryStatus
+    {
+        Pending = 0,
+        Completed = 1,
+    }
+
+    public class ResumingTaskScheduler : BlockingStaticTaskScheduler
+    {
+        private static readonly object WriteLock = new object();
+        private static StreamWriter fileWriter;
+
+        private static string[] AlreadyHandledTasks;
+
+        internal BlockingMq Mq { get; }
+
+        public ResumingTaskScheduler(int threads, int maxBacklog) : base(threads, maxBacklog)
+        {
+            this.Mq = BlockingMq.GetMq();
+        }
+
+        public static void SetAlreadyHandledTasks(TaskFileEntry[] taskFileEntries)
+        {
+            AlreadyHandledTasks = taskFileEntries.Select(entry => entry.input).ToArray();
+        }
+
+        public static bool IsTaskAlreadyHandled(string input)
+        {
+            if (AlreadyHandledTasks == null) return false;
+            return AlreadyHandledTasks.Contains(input);
+        }
+
+        public void New(TaskType taskType, Action<string> action, string input)
+        {
+            if (IsTaskAlreadyHandled(input)) return;
+
+            string taskGuid = SaveTask(taskType, input);
+
+            New(() =>
+            {
+                try
+                {
+                    action(input);
+                }
+                catch (Exception e)
+                {
+                    Mq.Error("Exception in " + taskType.ToString() + " task for host " + input);
+                    Mq.Error(e.ToString());
+                }
+
+                CompleteTask(taskGuid);
+            });
+        }
+
+        public static void SetTaskFile(string path)
+        {
+            fileWriter = new StreamWriter(path);
+        }
+
+        public static void CloseTaskFile()
+        {
+            if (fileWriter != null) {
+                lock (WriteLock)
+                {
+                    fileWriter.Close();
+                    fileWriter = null;
+                }
+            }
+        }
+
+        internal string SaveTask(TaskType taskType, string input)
+        {
+            // task file is not set, we are not saving tasks
+            if (fileWriter == null) return null;
+
+            string taskGuid = Guid.NewGuid().ToString();
+
+            StringBuilder taskEntryBuilder = new StringBuilder();
+
+            taskEntryBuilder.Append("Pending|");
+            taskEntryBuilder.Append(taskGuid);
+            taskEntryBuilder.Append("|");
+            taskEntryBuilder.Append(taskType.ToString());
+            taskEntryBuilder.Append("|");
+            taskEntryBuilder.Append(input);
+
+            lock (WriteLock)
+            {
+                fileWriter.WriteLine(taskEntryBuilder.ToString());
+                fileWriter.Flush();
+            }
+
+            return taskGuid;
+        }
+
+        internal void CompleteTask(string taskGuid)
+        {
+            if (fileWriter == null) return;
+
+            lock (WriteLock)
+            {
+                fileWriter.WriteLine("Completed|" + taskGuid);
+                fileWriter.Flush();
+            }
+        }
+    }
+
+    public class ShareTaskScheduler : ResumingTaskScheduler
+    {
+        public ShareTaskScheduler(int threads, int maxBacklog) : base(threads, maxBacklog) { }
+
+        public void New(Action<string> action, string file)
+        {
+            New(TaskType.Share, action, file);
+        }
+    }
+
+    public class TreeTaskScheduler : ResumingTaskScheduler
+    {
+        public TreeTaskScheduler(int threads, int maxBacklog) : base(threads, maxBacklog) { }
+
+        public void New(Action<string> action, string file)
+        {
+            New(TaskType.Tree, action, file);
+        }
+    }
+
+    public class FileTaskScheduler : ResumingTaskScheduler
+    {
+        public FileTaskScheduler(int threads, int maxBacklog) : base(threads, maxBacklog) { }
+
+        public void New(Action<string> action, string file)
+        {
+            New(TaskType.File, action, file);
         }
     }
 

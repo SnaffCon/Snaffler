@@ -33,11 +33,18 @@ namespace SnaffCore.Classifiers
                         // in this context snaffle means 'send a report up the queue, and scan the share further'
                         if (IsShareReadable(share))
                         {
+                            // is this supposed to be here?
+                            DirectoryInfo shareInfo = new DirectoryInfo(share);
+
+                            EffectivePermissions effPerms = new EffectivePermissions(MyOptions.CurrentUser);
+                            RwStatus rwStatus = effPerms.CanRw(shareInfo);
+
                             ShareResult shareResult = new ShareResult()
                             {
                                 Triage = ClassifierRule.Triage,
                                 Listable = true,
-                                SharePath = share
+                                SharePath = share,
+                                RwStatus = rwStatus
                             };
                             Mq.ShareResult(shareResult);
                         }

@@ -94,7 +94,8 @@ namespace SnaffCore.ShareFind
                         {
                             Listable = true,
                             SharePath = shareName,
-                            ShareComment = hostShareInfo.shi1_remark.ToString()
+                            ShareComment = hostShareInfo.shi1_remark.ToString(),
+                            RwStatus = new RwStatus()
                         };
 
                         // Try to find this computer+share in the list of DFS targets

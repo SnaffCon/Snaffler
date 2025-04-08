@@ -100,13 +100,19 @@ namespace Snaffler
             SwitchArgument dfsArg = new SwitchArgument('f', "dfs", "Limits Snaffler to finding file shares via DFS, for \"OPSEC\" reasons.", false);
             SwitchArgument findSharesOnlyArg = new SwitchArgument('a', "sharesonly",
                 "Stops after finding shares, doesn't walk their filesystems.", false);
+            SwitchArgument findFoldersOnlyArg = new SwitchArgument('g', "foldersonly",
+                "Stops after finding folders, doesn't scan files.", false);
+            SwitchArgument logEverything = new SwitchArgument('w', "logeverything",
+                "Log everything.", false);
+            SwitchArgument noColorLogs = new SwitchArgument('q', "nocolor",
+                "Do not color logs.", false);
             ValueArgument<string> compExclusionArg = new ValueArgument<string>('k', "exclusions", "Path to a file containing a list of computers to exclude from scanning.");
             ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "List of computers in a file(e.g C:\targets.txt), a single Computer (or comma separated list) to target.");
             ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
                 "Interval between status updates (in minutes) also acts as a timeout for AD data to be gathered via LDAP. Turn this knob up if you aren't getting any computers from AD when you run Snaffler through a proxy or other slow link. Default = 5");
-            // list of letters i haven't used yet: gnqw
+            // list of letters i haven't used yet: <NONE>
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(timeOutArg);
@@ -127,6 +133,9 @@ namespace Snaffler
             parser.Arguments.Add(tsvArg);
             parser.Arguments.Add(dfsArg);
             parser.Arguments.Add(findSharesOnlyArg);
+            parser.Arguments.Add(findFoldersOnlyArg);
+            parser.Arguments.Add(logEverything);
+            parser.Arguments.Add(noColorLogs);
             parser.Arguments.Add(maxThreadsArg);
             parser.Arguments.Add(compTargetArg);
             parser.Arguments.Add(ruleDirArg);
@@ -172,6 +181,10 @@ namespace Snaffler
                     if (logType.Value.ToLower() == "json")
                     {
                         parsedConfig.LogType = LogType.JSON;
+                    }
+                    else if (logType.Value.ToLower() == "html")
+                    {
+                        parsedConfig.LogType = LogType.HTML;
                     }
                     else
                     {
@@ -258,6 +271,21 @@ namespace Snaffler
                 {
                     parsedConfig.ScanFoundShares = false;
                 }
+                if (findFoldersOnlyArg.Parsed)
+                {
+                    parsedConfig.ScanFoundFiles = false;
+                }
+
+                if (logEverything.Parsed)
+                {
+                    parsedConfig.LogEverything = true;
+                }
+
+                if (noColorLogs.Parsed)
+                {
+                    parsedConfig.NoColorLogs = true;
+                }
+
                 if (maxThreadsArg.Parsed)
                 {
                     parsedConfig.MaxThreads = maxThreadsArg.Value;

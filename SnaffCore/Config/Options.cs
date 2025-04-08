@@ -7,7 +7,8 @@ namespace SnaffCore.Config
     public enum LogType
     {
         Plain = 0,
-        JSON = 1
+        JSON = 1,
+        HTML = 2
     }
 
     public partial class Options
@@ -23,6 +24,9 @@ namespace SnaffCore.Config
         public bool ScanSysvol { get; set; } = true;
         public bool ScanNetlogon { get; set; } = true;
         public bool ScanFoundShares { get; set; } = true;
+        public bool ScanFoundFiles { get; set; } = true;
+        public bool LogEverything { get; set; } = false;
+        public bool NoColorLogs { get; set; } = false;
         public int InterestLevel { get; set; } = 0;
         public bool DfsOnly { get; set; } = false;
         public bool DfsShareDiscovery { get; set; } = false;

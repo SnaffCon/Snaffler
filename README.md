@@ -62,6 +62,8 @@ The key incantations are:
 
 `-a`   Skips file enumeration, just gives you a list of listable shares on the target hosts.
 
+`-g`   Skips file enumeration, just gives you a list of shares and folders on the target hosts. (combine with `-w` for the most useful results)
+
 `-u`   Makes Snaffler pull a list of account names from AD, choose the ones that look most-interesting, and then use them in a search rule.
 
 `-d`   Domain to search for computers to search for shares on to search for files in. Easy.
@@ -74,11 +76,15 @@ The key incantations are:
 
 `-z`   Path to a config file that defines all of the above, and much much more! See below for more details. Give it `-z generate` to generate a sample config file called `.\default.toml`.
 
-`-t` Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.
+`-t` Type of log you would like to output. Currently supported options are plain, JSON, and HTML. Defaults to plain.
 
 `-x` Max number of threads to use. Don't set it below 4 or shit will break.
 
 `-p` Path to a directory full of .toml formatted rules. Snaffler will load all of these in place of the default ruleset.
+
+`-w` Log everything (currently just logs directories walked but not marked for snaffling)
+
+`-q` Disable coloring of console output
 
 ## What does any of this log output mean?
 

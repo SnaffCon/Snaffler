@@ -27,39 +27,42 @@ namespace SnaffCore.Classifiers.EffectiveAccess
         {
             RwStatus rwStatus = new RwStatus();
 
-            foreach (FileSystemAccessRule rule in acl)
+            try
             {
-                if (rule.IdentityReference.Value.Equals(_username, StringComparison.OrdinalIgnoreCase))
+                foreach (FileSystemAccessRule rule in acl)
                 {
-                    if (((rule.FileSystemRights & FileSystemRights.Read) == FileSystemRights.Read) ||
-                        ((rule.FileSystemRights & FileSystemRights.ReadAndExecute) == FileSystemRights.ReadAndExecute) ||
-                        ((rule.FileSystemRights & FileSystemRights.ReadData) == FileSystemRights.ReadData) ||
-                        ((rule.FileSystemRights & FileSystemRights.ListDirectory) == FileSystemRights.ListDirectory))
+                    if (rule.IdentityReference.Value.Equals(_username, StringComparison.OrdinalIgnoreCase))
                     {
-                        rwStatus.CanRead = true;
-                    }
-                    if (((rule.FileSystemRights & FileSystemRights.Write) == FileSystemRights.Write) ||
-                        ((rule.FileSystemRights & FileSystemRights.Modify) == FileSystemRights.Modify) ||
-                        ((rule.FileSystemRights & FileSystemRights.FullControl) == FileSystemRights.FullControl) ||
-                        ((rule.FileSystemRights & FileSystemRights.TakeOwnership) == FileSystemRights.TakeOwnership) ||
-                        ((rule.FileSystemRights & FileSystemRights.ChangePermissions) == FileSystemRights.ChangePermissions) ||
-                        ((rule.FileSystemRights & FileSystemRights.AppendData) == FileSystemRights.AppendData) ||
-                        ((rule.FileSystemRights & FileSystemRights.WriteData) == FileSystemRights.WriteData) ||
-                        ((rule.FileSystemRights & FileSystemRights.CreateFiles) == FileSystemRights.CreateFiles) ||
-                        ((rule.FileSystemRights & FileSystemRights.CreateDirectories) == FileSystemRights.CreateDirectories))
-                    {
-                        rwStatus.CanWrite = true;
-                    }
-                    if (((rule.FileSystemRights & FileSystemRights.Modify) == FileSystemRights.Modify) ||
-                        ((rule.FileSystemRights & FileSystemRights.FullControl) == FileSystemRights.FullControl) ||
-                        ((rule.FileSystemRights & FileSystemRights.TakeOwnership) == FileSystemRights.TakeOwnership) ||
-                        ((rule.FileSystemRights & FileSystemRights.ChangePermissions) == FileSystemRights.ChangePermissions))
-                    {
-                        rwStatus.CanModify = true;
+                        if (((rule.FileSystemRights & FileSystemRights.Read) == FileSystemRights.Read) ||
+                            ((rule.FileSystemRights & FileSystemRights.ReadAndExecute) == FileSystemRights.ReadAndExecute) ||
+                            ((rule.FileSystemRights & FileSystemRights.ReadData) == FileSystemRights.ReadData) ||
+                            ((rule.FileSystemRights & FileSystemRights.ListDirectory) == FileSystemRights.ListDirectory))
+                        {
+                            rwStatus.CanRead = true;
+                        }
+                        if (((rule.FileSystemRights & FileSystemRights.Write) == FileSystemRights.Write) ||
+                            ((rule.FileSystemRights & FileSystemRights.Modify) == FileSystemRights.Modify) ||
+                            ((rule.FileSystemRights & FileSystemRights.FullControl) == FileSystemRights.FullControl) ||
+                            ((rule.FileSystemRights & FileSystemRights.TakeOwnership) == FileSystemRights.TakeOwnership) ||
+                            ((rule.FileSystemRights & FileSystemRights.ChangePermissions) == FileSystemRights.ChangePermissions) ||
+                            ((rule.FileSystemRights & FileSystemRights.AppendData) == FileSystemRights.AppendData) ||
+                            ((rule.FileSystemRights & FileSystemRights.WriteData) == FileSystemRights.WriteData) ||
+                            ((rule.FileSystemRights & FileSystemRights.CreateFiles) == FileSystemRights.CreateFiles) ||
+                            ((rule.FileSystemRights & FileSystemRights.CreateDirectories) == FileSystemRights.CreateDirectories))
+                        {
+                            rwStatus.CanWrite = true;
+                        }
+                        if (((rule.FileSystemRights & FileSystemRights.Modify) == FileSystemRights.Modify) ||
+                            ((rule.FileSystemRights & FileSystemRights.FullControl) == FileSystemRights.FullControl) ||
+                            ((rule.FileSystemRights & FileSystemRights.TakeOwnership) == FileSystemRights.TakeOwnership) ||
+                            ((rule.FileSystemRights & FileSystemRights.ChangePermissions) == FileSystemRights.ChangePermissions))
+                        {
+                            rwStatus.CanModify = true;
+                        }
                     }
                 }
             }
-
+            catch (UnauthorizedAccessException) { }
 
             return rwStatus;
         }

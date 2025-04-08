@@ -159,21 +159,13 @@ namespace SnaffCore.ShareFind
                             // Share is readable, report as green  (the old default/min of the Triage enum )
                             shareResult.Triage = Triage.Green;
 
-                            try
-                            {
-                                DirectoryInfo dirInfo = new DirectoryInfo(shareResult.SharePath);
-                                RwStatus rwStatus = EffectivePermissions.CanRw(dirInfo);
-                                shareResult.RwStatus = rwStatus;
+                            DirectoryInfo dirInfo = new DirectoryInfo(shareResult.SharePath);
+                            RwStatus rwStatus = EffectivePermissions.CanRw(dirInfo);
+                            shareResult.RwStatus = rwStatus;
 
-                                if (rwStatus.CanWrite || rwStatus.CanModify)
-                                {
-                                    shareResult.Triage = Triage.Yellow;
-                                }
-                                
-                            }
-                            catch (System.UnauthorizedAccessException e)
+                            if (rwStatus.CanWrite || rwStatus.CanModify)
                             {
-                                Mq.Error("Failed to get permissions on " + shareResult.SharePath);
+                                shareResult.Triage = Triage.Yellow;
                             }
 
                             if (MyOptions.ScanFoundShares)

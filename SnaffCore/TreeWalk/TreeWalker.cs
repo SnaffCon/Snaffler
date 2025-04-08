@@ -39,18 +39,6 @@ namespace SnaffCore.TreeWalk
                 foreach (string file in files)
                 {
                     FileTaskScheduler.New(FileScanner.ScanFile, file);
-                    //FileTaskScheduler.New(() =>
-                    //{
-                    //    try
-                    //    {
-                    //        FileScanner.ScanFile(file);
-                    //    }
-                    //    catch (Exception e)
-                    //    {
-                    //        Mq.Error("Exception in FileScanner task for file " + file);
-                    //        Mq.Trace(e.ToString());
-                    //    }
-                    //});
                 }
             }
             catch (UnauthorizedAccessException)
@@ -106,18 +94,6 @@ namespace SnaffCore.TreeWalk
                         if (scanDir == true)
                         {
                             TreeTaskScheduler.New(WalkTree, dirStr);
-                            //TreeTaskScheduler.New(() =>
-                            //{
-                            //    try
-                            //    {
-                            //        WalkTree(dirStr);
-                            //    }
-                            //    catch (Exception e)
-                            //    {
-                            //        Mq.Error("Exception in TreeWalker task for dir " + dirStr);
-                            //        Mq.Error(e.ToString());
-                            //    }
-                            //});
                         }
                         else
                         {

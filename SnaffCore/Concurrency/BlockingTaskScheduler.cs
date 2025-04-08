@@ -73,20 +73,49 @@ namespace SnaffCore.Concurrency
         }
     }
 
-    public enum TaskType
+    public enum TaskFileType
     {
         None = 0,
         Share = 1,
         Tree = 2,
         File = 3
     }
+    
+    public enum TaskFileEntryStatus
+    {
+        Pending = 0,
+        Completed = 1,
+    }
 
     public struct TaskFileEntry
     {
         public TaskFileEntryStatus status;
         public string guid;
-        public TaskType type;
+        public TaskFileType type;
         public string input;
+
+        public override string ToString()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            stringBuilder.Append(status.ToString());
+            stringBuilder.Append("|");
+            stringBuilder.Append(guid);
+            stringBuilder.Append("|");
+            stringBuilder.Append(type.ToString());
+            stringBuilder.Append("|");
+            stringBuilder.Append(input);
+
+            return stringBuilder.ToString();
+        }
+
+        public TaskFileEntry(TaskFileType type, string input)
+        {
+            guid = Guid.NewGuid().ToString();
+            status = TaskFileEntryStatus.Pending;
+            this.type = type;
+            this.input = input;
+        }
 
         public TaskFileEntry(string entryLine)
         {
@@ -95,23 +124,9 @@ namespace SnaffCore.Concurrency
             status = (TaskFileEntryStatus)Enum.Parse(typeof(TaskFileEntryStatus), lineParts[0]);
             guid = lineParts[1];
 
-            if (status == TaskFileEntryStatus.Pending)
-            {
-                type = (TaskType)Enum.Parse(typeof(TaskType), lineParts[2]);
-                input = lineParts[3];
-            }
-            else
-            {
-                type = TaskType.None;
-                input = null;
-            }
+            type = (TaskFileType)Enum.Parse(typeof(TaskFileType), lineParts[2]);
+            input = lineParts[3];
         }
-    }
-
-    public enum TaskFileEntryStatus
-    {
-        Pending = 0,
-        Completed = 1,
     }
 
     public class ResumingTaskScheduler : BlockingStaticTaskScheduler
@@ -130,7 +145,7 @@ namespace SnaffCore.Concurrency
 
         public static void SetAlreadyHandledTasks(TaskFileEntry[] taskFileEntries)
         {
-            AlreadyHandledTasks = taskFileEntries.Select(entry => entry.input).ToArray();
+            AlreadyHandledTasks = taskFileEntries.Select(entry => entry.input).Distinct().ToArray();
         }
 
         public static bool IsTaskAlreadyHandled(string input)
@@ -139,11 +154,16 @@ namespace SnaffCore.Concurrency
             return AlreadyHandledTasks.Contains(input);
         }
 
-        public void New(TaskType taskType, Action<string> action, string input)
+        public void New(TaskFileType taskType, Action<string> action, string input)
         {
-            if (IsTaskAlreadyHandled(input)) return;
+            New(taskType, action, input, false);
+        }
 
-            string taskGuid = SaveTask(taskType, input);
+        public void New(TaskFileType taskType, Action<string> action, string input, bool ignoreAlreadyHandled)
+        {
+            if (!ignoreAlreadyHandled && IsTaskAlreadyHandled(input)) return;
+
+            TaskFileEntry? taskFileEntry = SaveTask(taskType, input);
 
             New(() =>
             {
@@ -157,7 +177,7 @@ namespace SnaffCore.Concurrency
                     Mq.Error(e.ToString());
                 }
 
-                CompleteTask(taskGuid);
+                CompleteTask(taskFileEntry);
             });
         }
 
@@ -177,38 +197,34 @@ namespace SnaffCore.Concurrency
             }
         }
 
-        internal string SaveTask(TaskType taskType, string input)
+        internal TaskFileEntry? SaveTask(TaskFileType taskType, string input)
         {
             // task file is not set, we are not saving tasks
             if (fileWriter == null) return null;
 
-            string taskGuid = Guid.NewGuid().ToString();
-
-            StringBuilder taskEntryBuilder = new StringBuilder();
-
-            taskEntryBuilder.Append("Pending|");
-            taskEntryBuilder.Append(taskGuid);
-            taskEntryBuilder.Append("|");
-            taskEntryBuilder.Append(taskType.ToString());
-            taskEntryBuilder.Append("|");
-            taskEntryBuilder.Append(input);
+            TaskFileEntry taskFileEntry = new TaskFileEntry(taskType, input);
 
             lock (WriteLock)
             {
-                fileWriter.WriteLine(taskEntryBuilder.ToString());
+                fileWriter.WriteLine(taskFileEntry.ToString());
                 fileWriter.Flush();
             }
 
-            return taskGuid;
+            return taskFileEntry;
         }
 
-        internal void CompleteTask(string taskGuid)
+        public static void CompleteTask(TaskFileEntry? taskFileEntry)
         {
             if (fileWriter == null) return;
+            if (!taskFileEntry.HasValue) return;
+
+            TaskFileEntry taskFileEntryValue = taskFileEntry.Value;
+
+            taskFileEntryValue.status = TaskFileEntryStatus.Completed;
 
             lock (WriteLock)
             {
-                fileWriter.WriteLine("Completed|" + taskGuid);
+                fileWriter.WriteLine(taskFileEntryValue.ToString());
                 fileWriter.Flush();
             }
         }
@@ -218,9 +234,14 @@ namespace SnaffCore.Concurrency
     {
         public ShareTaskScheduler(int threads, int maxBacklog) : base(threads, maxBacklog) { }
 
-        public void New(Action<string> action, string file)
+        public void New(Action<string> action, string share)
         {
-            New(TaskType.Share, action, file);
+            New(action, share, false);
+        }
+
+        public void New(Action<string> action, string share, bool ignoreAlreadyHandled)
+        {
+            New(TaskFileType.Share, action, share, ignoreAlreadyHandled);
         }
     }
 
@@ -228,9 +249,14 @@ namespace SnaffCore.Concurrency
     {
         public TreeTaskScheduler(int threads, int maxBacklog) : base(threads, maxBacklog) { }
 
-        public void New(Action<string> action, string file)
+        public void New(Action<string> action, string tree)
         {
-            New(TaskType.Tree, action, file);
+            New(action, tree, false);
+        }
+
+        public void New(Action<string> action, string tree, bool ignoreAlreadyHandled)
+        {
+            New(TaskFileType.Tree, action, tree, ignoreAlreadyHandled);
         }
     }
 
@@ -238,9 +264,14 @@ namespace SnaffCore.Concurrency
     {
         public FileTaskScheduler(int threads, int maxBacklog) : base(threads, maxBacklog) { }
 
-        public void New(Action<string> action, string file)
+        public void New(Action<string> action, string tree)
         {
-            New(TaskType.File, action, file);
+            New(action, tree, false);
+        }
+
+        public void New(Action<string> action, string file, bool ignoreAlreadyHandled)
+        {
+            New(TaskFileType.File, action, file, ignoreAlreadyHandled);
         }
     }
 

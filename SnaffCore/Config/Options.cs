@@ -16,6 +16,7 @@ namespace SnaffCore.Config
 
         // Pause and resume functionality
         public string TaskFile { get; set; }
+        public double TaskFileTimeOut { get; set; } = 5;
         public string ResumeFrom { get; set; }
 
         // Manual Targeting Options

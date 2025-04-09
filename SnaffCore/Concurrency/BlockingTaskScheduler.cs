@@ -6,6 +6,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
+using static SnaffCore.Config.Options;
 
 namespace SnaffCore.Concurrency
 {
@@ -131,10 +133,9 @@ namespace SnaffCore.Concurrency
 
     public class ResumingTaskScheduler : BlockingStaticTaskScheduler
     {
-        private static readonly object WriteLock = new object();
-        private static StreamWriter fileWriter;
-
-        private static string[] AlreadyHandledTasks;
+        private static readonly Dictionary<string, Tuple<string, string>> pendingTasks = new Dictionary<string, Tuple<string, string>>();
+        private static readonly object writeLock = new object();
+        private static int pendingSaveCalls = 0;
 
         internal BlockingMq Mq { get; }
 
@@ -143,89 +144,65 @@ namespace SnaffCore.Concurrency
             this.Mq = BlockingMq.GetMq();
         }
 
-        public static void SetAlreadyHandledTasks(TaskFileEntry[] taskFileEntries)
+        public void New(string taskType, Action<string> action, string path)
         {
-            AlreadyHandledTasks = taskFileEntries.Select(entry => entry.input).Distinct().ToArray();
-        }
+            string guid = null;
 
-        public static bool IsTaskAlreadyHandled(string input)
-        {
-            if (AlreadyHandledTasks == null) return false;
-            return AlreadyHandledTasks.Contains(input);
-        }
-
-        public void New(TaskFileType taskType, Action<string> action, string input)
-        {
-            New(taskType, action, input, false);
-        }
-
-        public void New(TaskFileType taskType, Action<string> action, string input, bool ignoreAlreadyHandled)
-        {
-            if (!ignoreAlreadyHandled && IsTaskAlreadyHandled(input)) return;
-
-            TaskFileEntry? taskFileEntry = SaveTask(taskType, input);
+            if (MyOptions.TaskFile != null)
+            {
+                guid = Guid.NewGuid().ToString();
+                pendingTasks.Add(guid, new Tuple<string, string>(taskType, path));
+            }
 
             New(() =>
             {
                 try
                 {
-                    action(input);
+                    action(path);
                 }
                 catch (Exception e)
                 {
-                    Mq.Error("Exception in " + taskType.ToString() + " task for host " + input);
+                    Mq.Error("Exception in " + taskType.ToString() + " task for host " + path);
                     Mq.Error(e.ToString());
                 }
 
-                CompleteTask(taskFileEntry);
+                if (guid != null) pendingTasks.Remove(guid);
             });
         }
 
-        public static void SetTaskFile(string path)
+        public static void SaveState(object sender, ElapsedEventArgs e)
         {
-            fileWriter = new StreamWriter(path);
+            SaveState();
         }
 
-        public static void CloseTaskFile()
+        public static void SaveState()
         {
-            if (fileWriter != null) {
-                lock (WriteLock)
+            // Guard against the possibility that someone forgot to check this
+            if (MyOptions.TaskFile == null) return;
+
+            // This blocks more than one save call from being buffered at a time
+            // Prevents a situation where a bunch of buffered calls wait for the lock
+            // But still allows for you to "write continously" if you set an interval shorter than the file write time
+            if (pendingSaveCalls > 1) return;
+            pendingSaveCalls++;
+
+            // In case the file takes longer to write than the set interval
+            lock (writeLock)
+            {
+                using (StreamWriter fileWriter = new StreamWriter(MyOptions.TaskFile, false))
                 {
-                    fileWriter.Close();
-                    fileWriter = null;
+                    // Copy the values into the array to avoid an error in case the pending tasks are changed during the write loop
+                    Tuple<string, string>[] valuesSnapshot = pendingTasks.Values.ToArray();
+
+                    foreach (Tuple<string, string> value in valuesSnapshot)
+                    {
+                        fileWriter.WriteLine($"{value.Item1}|{value.Item2}");
+                    }
+
+                    fileWriter.Flush();
                 }
-            }
-        }
 
-        internal TaskFileEntry? SaveTask(TaskFileType taskType, string input)
-        {
-            // task file is not set, we are not saving tasks
-            if (fileWriter == null) return null;
-
-            TaskFileEntry taskFileEntry = new TaskFileEntry(taskType, input);
-
-            lock (WriteLock)
-            {
-                fileWriter.WriteLine(taskFileEntry.ToString());
-                fileWriter.Flush();
-            }
-
-            return taskFileEntry;
-        }
-
-        public static void CompleteTask(TaskFileEntry? taskFileEntry)
-        {
-            if (fileWriter == null) return;
-            if (!taskFileEntry.HasValue) return;
-
-            TaskFileEntry taskFileEntryValue = taskFileEntry.Value;
-
-            taskFileEntryValue.status = TaskFileEntryStatus.Completed;
-
-            lock (WriteLock)
-            {
-                fileWriter.WriteLine(taskFileEntryValue.ToString());
-                fileWriter.Flush();
+                pendingSaveCalls--;
             }
         }
     }
@@ -236,12 +213,7 @@ namespace SnaffCore.Concurrency
 
         public void New(Action<string> action, string share)
         {
-            New(action, share, false);
-        }
-
-        public void New(Action<string> action, string share, bool ignoreAlreadyHandled)
-        {
-            New(TaskFileType.Share, action, share, ignoreAlreadyHandled);
+            New("share", action, share);
         }
     }
 
@@ -251,12 +223,7 @@ namespace SnaffCore.Concurrency
 
         public void New(Action<string> action, string tree)
         {
-            New(action, tree, false);
-        }
-
-        public void New(Action<string> action, string tree, bool ignoreAlreadyHandled)
-        {
-            New(TaskFileType.Tree, action, tree, ignoreAlreadyHandled);
+            New("tree", action, tree);
         }
     }
 
@@ -264,14 +231,9 @@ namespace SnaffCore.Concurrency
     {
         public FileTaskScheduler(int threads, int maxBacklog) : base(threads, maxBacklog) { }
 
-        public void New(Action<string> action, string tree)
+        public void New(Action<string> action, string file)
         {
-            New(action, tree, false);
-        }
-
-        public void New(Action<string> action, string file, bool ignoreAlreadyHandled)
-        {
-            New(TaskFileType.File, action, file, ignoreAlreadyHandled);
+            New("file", action, file);
         }
     }
 

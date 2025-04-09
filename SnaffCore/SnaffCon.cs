@@ -93,110 +93,114 @@ namespace SnaffCore
             statusUpdateTimer.Elapsed += TimedStatusUpdate;
             statusUpdateTimer.Start();
 
-            if (MyOptions.TaskFile != null && MyOptions.TaskFile.Length > 0)
+
+            if (MyOptions.TaskFile != null)
             {
-                ResumingTaskScheduler.SetTaskFile(MyOptions.TaskFile);
+                Timer saveStateTimer = new Timer(TimeSpan.FromMinutes(MyOptions.TaskFileTimeOut).TotalMilliseconds) { AutoReset = true };
+                saveStateTimer.Elapsed += ResumingTaskScheduler.SaveState;
+                saveStateTimer.Start();
             }
 
-            if (MyOptions.ResumeFrom != null && MyOptions.ResumeFrom.Length > 0)
+            if (MyOptions.ResumeFrom != null)
             {
-                // Parse task file into structured data
-                TaskFileEntry[] taskFileEntries = File.ReadAllLines(MyOptions.ResumeFrom).Select(line => new TaskFileEntry(line)).ToArray();
-
-                // Set the internal list on the scheduler so it can skip tasks (adds pending too because those will be handled below)
-                ResumingTaskScheduler.SetAlreadyHandledTasks(taskFileEntries);
-
-                // Parse the completed and pending tasks for dispatching
-                TaskFileEntry[] completedTasks = taskFileEntries.Where(entry => entry.status == TaskFileEntryStatus.Completed).ToArray();
-                
-                // If the user has specified a new file to save to, append completed tasks for continuity
-                foreach (TaskFileEntry completedTask in completedTasks)
+                // Read the task file and parse it into tuples
+                Tuple<string, string>[] taskFileEntries = File.ReadLines(MyOptions.ResumeFrom).Select(line =>
                 {
-                    ResumingTaskScheduler.CompleteTask(completedTask);
-                }
+                    string[] parts = line.Split('|');
+                    return parts.Length == 2 ? new Tuple<string, string>(parts[0], parts[1]) : null;
+                }).Where(tuple => tuple != null).ToArray();
 
-                TaskFileEntry[] pendingTasks = taskFileEntries.Where(entry => (entry.status == TaskFileEntryStatus.Pending && !completedTasks.Any(completedEntry => completedEntry.guid == entry.guid))).ToArray();
+                // Get all shares, they are non-recursive so just save all of them
+                Tuple<string, string>[] shareEntries = taskFileEntries.Where(entry => entry.Item1 == "share").ToArray();
 
-                // Dispatch pending tasks
-                foreach (TaskFileEntry pendingFileTask in pendingTasks)
+                // Remove all entries where the path starts with a pending share
+                taskFileEntries = taskFileEntries.Where(entry => !shareEntries.Any(shareEntry => entry.Item2.StartsWith("\\\\" + shareEntry.Item2 + "\\"))).ToArray();
+
+                // Get all tree entires, they are recursive so we need to find the shortest path for each shared base
+                Tuple<string, string>[] treeEntries = taskFileEntries.Where(entry => entry.Item1 == "tree" && !taskFileEntries.Any(otherEntry => entry.Item2.StartsWith(otherEntry.Item2 + "\\"))).ToArray();
+
+                // Remove all entries where the path starts with one of the base pending tree
+                taskFileEntries = taskFileEntries.Where(entry => !treeEntries.Any(treeEntry => entry.Item2.StartsWith(treeEntry.Item2 + "\\"))).ToArray();
+
+                // Tasks should be deduplicated now, dispatch what is left pending
+                foreach (Tuple<string, string> entry in taskFileEntries)
                 {
-                    switch (pendingFileTask.type)
+                    switch (entry.Item1)
                     {
-                        case TaskFileType.Share:
+                        case "share":
                             ShareFinder shareFinder = new ShareFinder();
-                            ShareTaskScheduler.New(shareFinder.GetComputerShares, pendingFileTask.input, true);
+                            ShareTaskScheduler.New(shareFinder.GetComputerShares, entry.Item2);
                             break;
-                        case TaskFileType.Tree:
-                            TreeTaskScheduler.New(TreeWalker.WalkTree, pendingFileTask.input, true);
+                        case "tree":
+                            TreeTaskScheduler.New(TreeWalker.WalkTree, entry.Item2);
                             break;
-                        case TaskFileType.File:
-                            FileTaskScheduler.New(FileScanner.ScanFile, pendingFileTask.input, true);
+                        case "file":
+                            FileTaskScheduler.New(FileScanner.ScanFile, entry.Item2);
                             break;
                     }
                 }
             }
-
-            // Continue with normal operation, anything handled from the file above will be skipped internally by the scheduler
-
-            // If we want to hunt for user IDs, we need data from the running user's domain.
-            // Future - walk trusts
-            if (MyOptions.DomainUserRules)
+            else
             {
-                DomainUserDiscovery();
-            }
-
-            // Explicit folder setting overrides DFS
-            if (MyOptions.PathTargets.Count != 0 && (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly))
-            {
-                DomainDfsDiscovery();
-            }
-
-            if (MyOptions.PathTargets.Count == 0 && MyOptions.ComputerTargets == null)
-            {
-                if (MyOptions.DfsSharesDict.Count == 0)
+                // If we want to hunt for user IDs, we need data from the running user's domain.
+                // Future - walk trusts
+                if (MyOptions.DomainUserRules)
                 {
-                    Mq.Info("Invoking DFS Discovery because no ComputerTargets or PathTargets were specified");
+                    DomainUserDiscovery();
+                }
+
+                // Explicit folder setting overrides DFS
+                if (MyOptions.PathTargets.Count != 0 && (MyOptions.DfsShareDiscovery || MyOptions.DfsOnly))
+                {
                     DomainDfsDiscovery();
                 }
 
-                if (!MyOptions.DfsOnly)
+                if (MyOptions.PathTargets.Count == 0 && MyOptions.ComputerTargets == null)
                 {
-                    Mq.Info("Invoking full domain computer discovery.");
-                    DomainTargetDiscovery();
-                }
-                else
-                {
-                    Mq.Info("Skipping domain computer discovery.");
-                    foreach (string share in MyOptions.DfsSharesDict.Keys)
+                    if (MyOptions.DfsSharesDict.Count == 0)
                     {
-                        if (!MyOptions.PathTargets.Contains(share))
-                        {
-                            MyOptions.PathTargets.Add(share);
-                        }
+                        Mq.Info("Invoking DFS Discovery because no ComputerTargets or PathTargets were specified");
+                        DomainDfsDiscovery();
                     }
-                    Mq.Info("Starting TreeWalker tasks on DFS shares.");
+
+                    if (!MyOptions.DfsOnly)
+                    {
+                        Mq.Info("Invoking full domain computer discovery.");
+                        DomainTargetDiscovery();
+                    }
+                    else
+                    {
+                        Mq.Info("Skipping domain computer discovery.");
+                        foreach (string share in MyOptions.DfsSharesDict.Keys)
+                        {
+                            if (!MyOptions.PathTargets.Contains(share))
+                            {
+                                MyOptions.PathTargets.Add(share);
+                            }
+                        }
+                        Mq.Info("Starting TreeWalker tasks on DFS shares.");
+                        FileDiscovery(MyOptions.PathTargets.ToArray());
+                    }
+                }
+                // otherwise we should have a set of path targets...
+                else if (MyOptions.PathTargets.Count != 0)
+                {
                     FileDiscovery(MyOptions.PathTargets.ToArray());
                 }
-            }
-            // otherwise we should have a set of path targets...
-            else if (MyOptions.PathTargets.Count != 0)
-            {
-                FileDiscovery(MyOptions.PathTargets.ToArray());
-            }
-            // or we've been told what computers to hit...
-            else if (MyOptions.ComputerTargets != null)
-            {
-                ShareDiscovery(MyOptions.ComputerTargets);
-            }
+                // or we've been told what computers to hit...
+                else if (MyOptions.ComputerTargets != null)
+                {
+                    ShareDiscovery(MyOptions.ComputerTargets);
+                }
 
-            // but if that hasn't been done, something has gone wrong.
-            else
-            {
-                Mq.Error("OctoParrot says: AWK! I SHOULDN'T BE!");
+                // but if that hasn't been done, something has gone wrong.
+                else
+                {
+                    Mq.Error("OctoParrot says: AWK! I SHOULDN'T BE!");
+                }
             }
 
             waitHandle.WaitOne();
-            ResumingTaskScheduler.CloseTaskFile();
 
             StatusUpdate();
 

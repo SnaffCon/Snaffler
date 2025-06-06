@@ -37,7 +37,7 @@ namespace Snaffler
             return _hostString;
         }
 
-        public void Run(string[] args)
+        public async Task RunAsync(string[] args)
         {
             // prime the hoststring lazy instantiator
             hostString();
@@ -201,16 +201,9 @@ namespace Snaffler
 
                 var tokenSource = new CancellationTokenSource();
                 var token = tokenSource.Token;
-                Task thing = Task.Factory.StartNew(() => { controller.Execute(); }, token);
-                bool exit = false;
-
-                while (exit == false)
-                {
-                    if (HandleOutput() == true)
-                    {
-                        exit = true;
-                    }
-                }
+                Task controllerTask = Task.Run(() => controller.Execute(), token);
+                await HandleOutputAsync();
+                await controllerTask;
                 return;
             }
             catch (Exception e)
@@ -223,7 +216,7 @@ namespace Snaffler
         private void DumpQueue()
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            while (Mq.Q.TryTake(out SnafflerMessage message))
+            while (Mq.Reader.TryRead(out SnafflerMessage message))
             {
                 // emergency dump of queue contents to console
                 Console.WriteLine(message.Message);
@@ -234,10 +227,10 @@ namespace Snaffler
             }
         }
 
-        private bool HandleOutput()
+        private async Task<bool> HandleOutputAsync()
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            foreach (SnafflerMessage message in Mq.Q.GetConsumingEnumerable())
+            await foreach (SnafflerMessage message in Mq.Reader.ReadAllAsync())
             {
                 if (Options.LogType == LogType.Plain)
                 {
@@ -248,7 +241,7 @@ namespace Snaffler
                     ProcessMessageJSON(message);
                 }
 
-                // catch terminating messages and bail out of the master 'while' loop
+                // catch terminating messages and bail out
                 if ((message.Type == SnafflerMessageType.Fatal) || (message.Type == SnafflerMessageType.Finish))
                 {
                     return true;

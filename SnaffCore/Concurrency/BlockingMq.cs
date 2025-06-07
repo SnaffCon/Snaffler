@@ -1,6 +1,7 @@
 ﻿using SnaffCore.Classifiers;
 using System;
 using System.Collections.Concurrent;
+using System.Threading.Channels;
 
 namespace SnaffCore.Concurrency
 {
@@ -19,29 +20,35 @@ namespace SnaffCore.Concurrency
         }
 
         // Message Queue
-        public BlockingCollection<SnafflerMessage> Q { get; private set; }
+        private Channel<SnafflerMessage> _channel;
+        public ChannelReader<SnafflerMessage> Reader => _channel.Reader;
 
         private BlockingMq()
         {
-            Q = new BlockingCollection<SnafflerMessage>();
+            _channel = Channel.CreateUnbounded<SnafflerMessage>();
+        }
+
+        private void Enqueue(SnafflerMessage message)
+        {
+            _channel.Writer.TryWrite(message);
         }
 
         public void Terminate()
         {
             // say we did a thing
-            Q.Add(new SnafflerMessage
+            Enqueue(new SnafflerMessage
             {
                 DateTime = DateTime.Now,
                 Type = SnafflerMessageType.Fatal,
                 Message = "Terminate was called"
             });
-            //this.Q.CompleteAdding();
+            _channel.Writer.TryComplete();
         }
 
         public void Trace(string message)
         {
             // say we did a thing
-            Q.Add(new SnafflerMessage
+            Enqueue(new SnafflerMessage
             {
                 DateTime = DateTime.Now,
                 Type = SnafflerMessageType.Trace,
@@ -52,7 +59,7 @@ namespace SnaffCore.Concurrency
         public void Degub(string message)
         {
             // say we did a thing
-            Q.Add(new SnafflerMessage
+            Enqueue(new SnafflerMessage
             {
                 DateTime = DateTime.Now,
                 Type = SnafflerMessageType.Degub,
@@ -63,7 +70,7 @@ namespace SnaffCore.Concurrency
         public void Info(string message)
         {
             // say we did a thing
-            Q.Add(new SnafflerMessage
+            Enqueue(new SnafflerMessage
             {
                 DateTime = DateTime.Now,
                 Type = SnafflerMessageType.Info,
@@ -73,7 +80,7 @@ namespace SnaffCore.Concurrency
 
         public void Error(string message)
         {
-            Q.Add(new SnafflerMessage
+            Enqueue(new SnafflerMessage
             {
                 DateTime = DateTime.Now,
                 Type = SnafflerMessageType.Error,
@@ -84,7 +91,7 @@ namespace SnaffCore.Concurrency
         public void FileResult(FileResult fileResult)
         {
             // say we did a thing
-            Q.Add(new SnafflerMessage
+            Enqueue(new SnafflerMessage
             {
                 DateTime = DateTime.Now,
                 Type = SnafflerMessageType.FileResult,
@@ -94,7 +101,7 @@ namespace SnaffCore.Concurrency
         public void DirResult(DirResult dirResult)
         {
             // say we did a thing
-            Q.Add(new SnafflerMessage
+            Enqueue(new SnafflerMessage
             {
                 DateTime = DateTime.Now,
                 DirResult = dirResult,
@@ -104,7 +111,7 @@ namespace SnaffCore.Concurrency
         public void ShareResult(ShareResult shareResult)
         {
             // say we did a thing
-            Q.Add(new SnafflerMessage
+            Enqueue(new SnafflerMessage
             {
                 DateTime = DateTime.Now,
                 ShareResult = shareResult,
@@ -114,11 +121,12 @@ namespace SnaffCore.Concurrency
 
         public void Finish()
         {
-            Q.Add(new SnafflerMessage()
+            Enqueue(new SnafflerMessage()
             {
                 DateTime = DateTime.Now,
                 Type = SnafflerMessageType.Finish
             });
+            _channel.Writer.TryComplete();
         }
     }
 }

@@ -200,7 +200,7 @@ namespace Snaffler
 
                 controller = new SnaffCon(Options);
 
-                Task controllerTask = controller.ExecuteAsync();
+                Task controllerTask = Task.Run(() => controller.ExecuteAsync());
                 await HandleOutputAsync();
                 await controllerTask;
                 return;

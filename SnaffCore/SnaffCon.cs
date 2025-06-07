@@ -150,6 +150,8 @@ namespace SnaffCore
                 Mq.Error("OctoParrot says: AWK! I SHOULDN'T BE!");
             }
 
+            _ = StartCompletionWatcherAsync();
+
             waitHandle.WaitOne();
 
             StatusUpdate();
@@ -497,6 +499,20 @@ namespace SnaffCore
                 waitHandle.Set();
             }
             //}
+        }
+
+        private async Task StartCompletionWatcherAsync()
+        {
+            while (true)
+            {
+                if (FileTaskScheduler.Done() && ShareTaskScheduler.Done() && TreeTaskScheduler.Done())
+                {
+                    waitHandle.Set();
+                    break;
+                }
+
+                await Task.Delay(1000);
+            }
         }
 
         private static String BytesToString(long byteCount)

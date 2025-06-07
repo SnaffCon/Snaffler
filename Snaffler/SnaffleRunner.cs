@@ -9,6 +9,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -52,7 +53,7 @@ namespace Snaffler
             try
             {
                 // parse cli opts in
-                Options = Config.Parse(args);
+                Options = await Config.ParseAsync(args);
 
                 if (Options == null)
                 {
@@ -199,9 +200,7 @@ namespace Snaffler
 
                 controller = new SnaffCon(Options);
 
-                var tokenSource = new CancellationTokenSource();
-                var token = tokenSource.Token;
-                Task controllerTask = Task.Run(() => controller.Execute(), token);
+                Task controllerTask = controller.ExecuteAsync();
                 await HandleOutputAsync();
                 await controllerTask;
                 return;
@@ -238,7 +237,7 @@ namespace Snaffler
                 }
                 else if (Options.LogType == LogType.JSON)
                 {
-                    ProcessMessageJSON(message);
+                    await ProcessMessageJSONAsync(message);
                 }
 
                 // catch terminating messages and bail out
@@ -297,7 +296,7 @@ namespace Snaffler
             }
         }
 
-        private void ProcessMessageJSON(SnafflerMessage message)
+        private async Task ProcessMessageJSONAsync(SnafflerMessage message)
         {
             //  standardized time formatting,  UTC
             string datetime = String.Format("{1}{0}{2:u}{0}", Options.Separator, hostString(), message.DateTime.ToUniversalTime());
@@ -348,10 +347,10 @@ namespace Snaffler
                         Console.WriteLine("Press any key to exit.");
                         Console.ReadKey();
                     }
-                    if (Options.LogType == LogType.JSON) 
+                    if (Options.LogType == LogType.JSON)
                     {
                         Logger.Info("Normalising output, please wait...");
-                        FixJSONOutput();
+                        await FixJSONOutputAsync();
                     }
                     break;
             }
@@ -546,29 +545,27 @@ namespace Snaffler
         }
 
         //This is probably slow but it is a quick and easy fix for now.
-        private void FixJSONOutput() 
+        private async Task FixJSONOutputAsync()
         {
             //Rename the log file temporarily
             File.Move(Options.LogFilePath, Options.LogFilePath + ".tmp");
             //Prepare the normalised file
-            StreamWriter file = new StreamWriter(Options.LogFilePath);
+            using StreamWriter file = new StreamWriter(Options.LogFilePath);
             //Read in the original log file to an array
-            string[] lines = System.IO.File.ReadAllLines(Options.LogFilePath + ".tmp");
+            string[] lines = await System.IO.File.ReadAllLinesAsync(Options.LogFilePath + ".tmp");
             //Write the surrounding template that we need.
-            file.Write("{\"entries\": [\n");
+            await file.WriteAsync("{\"entries\": [\n");
             //Write all the lines into the new file but add a comma after all but the last so it becomes valid JSON.
             for (int ii = 0; ii < lines.Length -1; ii++)
             {
-                file.WriteLine(lines[ii] + ",");
+                await file.WriteLineAsync(lines[ii] + ",");
             }
             //Add the last line but without a comma
-            file.WriteLine(lines[lines.Length - 1]);
+            await file.WriteLineAsync(lines[lines.Length - 1]);
             //Close out the file's contents with the last of the JSON to make it valid.
-            file.Write("]\n}");
+            await file.WriteAsync("]\n}");
             //Flush the output
-            file.Flush();
-            //Close the file
-            file.Close();
+            await file.FlushAsync();
             //Delete the temporary file.
             File.Delete(Options.LogFilePath + ".tmp");
         }

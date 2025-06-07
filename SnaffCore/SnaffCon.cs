@@ -16,6 +16,7 @@ using System.Timers;
 using static SnaffCore.Config.Options;
 using Timer = System.Timers.Timer;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace SnaffCore
 {
@@ -80,7 +81,7 @@ namespace SnaffCore
             return FileTaskScheduler;
         }
 
-        public void Execute()
+        public async Task ExecuteAsync()
         {
             StartTime = DateTime.Now;
             // This is the main execution thread.
@@ -116,7 +117,7 @@ namespace SnaffCore
                 if (!MyOptions.DfsOnly)
                 {
                     Mq.Info("Invoking full domain computer discovery.");
-                    DomainTargetDiscovery();
+                    await DomainTargetDiscoveryAsync();
                 }
                 else
                 {
@@ -140,7 +141,7 @@ namespace SnaffCore
             // or we've been told what computers to hit...
             else if (MyOptions.ComputerTargets != null)
             {
-                ShareDiscovery(MyOptions.ComputerTargets);
+                await ShareDiscoveryAsync(MyOptions.ComputerTargets);
             }
 
             // but if that hasn't been done, something has gone wrong.
@@ -176,7 +177,7 @@ namespace SnaffCore
             }
         }
 
-        private void DomainTargetDiscovery()
+        private async Task DomainTargetDiscoveryAsync()
         {
             List<string> targetComputers;
 
@@ -229,7 +230,7 @@ namespace SnaffCore
             }
 
             // call ShareDisco which should handle the rest.
-            ShareDiscovery(targetComputers.ToArray());
+            await ShareDiscoveryAsync(targetComputers.ToArray());
             // ShareDiscovery(targetComputers.ToArray(), dfsShares);
         }
 
@@ -285,12 +286,12 @@ namespace SnaffCore
             }
         }
 
-        private void ShareDiscovery(string[] computerTargets)
+        private async Task ShareDiscoveryAsync(string[] computerTargets)
         {
             Mq.Info("Starting to look for readable shares...");
             foreach (string computer in computerTargets)
             {
-                if (CheckExclusions(computer))
+                if (await CheckExclusions(computer))
                 {
                     // skip any that are in the exclusion list
                     continue;
@@ -302,7 +303,7 @@ namespace SnaffCore
                     try
                     {
                         Mq.Trace("Performing reverse lookup for " + computer);
-                        IPHostEntry result = Dns.GetHostEntry(computer);
+                        IPHostEntry result = await Dns.GetHostEntryAsync(computer);
                         computerName = result.HostName;
                         Mq.Trace("Got DNSName " + computerName + " for " + computer);
                     }
@@ -343,7 +344,7 @@ namespace SnaffCore
             return IPAddress.TryParse(host, out ip);
         }
 
-        private bool CheckExclusions(string computer)
+        private async Task<bool> CheckExclusions(string computer)
         {
             // check if it's an IP already
             if (isIP(computer))
@@ -360,7 +361,7 @@ namespace SnaffCore
                 try
                 {
                     // resolve it
-                    IPHostEntry result = Dns.GetHostEntry(computer);
+                    IPHostEntry result = await Dns.GetHostEntryAsync(computer);
                     // handle multiple IPs in response
                     foreach (IPAddress ipAddress in result.AddressList)
                     {

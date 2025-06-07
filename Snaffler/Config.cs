@@ -12,12 +12,13 @@ using System.Reflection;
 using System.Security;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Snaffler
 {
     public static class Config
     {
-        public static Options Parse(string[] args)
+        public static async Task<Options> ParseAsync(string[] args)
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Options options;
@@ -25,7 +26,7 @@ namespace Snaffler
             // parse the args
             try
             {
-                options = ParseImpl(args);
+                options = await ParseImplAsync(args);
                 if (options == null)
                 {
                     return null;
@@ -62,7 +63,7 @@ namespace Snaffler
             return IPAddress.TryParse(host, out ip);
         }
 
-        private static Options ParseImpl(string[] args)
+        private static async Task<Options> ParseImplAsync(string[] args)
         {
             BlockingMq Mq = BlockingMq.GetMq();
             Mq.Info("Parsing args...");
@@ -201,7 +202,7 @@ namespace Snaffler
                 if (compExclusionArg.Parsed)
                 {
                     List<string> compExclusions = new List<string>();
-                    string[] fileLines = File.ReadAllLines(compExclusionArg.Value);
+                    string[] fileLines = await File.ReadAllLinesAsync(compExclusionArg.Value);
                     foreach (string line in fileLines)
                     {
                         if (isIP(line))
@@ -212,7 +213,7 @@ namespace Snaffler
                         {
                             try
                             {
-                                IPHostEntry result = Dns.GetHostEntry(line);
+                                IPHostEntry result = await Dns.GetHostEntryAsync(line);
                                 foreach (IPAddress ipAddress in result.AddressList)
                                 {
                                     compExclusions.Add(ipAddress.ToString());
@@ -241,7 +242,8 @@ namespace Snaffler
                     List<string> compTargets = new List<string>();
                     if (compTargetArg.Value.Contains(Path.DirectorySeparatorChar))
                     {
-                        compTargets.AddRange(File.ReadLines(compTargetArg.Value).Select(line => line.Trim()));
+                        string[] targetLines = await File.ReadAllLinesAsync(compTargetArg.Value);
+                        compTargets.AddRange(targetLines.Select(line => line.Trim()));
                     }
                     else if (compTargetArg.Value.Contains(","))
                     {
@@ -420,7 +422,7 @@ namespace Snaffler
                         StringBuilder sb = new StringBuilder();
                         foreach (string tomlfile in tomlfiles)
                         {
-                            string tomlstring = File.ReadAllText(tomlfile);
+                            string tomlstring = await File.ReadAllTextAsync(tomlfile);
                             sb.AppendLine(tomlstring);
                         }
                         string bulktoml = sb.ToString();

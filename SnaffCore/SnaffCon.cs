@@ -150,7 +150,7 @@ namespace SnaffCore
                 Mq.Error("OctoParrot says: AWK! I SHOULDN'T BE!");
             }
 
-            _ = StartCompletionWatcherAsync();
+            _ = Task.Run(StartCompletionWatcherAsync);
 
             waitHandle.WaitOne();
 

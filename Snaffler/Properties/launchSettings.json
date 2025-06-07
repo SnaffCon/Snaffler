@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Snaffler": {
+      "commandName": "Project",
+      "commandLineArgs": "-s -i \"D:\\\\Backup - 2020-05-31\""
+    }
+  }
+}

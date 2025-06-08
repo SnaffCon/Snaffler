@@ -1,14 +1,9 @@
-﻿using NLog;
-using NLog.Config;
-using NLog.Layouts;
-using NLog.Targets;
 using SnaffCore;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -17,7 +12,6 @@ namespace Snaffler
 {
     public class SnaffleRunner
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private BlockingMq Mq { get; set; }
         private LogLevel LogLevel { get; set; }
         private Options Options { get; set; }
@@ -77,119 +71,18 @@ namespace Snaffler
                     dirResultTemplate = "{{{0}}}({1})";
                 }
                 //------------------------------------------
-                // set up new fangled logging
+                // set up logging
                 //------------------------------------------
-                LoggingConfiguration nlogConfig = new LoggingConfiguration();
-                nlogConfig.Variables["encoding"] = "utf8";
-                ColoredConsoleTarget logconsole = null;
-                FileTarget logfile = null;
 
                 ParseLogLevelString(Options.LogLevelString);
 
-                // Targets where to log to: File and Console
-                if (Options.LogToConsole)
-                {
-                    logconsole = new ColoredConsoleTarget("logconsole")
-                    {
-                        DetectOutputRedirected = true,
-                        UseDefaultRowHighlightingRules = false,
-                        WordHighlightingRules =
-                        {
-                            new ConsoleWordHighlightingRule("{Green}", ConsoleOutputColor.DarkGreen,
-                                ConsoleOutputColor.White),
-                            new ConsoleWordHighlightingRule("{Yellow}", ConsoleOutputColor.DarkYellow,
-                                ConsoleOutputColor.White),
-                            new ConsoleWordHighlightingRule("{Red}", ConsoleOutputColor.DarkRed,
-                                ConsoleOutputColor.White),
-                            new ConsoleWordHighlightingRule("{Black}", ConsoleOutputColor.Black,
-                                ConsoleOutputColor.White),
-
-                            new ConsoleWordHighlightingRule("[Trace]", ConsoleOutputColor.DarkGray,
-                                ConsoleOutputColor.Black),
-                            new ConsoleWordHighlightingRule("[Degub]", ConsoleOutputColor.Gray,
-                                ConsoleOutputColor.Black),
-                            new ConsoleWordHighlightingRule("[Info]", ConsoleOutputColor.White,
-                                ConsoleOutputColor.Black),
-                            new ConsoleWordHighlightingRule("[Error]", ConsoleOutputColor.Magenta,
-                                ConsoleOutputColor.Black),
-                            new ConsoleWordHighlightingRule("[Fatal]", ConsoleOutputColor.Red,
-                                ConsoleOutputColor.Black),
-                            new ConsoleWordHighlightingRule("[File]", ConsoleOutputColor.Green,
-                                ConsoleOutputColor.Black),
-                            new ConsoleWordHighlightingRule("[Share]", ConsoleOutputColor.Yellow,
-                                ConsoleOutputColor.Black),
-                            new ConsoleWordHighlightingRule
-                            {
-                                CompileRegex = true,
-                                Regex = @"<.*\|.*\|.*\|.*?>",
-                                ForegroundColor = ConsoleOutputColor.Cyan,
-                                BackgroundColor = ConsoleOutputColor.Black
-                            },
-                            new ConsoleWordHighlightingRule
-                            {
-                                CompileRegex = true,
-                                Regex = @"^\d\d\d\d-\d\d\-\d\d \d\d:\d\d:\d\d [\+-]\d\d:\d\d ",
-                                ForegroundColor = ConsoleOutputColor.DarkGray,
-                                BackgroundColor = ConsoleOutputColor.Black
-                            },
-                            new ConsoleWordHighlightingRule
-                            {
-                                CompileRegex = true,
-                                Regex = @"\((?:[^\)]*\)){1}",
-                                ForegroundColor = ConsoleOutputColor.DarkMagenta,
-                                BackgroundColor = ConsoleOutputColor.Black
-                            }
-                        }
-                    };
-                    if (LogLevel == LogLevel.Warn)
-                    {
-                        nlogConfig.AddRule(LogLevel.Warn, LogLevel.Warn, logconsole);
-                    }
-                    else
-                    {
-                        nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logconsole);
-                    }
-                    logconsole.Layout = "${message}";
-                }
-
-                if (Options.LogToFile)
-                {
-                    logfile = new FileTarget("logfile") { FileName = Options.LogFilePath };
-                    if (LogLevel == LogLevel.Warn)
-                    {
-                        nlogConfig.AddRule(LogLevel.Warn, LogLevel.Warn, logfile);
-                    }
-                    else
-                    {
-                        nlogConfig.AddRule(LogLevel, LogLevel.Fatal, logfile);
-                    }
-                    if (Options.LogType == LogType.Plain)
-                    {
-                        logfile.Layout = "${message}";
-                    }
-                    else if (Options.LogType == LogType.JSON)
-                    {
-                        var eventProperties = new JsonLayout();
-                        eventProperties.IncludeAllProperties = true;
-                        eventProperties.MaxRecursionLimit = 5;
-                        var jsonLayout = new JsonLayout
-                        {
-                            Attributes =
-                            {
-                                new JsonAttribute("time", "${longdate}"),
-                                new JsonAttribute("level", "${level}"),
-                                new JsonAttribute("message", "${message}"),
-                                new JsonAttribute("eventProperties", eventProperties,
-                                //don't escape layout
-                                false)
-                            }
-                        };
-                        logfile.Layout = jsonLayout;
-                    }
-                }
-
-                // Apply config           
-                LogManager.Configuration = nlogConfig;
+                Logger.Configure(
+                    Options.LogToConsole,
+                    Options.LogToFile,
+                    Options.LogFilePath,
+                    LogLevel,
+                    Options.LogType,
+                    Options.Separator);
 
                 //-------------------------------------------
 
@@ -203,6 +96,7 @@ namespace Snaffler
                 Task controllerTask = Task.Run(() => controller.ExecuteAsync());
                 await HandleOutputAsync();
                 await controllerTask;
+                Logger.Close();
                 return;
             }
             catch (Exception e)
@@ -251,41 +145,41 @@ namespace Snaffler
 
         private void ProcessMessage(SnafflerMessage message)
         {
-            //  standardized time formatting,  UTC
-            string datetime = String.Format("{1}{0}{2:u}{0}", Options.Separator, hostString(), message.DateTime.ToUniversalTime());
+            string prefix = hostString() + Options.Separator +
+                message.DateTime.ToUniversalTime().ToString("u") + Options.Separator;
 
             switch (message.Type)
             {
                 case SnafflerMessageType.Trace:
-                    Logger.Trace(datetime + "[Trace]" + Options.Separator + message.Message);
+                    Logger.Trace(message.DateTime, prefix, message.Message);
                     break;
                 case SnafflerMessageType.Degub:
-                    Logger.Debug(datetime + "[Degub]" + Options.Separator + message.Message);
+                    Logger.Debug(message.DateTime, prefix, message.Message);
                     break;
                 case SnafflerMessageType.Info:
-                    Logger.Info(datetime + "[Info]" + Options.Separator + message.Message);
+                    Logger.Info(message.DateTime, prefix, message.Message);
                     break;
                 case SnafflerMessageType.FileResult:
-                    Logger.Warn(datetime + "[File]" + Options.Separator + FileResultLogFromMessage(message));
+                    Logger.File(message.DateTime, prefix, FileResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.DirResult:
-                    Logger.Warn(datetime + "[Dir]" + Options.Separator + DirResultLogFromMessage(message));
+                    Logger.Dir(message.DateTime, prefix, DirResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.ShareResult:
-                    Logger.Warn(datetime + "[Share]" + Options.Separator + ShareResultLogFromMessage(message));
+                    Logger.Share(message.DateTime, prefix, ShareResultLogFromMessage(message));
                     break;
                 case SnafflerMessageType.Error:
-                    Logger.Error(datetime + "[Error]" + Options.Separator + message.Message);
+                    Logger.Error(message.DateTime, prefix, message.Message);
                     break;
                 case SnafflerMessageType.Fatal:
-                    Logger.Fatal(datetime + "[Fatal]" + Options.Separator + message.Message);
+                    Logger.Fatal(message.DateTime, prefix, message.Message);
                     if (Debugger.IsAttached)
                     {
                         Console.ReadKey();
                     }
                     break;
                 case SnafflerMessageType.Finish:
-                    Logger.Info("Snaffler out.");
+                    Logger.Info(message.DateTime, prefix, "Snaffler out.");
                     
                     if (Debugger.IsAttached)
                     {
@@ -298,49 +192,40 @@ namespace Snaffler
 
         private async Task ProcessMessageJSONAsync(SnafflerMessage message)
         {
-            //  standardized time formatting,  UTC
-            string datetime = String.Format("{1}{0}{2:u}{0}", Options.Separator, hostString(), message.DateTime.ToUniversalTime());
+            string prefix = hostString() + Options.Separator;
 
             switch (message.Type)
             {
                 case SnafflerMessageType.Trace:
-                    //Logger.Trace(message);
-                    Logger.Trace(datetime + "[Trace]" + Options.Separator + message.Message, message);
+                    Logger.Trace(message.DateTime, prefix, message.Message, message);
                     break;
                 case SnafflerMessageType.Degub:
-                    //Logger.Debug(message);
-                    Logger.Debug(datetime + "[Degub]" + Options.Separator + message.Message, message);
+                    Logger.Debug(message.DateTime, prefix, message.Message, message);
                     break;
                 case SnafflerMessageType.Info:
-                    //Logger.Info(message);
-                    Logger.Info(datetime + "[Info]" + Options.Separator + message.Message, message);
+                    Logger.Info(message.DateTime, prefix, message.Message, message);
                     break;
                 case SnafflerMessageType.FileResult:
-                    //Logger.Warn(message);
-                    Logger.Warn(datetime + "[File]" + Options.Separator + FileResultLogFromMessage(message), message);
+                    Logger.File(message.DateTime, prefix, FileResultLogFromMessage(message), message);
                     break;
                 case SnafflerMessageType.DirResult:
-                    //Logger.Warn(message);
-                    Logger.Warn(datetime + "[Dir]" + Options.Separator + DirResultLogFromMessage(message), message);
+                    Logger.Dir(message.DateTime, prefix, DirResultLogFromMessage(message), message);
                     break;
                 case SnafflerMessageType.ShareResult:
-                    //Logger.Warn(message);
-                    Logger.Warn(datetime + "[Share]" + Options.Separator + ShareResultLogFromMessage(message), message);
+                    Logger.Share(message.DateTime, prefix, ShareResultLogFromMessage(message), message);
                     break;
                 case SnafflerMessageType.Error:
-                    //Logger.Error(message);
-                    Logger.Error(datetime + "[Error]" + Options.Separator + message.Message, message);
+                    Logger.Error(message.DateTime, prefix, message.Message, message);
                     break;
                 case SnafflerMessageType.Fatal:
-                    //Logger.Fatal(message);
-                    Logger.Fatal(datetime + "[Fatal]" + Options.Separator + message.Message, message);
+                    Logger.Fatal(message.DateTime, prefix, message.Message, message);
                     if (Debugger.IsAttached)
                     {
                         Console.ReadKey();
                     }
                     break;
                 case SnafflerMessageType.Finish:
-                    Logger.Info("Snaffler out.");
+                    Logger.Info(message.DateTime, prefix, "Snaffler out.");
 
                     if (Debugger.IsAttached)
                     {
@@ -349,7 +234,7 @@ namespace Snaffler
                     }
                     if (Options.LogType == LogType.JSON)
                     {
-                        Logger.Info("Normalising output, please wait...");
+                        Logger.Info(message.DateTime, prefix, "Normalising output, please wait...");
                         await FixJSONOutputAsync();
                     }
                     break;
@@ -493,19 +378,27 @@ namespace Snaffler
 
         public void WriteColor(string textToWrite, ConsoleColor fgColor)
         {
+            if (Console.IsOutputRedirected)
+            {
+                Console.Write(textToWrite);
+                return;
+            }
+
             Console.ForegroundColor = fgColor;
-
             Console.Write(textToWrite);
-
             Console.ResetColor();
         }
 
         public void WriteColorLine(string textToWrite, ConsoleColor fgColor)
         {
+            if (Console.IsOutputRedirected)
+            {
+                Console.WriteLine(textToWrite);
+                return;
+            }
+
             Console.ForegroundColor = fgColor;
-
             Console.WriteLine(textToWrite);
-
             Console.ResetColor();
         }
 

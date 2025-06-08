@@ -275,6 +275,17 @@ The solution was UltraSnaffler, which is just a second `.sln` file that enables 
 
 WARNING: Snaffler's default rules don't include any that will look inside Office docs or PDFs, because we found it really difficult to write any that weren't going to just take *years* to finish a run in a typical corporate environment. *Be warned, looking inside these docs is a lot slower than looking inside good old fashioned text files, and a typical environment will have an absolute mountain of low-value Office docs and PDFs.*
 
+## Building Native AOT executables
+
+Snaffler and its library projects now support publishing as native executables.
+To create a self‑contained binary, run a command like:
+
+```bash
+dotnet publish Snaffler/Snaffler.csproj -c Release -r win-x64 --self-contained
+```
+
+Replace the runtime identifier with the target OS and architecture of your choice.
+
 ## How does the config file thing work?
 
 This is actually really neat IMO.

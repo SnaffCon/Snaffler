@@ -1,6 +1,5 @@
 using CommandLineParser.Arguments;
-using Nett;
-using NLog;
+using CsToml;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using System;
@@ -18,6 +17,7 @@ namespace Snaffler
 {
     public static class Config
     {
+
         public static async Task<Options> ParseAsync(string[] args)
         {
             BlockingMq Mq = BlockingMq.GetMq();
@@ -141,11 +141,6 @@ namespace Snaffler
                 return null; 
             }
 
-            TomlSettings settings = TomlSettings.Create(cfg => cfg
-.ConfigureType<LogLevel>(tc =>
-    tc.WithConversionFor<TomlString>(conv => conv
-        .FromToml(s => (LogLevel)Enum.Parse(typeof(LogLevel), s.Value, ignoreCase: true))
-        .ToToml(e => e.ToString()))));
 
             try
             {
@@ -368,7 +363,8 @@ namespace Snaffler
                 {
                     if (configFileArg.Value.Equals("generate"))
                     {
-                        Toml.WriteFile(parsedConfig, ".\\default.toml", settings);
+                        using var result = CsTomlSerializer.Serialize(parsedConfig);
+                        File.WriteAllBytes(".\\default.toml", result.ByteSpan.ToArray());
                         Console.WriteLine("Wrote config values to .\\default.toml");
                         parsedConfig.LogToConsole = true;
                         Mq.Degub("Enabled logging to stdout.");
@@ -377,7 +373,7 @@ namespace Snaffler
                     else
                     {
                         string configFile = configFileArg.Value;
-                        parsedConfig = Toml.ReadFile<Options>(configFile, settings);
+                        parsedConfig = CsTomlSerializer.Deserialize<Options>(await File.ReadAllBytesAsync(configFile));
                         Mq.Info("Read config file from " + configFile);
                     }
                 }
@@ -411,7 +407,7 @@ namespace Snaffler
                         string bulktoml = sb.ToString();
 
                         // deserialise the toml to an actual ruleset
-                        RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
+                        RuleSet ruleSet = CsTomlSerializer.Deserialize<RuleSet>(System.Text.Encoding.UTF8.GetBytes(bulktoml));
 
                         // stick the rules in our config!
                         parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
@@ -427,7 +423,7 @@ namespace Snaffler
                         }
                         string bulktoml = sb.ToString();
                         // deserialise the toml to an actual ruleset
-                        RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
+                        RuleSet ruleSet = CsTomlSerializer.Deserialize<RuleSet>(System.Text.Encoding.UTF8.GetBytes(bulktoml));
 
                         // stick the rules in our config!
                         parsedConfig.ClassifierRules = ruleSet.ClassifierRules;

@@ -5,6 +5,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>Snaffler</RootNamespace>
     <AssemblyName>Snaffler</AssemblyName>
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SnaffCore\SnaffCore.csproj" />
@@ -16,7 +17,7 @@
   <ItemGroup>
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.22" />
     <PackageReference Include="dnMerge" Version="0.5.15" PrivateAssets="all" />
-    <PackageReference Include="Nett" Version="0.15.0" />
-    <PackageReference Include="NLog" Version="4.7.15" />
+    <PackageReference Include="CsToml" Version="1.6.5" />
+    <PackageReference Include="CsToml.Generator" Version="1.6.5" />
   </ItemGroup>
 </Project>

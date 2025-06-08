@@ -2,9 +2,11 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Nett.Coma" Version="0.15.0" />
+    <PackageReference Include="CsToml" Version="1.6.5" />
+    <PackageReference Include="CsToml.Generator" Version="1.6.5" />
     <PackageReference Include="System.DirectoryServices" Version="7.0.0" />
     <PackageReference Include="System.DirectoryServices.Protocols" Version="7.0.0" />
   </ItemGroup>

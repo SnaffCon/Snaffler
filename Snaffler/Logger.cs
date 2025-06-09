@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SnaffCore.Config;
@@ -27,10 +29,14 @@ namespace Snaffler
         private static LogLevel _minLevel;
         private static LogType _logType;
         private static char _separator;
+        private static Channel<LogEntry>? _channel;
+        private static Task? _consumerTask;
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
+
+        private readonly record struct LogEntry(string Prefix, string Tag, ConsoleColor TagColor, string Message, string FileMessage);
 
         public static void Configure(bool logToConsole, bool logToFile, string? filePath, LogLevel minLevel, LogType logType, char separator)
         {
@@ -46,10 +52,14 @@ namespace Snaffler
                     AutoFlush = true
                 };
             }
+            _channel = Channel.CreateUnbounded<LogEntry>();
+            _consumerTask = Task.Run(ProcessQueueAsync);
         }
 
         public static void Close()
         {
+            _channel?.Writer.TryComplete();
+            _consumerTask?.Wait();
             lock (_lock)
             {
                 if (_fileWriter != null)
@@ -173,6 +183,22 @@ namespace Snaffler
             }
         }
 
+        private static async Task ProcessQueueAsync()
+        {
+            if (_channel == null) return;
+            await foreach (var entry in _channel.Reader.ReadAllAsync())
+            {
+                if (_consoleEnabled)
+                {
+                    WriteConsoleInternal(entry.Prefix, entry.Tag, entry.TagColor, entry.Message);
+                }
+                if (_fileEnabled)
+                {
+                    WriteFile(entry.FileMessage);
+                }
+            }
+        }
+
         private static string BuildJson(LogLevel level, DateTime time, string message, object? data)
         {
             var obj = new
@@ -191,14 +217,21 @@ namespace Snaffler
 
             string plain = string.Concat(prefix, tag, _separator, message);
             string output = _logType == LogType.JSON ? BuildJson(level, time, plain, data) : plain;
-
-            if (_consoleEnabled)
+            var entry = new LogEntry(prefix, tag, tagColor, message, output);
+            if (_channel != null)
             {
-                WriteConsole(prefix, tag, tagColor, message);
+                _channel.Writer.TryWrite(entry);
             }
-            if (_fileEnabled)
+            else
             {
-                WriteFile(output);
+                if (_consoleEnabled)
+                {
+                    WriteConsoleInternal(prefix, tag, tagColor, message);
+                }
+                if (_fileEnabled)
+                {
+                    WriteFile(output);
+                }
             }
         }
 

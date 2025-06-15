@@ -1,98 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B118802D-2E46-4E41-AAC7-9EE890268F8B}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SnaffCore</RootNamespace>
-    <AssemblyName>SnaffCore</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
+    <TargetFrameworks>net9.0;net451</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
+    <PackageReference Include="CsToml" Version="1.6.5" />
+    <PackageReference Include="CsToml.Generator" Version="1.6.5" />
+    <PackageReference Include="System.DirectoryServices" Version="7.0.0" />
+    <PackageReference Include="System.DirectoryServices.Protocols" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <PackageReference Include="Nett.Coma" Version="0.15.0" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.Protocols" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.XML" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ActiveDirectory\DfsFinder.cs" />
-    <Compile Include="ActiveDirectory\DirectorySearch.cs" />
-    <Compile Include="ActiveDirectory\Extensions.cs" />
-    <Compile Include="ActiveDirectory\Helpers.cs" />
-    <Compile Include="ActiveDirectory\LdapTypeEnum.cs" />
-    <Compile Include="Classifiers\ArchiveClassifier.cs" />
-    <Compile Include="Classifiers\Certificate.cs" />
-    <Compile Include="Classifiers\EffectiveAccess.cs" />
-    <Compile Include="Classifiers\FileResult.cs" />
-    <Compile Include="Classifiers\PostMatchClassifier.cs" />
-    <Compile Include="Classifiers\TextClassifier.cs" />
-    <Compile Include="Classifiers\ContentClassifier.cs" />
-    <Compile Include="Classifiers\DirClassifier.cs" />
-    <Compile Include="Classifiers\FileClassifier.cs" />
-    <Compile Include="Classifiers\ShareClassifier.cs" />
-    <Compile Include="ActiveDirectory\AdData.cs" />
-    <Compile Include="Concurrency\BlockingMq.cs" />
-    <Compile Include="Concurrency\BlockingTaskScheduler.cs" />
-    <Compile Include="Concurrency\SnafflerMessage.cs" />
-    <Compile Include="Concurrency\SnafflerMessageType.cs" />
-    <Compile Include="Config\ClassifierOptions.cs" />
-    <Compile Include="Config\Options.cs" />
-    <Compile Include="Classifiers\ClassifierRule.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShareFind\ShareFinder.cs" />
-    <Compile Include="FileScan\FileScanner.cs" />
-    <Compile Include="TreeWalk\TreeWalker.cs" />
-    <Compile Include="SnaffCon.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Nett.Coma">
-      <Version>0.15.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

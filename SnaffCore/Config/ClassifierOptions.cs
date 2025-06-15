@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CsToml;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 
 namespace SnaffCore.Config
@@ -9,16 +11,17 @@ namespace SnaffCore.Config
     public partial class Options
     {
         // Classifiers
+        [TomlValueOnSerialized]
         public List<ClassifierRule> ClassifierRules { get; set; } = new List<ClassifierRule>();
-        [Nett.TomlIgnore]
+        [IgnoreDataMember]
         public List<ClassifierRule> ShareClassifiers { get; set; } = new List<ClassifierRule>();
-        [Nett.TomlIgnore]
+        [IgnoreDataMember]
         public List<ClassifierRule> DirClassifiers { get; set; } = new List<ClassifierRule>();
-        [Nett.TomlIgnore]
+        [IgnoreDataMember]
         public List<ClassifierRule> FileClassifiers { get; set; } = new List<ClassifierRule>();
-        [Nett.TomlIgnore]
+        [IgnoreDataMember]
         public List<ClassifierRule> ContentsClassifiers { get; set; } = new List<ClassifierRule>();
-        [Nett.TomlIgnore]
+        [IgnoreDataMember]
         public List<ClassifierRule> PostMatchClassifiers { get; set; } = new List<ClassifierRule>();
 
         public void PrepareClassifiers()

@@ -66,6 +66,26 @@ namespace SnaffCore.Concurrency
                 }
             }
         }
+
+        public void New(Func<Task> asyncAction)
+        {
+            bool proceed = false;
+
+            while (proceed == false)
+            {
+                lock (syncLock)
+                {
+                    if (_maxBacklog != 0)
+                    {
+                        if (Scheduler.GetTaskCounters().CurrentTasksQueued >= _maxBacklog)
+                            continue;
+                    }
+
+                    proceed = true;
+                    _taskFactory.StartNew(asyncAction, _cancellationSource.Token).Unwrap();
+                }
+            }
+        }
     }
 
     public class TaskCounters

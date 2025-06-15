@@ -204,15 +204,12 @@ namespace Snaffler
             }
         }
 
-#if NETFRAMEWORK
         private static async Task ProcessQueueAsync()
         {
             if (_channel == null) return;
+#if NETFRAMEWORK
             foreach (var entry in _channel.GetConsumingEnumerable())
 #else
-        private static async Task ProcessQueueAsync()
-        {
-            if (_channel == null) return;
             await foreach (var entry in _channel.Reader.ReadAllAsync())
 #endif
             {
@@ -227,31 +224,22 @@ namespace Snaffler
             }
         }
 
+
+        private static string BuildJson(LogLevel level, DateTime time, string message, object? data)
+        {
+            var obj = new
+            {
+                time = time.ToUniversalTime().ToString("O"),
+                level = level.ToString(),
+                message,
+                eventProperties = data
+            };
 #if NETFRAMEWORK
-        private static string BuildJson(LogLevel level, DateTime time, string message, object? data)
-        {
-            var obj = new
-            {
-                time = time.ToUniversalTime().ToString("O"),
-                level = level.ToString(),
-                message,
-                eventProperties = data
-            };
             return JsonConvert.SerializeObject(obj);
-        }
 #else
-        private static string BuildJson(LogLevel level, DateTime time, string message, object? data)
-        {
-            var obj = new
-            {
-                time = time.ToUniversalTime().ToString("O"),
-                level = level.ToString(),
-                message,
-                eventProperties = data
-            };
             return JsonSerializer.Serialize(obj, _jsonOptions);
-        }
 #endif
+        }
 
         private static void Log(LogLevel level, DateTime time, string prefix, string tag, ConsoleColor tagColor, string message, object? data = null)
         {

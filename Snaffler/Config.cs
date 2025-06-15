@@ -1,5 +1,4 @@
 using CommandLineParser.Arguments;
-using CsToml;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using System;
@@ -138,7 +137,7 @@ namespace Snaffler
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
             {
                 parser.ShowUsage();
-                return null; 
+                return null;
             }
 
 
@@ -197,7 +196,7 @@ namespace Snaffler
                 if (compExclusionArg.Parsed)
                 {
                     List<string> compExclusions = new List<string>();
-                    string[] fileLines = await File.ReadAllLinesAsync(compExclusionArg.Value);
+                    string[] fileLines = await FileCompat.ReadAllLinesAsync(compExclusionArg.Value);
                     foreach (string line in fileLines)
                     {
                         if (isIP(line))
@@ -237,7 +236,7 @@ namespace Snaffler
                     List<string> compTargets = new List<string>();
                     if (compTargetArg.Value.Contains(Path.DirectorySeparatorChar))
                     {
-                        string[] targetLines = await File.ReadAllLinesAsync(compTargetArg.Value);
+                        string[] targetLines = await FileCompat.ReadAllLinesAsync(compTargetArg.Value);
                         compTargets.AddRange(targetLines.Select(line => line.Trim()));
                     }
                     else if (compTargetArg.Value.Contains(","))
@@ -363,8 +362,7 @@ namespace Snaffler
                 {
                     if (configFileArg.Value.Equals("generate"))
                     {
-                        using var result = CsTomlSerializer.Serialize(parsedConfig);
-                        File.WriteAllBytes(".\\default.toml", result.ByteSpan.ToArray());
+                        await TomlCompat.WriteFileAsync(parsedConfig, ".\\default.toml");
                         Console.WriteLine("Wrote config values to .\\default.toml");
                         parsedConfig.LogToConsole = true;
                         Mq.Degub("Enabled logging to stdout.");
@@ -373,7 +371,7 @@ namespace Snaffler
                     else
                     {
                         string configFile = configFileArg.Value;
-                        parsedConfig = CsTomlSerializer.Deserialize<Options>(await File.ReadAllBytesAsync(configFile));
+                        parsedConfig = await TomlCompat.ReadFileAsync(configFile);
                         Mq.Info("Read config file from " + configFile);
                     }
                 }
@@ -407,7 +405,7 @@ namespace Snaffler
                         string bulktoml = sb.ToString();
 
                         // deserialise the toml to an actual ruleset
-                        RuleSet ruleSet = CsTomlSerializer.Deserialize<RuleSet>(System.Text.Encoding.UTF8.GetBytes(bulktoml));
+                        RuleSet ruleSet = TomlCompat.ReadString(bulktoml);
 
                         // stick the rules in our config!
                         parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
@@ -418,12 +416,12 @@ namespace Snaffler
                         StringBuilder sb = new StringBuilder();
                         foreach (string tomlfile in tomlfiles)
                         {
-                            string tomlstring = await File.ReadAllTextAsync(tomlfile);
+                            string tomlstring = await FileCompat.ReadAllTextAsync(tomlfile);
                             sb.AppendLine(tomlstring);
                         }
                         string bulktoml = sb.ToString();
                         // deserialise the toml to an actual ruleset
-                        RuleSet ruleSet = CsTomlSerializer.Deserialize<RuleSet>(System.Text.Encoding.UTF8.GetBytes(bulktoml));
+                        RuleSet ruleSet = TomlCompat.ReadString(bulktoml);
 
                         // stick the rules in our config!
                         parsedConfig.ClassifierRules = ruleSet.ClassifierRules;

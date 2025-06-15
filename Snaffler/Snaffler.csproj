@@ -1,11 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net9.0;net451</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>Snaffler</RootNamespace>
     <AssemblyName>Snaffler</AssemblyName>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
     <PublishAot>true</PublishAot>
+    <FodyDisable>true</FodyDisable>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <FodyEnable>true</FodyEnable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SnaffCore\SnaffCore.csproj" />
@@ -16,8 +23,17 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineArgumentsParser" Version="3.0.22" />
-    <PackageReference Include="dnMerge" Version="0.5.15" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
     <PackageReference Include="CsToml" Version="1.6.5" />
     <PackageReference Include="CsToml.Generator" Version="1.6.5" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <PackageReference Include="Nett" Version="0.15.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Fody" Version="6.7.0" PrivateAssets="all" />
+    <PackageReference Include="Costura.Fody" Version="5.7.0" PrivateAssets="all" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.Protocols" />
   </ItemGroup>
 </Project>

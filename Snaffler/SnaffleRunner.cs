@@ -108,8 +108,13 @@ namespace Snaffler
 
         private void DumpQueue()
         {
+#if NETFRAMEWORK
+            BlockingMq Mq = BlockingMq.GetMq();
+            while (Mq.Collection.TryTake(out SnafflerMessage message))
+#else
             BlockingMq Mq = BlockingMq.GetMq();
             while (Mq.Reader.TryRead(out SnafflerMessage message))
+#endif
             {
                 // emergency dump of queue contents to console
                 Console.WriteLine(message.Message);
@@ -123,7 +128,11 @@ namespace Snaffler
         private async Task<bool> HandleOutputAsync()
         {
             BlockingMq Mq = BlockingMq.GetMq();
+#if NETFRAMEWORK
+            foreach (SnafflerMessage message in Mq.Collection.GetConsumingEnumerable())
+#else
             await foreach (SnafflerMessage message in Mq.Reader.ReadAllAsync())
+#endif
             {
                 if (Options.LogType == LogType.Plain)
                 {
@@ -445,7 +454,7 @@ namespace Snaffler
             //Prepare the normalised file
             using StreamWriter file = new StreamWriter(Options.LogFilePath);
             //Read in the original log file to an array
-            string[] lines = await System.IO.File.ReadAllLinesAsync(Options.LogFilePath + ".tmp");
+            string[] lines = await FileCompat.ReadAllLinesAsync(Options.LogFilePath + ".tmp");
             //Write the surrounding template that we need.
             await file.WriteAsync("{\"entries\": [\n");
             //Write all the lines into the new file but add a comma after all but the last so it becomes valid JSON.

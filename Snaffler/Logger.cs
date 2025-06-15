@@ -1,10 +1,15 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+#if NETFRAMEWORK
+using System.Collections.Concurrent;
+using Newtonsoft.Json;
+#else
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+#endif
+using System.Threading.Tasks;
 using SnaffCore.Config;
 
 #nullable enable
@@ -29,12 +34,17 @@ namespace Snaffler
         private static LogLevel _minLevel;
         private static LogType _logType;
         private static char _separator;
+#if NETFRAMEWORK
+        private static BlockingCollection<LogEntry>? _channel;
+        private static Task? _consumerTask;
+#else
         private static Channel<LogEntry>? _channel;
         private static Task? _consumerTask;
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
+#endif
 
         private readonly record struct LogEntry(string Prefix, string Tag, ConsoleColor TagColor, string Message, string FileMessage);
 
@@ -52,13 +62,24 @@ namespace Snaffler
                     AutoFlush = true
                 };
             }
+#if NETFRAMEWORK
+            _channel = new BlockingCollection<LogEntry>();
+            _consumerTask = Task.Run(ProcessQueueAsync);
+#else
             _channel = Channel.CreateUnbounded<LogEntry>();
             _consumerTask = Task.Run(ProcessQueueAsync);
+#endif
         }
 
+#if NETFRAMEWORK
+        public static void Close()
+        {
+            _channel?.CompleteAdding();
+#else
         public static void Close()
         {
             _channel?.Writer.TryComplete();
+#endif
             _consumerTask?.Wait();
             lock (_lock)
             {
@@ -183,10 +204,17 @@ namespace Snaffler
             }
         }
 
+#if NETFRAMEWORK
+        private static async Task ProcessQueueAsync()
+        {
+            if (_channel == null) return;
+            foreach (var entry in _channel.GetConsumingEnumerable())
+#else
         private static async Task ProcessQueueAsync()
         {
             if (_channel == null) return;
             await foreach (var entry in _channel.Reader.ReadAllAsync())
+#endif
             {
                 if (_consoleEnabled)
                 {
@@ -199,6 +227,19 @@ namespace Snaffler
             }
         }
 
+#if NETFRAMEWORK
+        private static string BuildJson(LogLevel level, DateTime time, string message, object? data)
+        {
+            var obj = new
+            {
+                time = time.ToUniversalTime().ToString("O"),
+                level = level.ToString(),
+                message,
+                eventProperties = data
+            };
+            return JsonConvert.SerializeObject(obj);
+        }
+#else
         private static string BuildJson(LogLevel level, DateTime time, string message, object? data)
         {
             var obj = new
@@ -210,6 +251,7 @@ namespace Snaffler
             };
             return JsonSerializer.Serialize(obj, _jsonOptions);
         }
+#endif
 
         private static void Log(LogLevel level, DateTime time, string prefix, string tag, ConsoleColor tagColor, string message, object? data = null)
         {
@@ -218,11 +260,19 @@ namespace Snaffler
             string plain = string.Concat(prefix, tag, _separator, message);
             string output = _logType == LogType.JSON ? BuildJson(level, time, plain, data) : plain;
             var entry = new LogEntry(prefix, tag, tagColor, message, output);
+#if NETFRAMEWORK
+            if (_channel != null)
+            {
+                _channel.Add(entry);
+            }
+            else
+#else
             if (_channel != null)
             {
                 _channel.Writer.TryWrite(entry);
             }
             else
+#endif
             {
                 if (_consoleEnabled)
                 {

@@ -1,13 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net9.0;net451</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
     <PublishAot>true</PublishAot>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
     <PackageReference Include="CsToml" Version="1.6.5" />
     <PackageReference Include="CsToml.Generator" Version="1.6.5" />
     <PackageReference Include="System.DirectoryServices" Version="7.0.0" />
     <PackageReference Include="System.DirectoryServices.Protocols" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <PackageReference Include="Nett.Coma" Version="0.15.0" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.Protocols" />
   </ItemGroup>
 </Project>

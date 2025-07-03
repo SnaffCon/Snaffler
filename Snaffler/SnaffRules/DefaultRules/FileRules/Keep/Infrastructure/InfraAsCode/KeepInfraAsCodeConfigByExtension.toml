@@ -7,5 +7,6 @@ MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
 WordList = [    "\\.cscfg",
+"\\.ucs",
 "\\.tfvars"]
 Triage = "Red"

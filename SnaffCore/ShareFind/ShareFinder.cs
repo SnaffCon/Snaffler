@@ -19,7 +19,7 @@ namespace SnaffCore.ShareFind
         private BlockingMq Mq { get; set; }
         private BlockingStaticTaskScheduler TreeTaskScheduler { get; set; }
         private TreeWalker TreeWalker { get; set; }
-        //private EffectivePermissions effectivePermissions { get; set; } = new EffectivePermissions(MyOptions.CurrentUser);
+        private EffectivePermissions EffectivePermissions { get; set; } = new EffectivePermissions(MyOptions.CurrentUser);
 
         public ShareFinder()
         {
@@ -94,7 +94,8 @@ namespace SnaffCore.ShareFind
                         {
                             Listable = true,
                             SharePath = shareName,
-                            ShareComment = hostShareInfo.shi1_remark.ToString()
+                            ShareComment = hostShareInfo.shi1_remark.ToString(),
+                            RwStatus = new RwStatus()
                         };
 
                         // Try to find this computer+share in the list of DFS targets
@@ -159,26 +160,13 @@ namespace SnaffCore.ShareFind
                             // Share is readable, report as green  (the old default/min of the Triage enum )
                             shareResult.Triage = Triage.Green;
 
-                            try
+                            DirectoryInfo dirInfo = new DirectoryInfo(shareResult.SharePath);
+                            RwStatus rwStatus = EffectivePermissions.CanRw(dirInfo);
+                            shareResult.RwStatus = rwStatus;
+
+                            if (rwStatus.CanWrite || rwStatus.CanModify)
                             {
-                                DirectoryInfo dirInfo = new DirectoryInfo(shareResult.SharePath);
-
-                                //EffectivePermissions.RwStatus rwStatus = effectivePermissions.CanRw(dirInfo);
-
-                                shareResult.RootModifyable = false;
-                                shareResult.RootWritable = false;
-                                shareResult.RootReadable = true;
-
-                                /*
-                                 if (rwStatus.CanWrite || rwStatus.CanModify)
-                                {
-                                    triage = Triage.Yellow;
-                                }
-                                */
-                            }
-                            catch (System.UnauthorizedAccessException e)
-                            {
-                                Mq.Error("Failed to get permissions on " + shareResult.SharePath);
+                                shareResult.Triage = Triage.Yellow;
                             }
 
                             if (MyOptions.ScanFoundShares)

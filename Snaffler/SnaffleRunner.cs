@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace Snaffler
 {
@@ -192,6 +193,28 @@ namespace Snaffler
 
                 //-------------------------------------------
 
+                // Check if user credentials were specified
+                if (Options.Username != null)
+                {
+                    Mq.Info($"Impersonating {Options.Username}.");
+
+                    bool loginResult = Impersonator.Login(Options.TargetDomain ?? Environment.UserDomainName, Options.Username, Options.Password ?? "");
+                    if (!loginResult)
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+                        throw new Exception($"[Error Code {errorCode}] Failed to log in to {Impersonator.GetUsername()}.");
+                    }
+
+                    bool impersonateResult = Impersonator.StartImpersonating();
+                    if (!impersonateResult)
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+                        throw new Exception($"[Error Code {errorCode}] Failed to impersonate {Impersonator.GetUsername()}.");
+                    }
+
+                    Options.CurrentUser = Options.Username;
+                }
+
                 if (Options.Snaffle && (Options.SnafflePath.Length > 4))
                 {
                     Directory.CreateDirectory(Options.SnafflePath);
@@ -217,6 +240,11 @@ namespace Snaffler
             {
                 Console.WriteLine(e.ToString());
                 DumpQueue();
+            }
+            finally
+            {
+                Impersonator.StopImpersonating();
+                Impersonator.Free();
             }
         }
 

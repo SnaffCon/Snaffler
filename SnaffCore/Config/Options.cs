@@ -58,6 +58,10 @@ namespace SnaffCore.Config
         public string TargetDc { get; set; }
         public bool LogDeniedShares { get; set; } = false; 
 
+        // User Authentication Options
+        public string Username { get; set; }
+        public string Password { get; set; }
+
         // FileScanner Options
         public bool DomainUserRules { get; set; } = false;
         public int DomainUserMinLen { get; set; } = 6;

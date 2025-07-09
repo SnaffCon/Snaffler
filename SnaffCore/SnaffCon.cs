@@ -16,6 +16,7 @@ using System.Timers;
 using static SnaffCore.Config.Options;
 using Timer = System.Timers.Timer;
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace SnaffCore
 {
@@ -82,6 +83,13 @@ namespace SnaffCore
 
         public void Execute()
         {
+            bool impersonateResult = Impersonator.StartImpersonating();
+            if (!impersonateResult)
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                Mq.Error($"[Error Code {errorCode}] Failed to impersonate {Impersonator.GetUsername()}.");
+            }
+
             StartTime = DateTime.Now;
             // This is the main execution thread.
             Timer statusUpdateTimer =
@@ -157,6 +165,8 @@ namespace SnaffCore
             Mq.Info("Finished at " + finished.ToLocalTime());
             Mq.Info("Snafflin' took " + runSpan);
             Mq.Finish();
+
+            Impersonator.StopImpersonating();
         }
 
         private void DomainDfsDiscovery()

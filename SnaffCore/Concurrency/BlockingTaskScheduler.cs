@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -62,7 +63,13 @@ namespace SnaffCore.Concurrency
                     // okay, let's add the thing
                     proceed = true;
 
-                    _taskFactory.StartNew(action, _cancellationSource.Token);
+                    WindowsIdentity impersonatedUser = WindowsIdentity.GetCurrent();
+                    _taskFactory.StartNew(() => {
+                        using (WindowsImpersonationContext ctx = impersonatedUser.Impersonate())
+                        {
+                            action();
+                        }
+                    }, _cancellationSource.Token);
                 }
             }
         }

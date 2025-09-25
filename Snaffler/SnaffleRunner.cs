@@ -1,4 +1,4 @@
-﻿using NLog;
+using NLog;
 using NLog.Config;
 using NLog.Layouts;
 using NLog.Targets;
@@ -8,9 +8,10 @@ using SnaffCore.Config;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
+using System.Security.Principal;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Snaffler
 {
@@ -201,7 +202,14 @@ namespace Snaffler
 
                 var tokenSource = new CancellationTokenSource();
                 var token = tokenSource.Token;
-                Task thing = Task.Factory.StartNew(() => { controller.Execute(); }, token);
+
+                WindowsIdentity impersonatedUser = WindowsIdentity.GetCurrent();
+                Task thing = Task.Factory.StartNew(() => {
+                    using (WindowsImpersonationContext ctx = impersonatedUser.Impersonate())
+                    {
+                        controller.Execute();
+                    }
+                }, token);
                 bool exit = false;
 
                 while (exit == false)

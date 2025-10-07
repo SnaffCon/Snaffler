@@ -309,16 +309,39 @@ namespace Snaffler
                 if (dirTargetArg.Parsed)
                 {
                     parsedConfig.ShareFinderEnabled = false;
-                    //Console.WriteLine(dirTargetArg.Value);
-                    string pathTarget = dirTargetArg.Value;
-                    if (dirTargetArg.Value.Length > 4)
-                    {
-                        pathTarget = dirTargetArg.Value.TrimEnd('\\');
-                    }
-                    parsedConfig.PathTargets.Add(pathTarget);
-                    //Console.WriteLine(parsedConfig.PathTargets[0]);
                     Mq.Degub("Disabled finding shares.");
-                    Mq.Degub("Target path is " + dirTargetArg.Value);
+
+                    if (dirTargetArg.Value.Contains(","))
+                    {
+                        string pathTargetsString = dirTargetArg.Value;
+                        string[] pathTargets = pathTargetsString.Split(',');
+                        foreach (string pathTarget in pathTargets)
+                        {
+                            if (pathTarget.Length > 4)
+                            {
+                                parsedConfig.PathTargets.Add(pathTarget.TrimEnd('\\'));
+                            }
+                            else
+                            {
+                                parsedConfig.PathTargets.Add(pathTarget);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        string pathTarget = dirTargetArg.Value;
+                        if (dirTargetArg.Value.Length > 4)
+                        {
+                            pathTarget = dirTargetArg.Value.TrimEnd('\\');
+                        }
+                        parsedConfig.PathTargets.Add(pathTarget);
+                    }
+                    
+                    //Console.WriteLine(parsedConfig.PathTargets[0]);
+                    foreach (string pathTarget in parsedConfig.PathTargets)
+                    {
+                        Mq.Degub("Targeting path:" + pathTarget);
+                    }
                 }
 
                 if (maxGrepSizeArg.Parsed)

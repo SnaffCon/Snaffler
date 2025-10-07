@@ -90,17 +90,26 @@ namespace SnaffCore.ActiveDirectory
         {
             Mq = BlockingMq.GetMq();
 
-            // target domain and dc set
-            if ((!string.IsNullOrEmpty(MyOptions.TargetDomain)) && (!string.IsNullOrEmpty(MyOptions.TargetDc)))
+            // target domain set
+            if (!string.IsNullOrEmpty(MyOptions.TargetDomain))
             {
-                Mq.Trace("Target DC and Domain specified: " + MyOptions.TargetDomain + " + " + MyOptions.TargetDc);
-                _targetDc = MyOptions.TargetDc;
+                Mq.Trace("Target Domain specified: " + MyOptions.TargetDomain);
                 _targetDomain = MyOptions.TargetDomain;
+
+                // target DC set
+                if (!string.IsNullOrEmpty(MyOptions.TargetDc)){
+                    Mq.Trace("Target DC specified: " MyOptions.TargetDc);
+                    _targetDc = MyOptions.TargetDc;
+                }
+                else {
+                    Mq.Trace("No target DC specified, using domain as DC.");
+                    _targetDc = MyOptions.TargetDomain;
+                }
             }
             // no target DC or domain set
             else
             {
-                Mq.Trace("Getting current domain from user context.");
+                Mq.Trace("No DC or domain specified, setting current domain from user context.");
                 _currentDomain = Domain.GetCurrentDomain();
                 _targetDomain = _currentDomain.Name;
                 _targetDc = _targetDomain;

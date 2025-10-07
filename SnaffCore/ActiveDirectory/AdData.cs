@@ -144,7 +144,7 @@ namespace SnaffCore.ActiveDirectory
                     Mq.Trace("No target DC specified, using domain as DC.");
                     string dcIp = GetIPv4Address(MyOptions.TargetDomain);
 
-                    _targetDomain = dcIp;
+                    _targetDc = dcIp;
                 }
             }
             // no target DC or domain set

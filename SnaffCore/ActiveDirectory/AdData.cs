@@ -7,6 +7,7 @@ using SnaffCore.ActiveDirectory.LDAP;
 using static SnaffCore.Config.Options;
 using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Net;
 
 namespace SnaffCore.ActiveDirectory
 {
@@ -86,6 +87,43 @@ namespace SnaffCore.ActiveDirectory
         }
 
 
+
+        public static string GetIPv4Address(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
+
+            try
+            {
+                // Check if input is already a valid IPv4 address
+                if (IPAddress.TryParse(input, out IPAddress parsedIP))
+                {
+                    // Return only if it's IPv4
+                    if (parsedIP.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    {
+                        return parsedIP.ToString();
+                    }
+                    // If it's IPv6, return null
+                    return null;
+                }
+
+                // Input is not an IP, treat as FQDN and resolve
+                IPHostEntry hostEntry = Dns.GetHostEntry(input);
+                IPAddress ipv4Address = hostEntry.AddressList
+                    .FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+
+                return ipv4Address?.ToString();
+            }
+            catch (Exception ex)
+            {
+                // Handle DNS resolution errors
+                Console.WriteLine($"Resolution failed for '{input}': {ex.Message}");
+                return null;
+            }
+        }
+
+
+
         private void SetDirectorySearch()
         {
             Mq = BlockingMq.GetMq();
@@ -98,12 +136,15 @@ namespace SnaffCore.ActiveDirectory
 
                 // target DC set
                 if (!string.IsNullOrEmpty(MyOptions.TargetDc)){
-                    Mq.Trace("Target DC specified: " MyOptions.TargetDc);
-                    _targetDc = MyOptions.TargetDc;
+                    Mq.Trace("Target DC specified: " + MyOptions.TargetDc);
+                    string dcIp = GetIPv4Address(MyOptions.TargetDc);
+                    _targetDc = dcIp;
                 }
                 else {
                     Mq.Trace("No target DC specified, using domain as DC.");
-                    _targetDc = MyOptions.TargetDomain;
+                    string dcIp = GetIPv4Address(MyOptions.TargetDomain);
+
+                    _targetDomain = dcIp;
                 }
             }
             // no target DC or domain set

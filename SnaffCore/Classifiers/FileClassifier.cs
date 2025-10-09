@@ -8,6 +8,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using static SnaffCore.Config.Options;
 using SnaffCore.Classifiers.EffectiveAccess;
+using SnaffCore.SCCM;
+using SnaffCore.TreeWalk;
 
 namespace SnaffCore.Classifiers
 {
@@ -110,6 +112,13 @@ namespace SnaffCore.Classifiers
                     };
                     // if the file was list-only, don't bother sending a result back to the user.
                     if (!fileResult.RwStatus.CanRead && !fileResult.RwStatus.CanModify && !fileResult.RwStatus.CanWrite) { return false; };
+
+                    // Check if this is an SCCM DataLib .INI file and resolve it to actual content files
+                    if (IsSCCMDataLibIniFile(fileInfo))
+                    {
+                        ResolveSCCMIniFile(fileInfo);
+                    }
+
                     Mq.FileResult(fileResult);
                     return false;
                 case MatchAction.CheckForKeys:
@@ -366,6 +375,196 @@ namespace SnaffCore.Classifiers
                 }
             }
             return matchReasons;
+        }
+
+        private bool IsSCCMDataLibIniFile(FileInfo fileInfo)
+        {
+            BlockingMq Mq = BlockingMq.GetMq();
+            // Check if this is a .INI file in a DataLib directory structure
+            if (!fileInfo.Extension.Equals(".INI", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            string fullPath = fileInfo.FullName;
+
+            // Check if path contains DataLib (case-insensitive)
+            if (fullPath.IndexOf("DataLib", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ResolveSCCMIniFile(FileInfo iniFile)
+        {
+            BlockingMq Mq = BlockingMq.GetMq();
+            try
+            {
+                // Find the ContentLib root directory
+                string fullPath = iniFile.FullName;
+                string contentLibRoot = FindContentLibRoot(fullPath);
+
+                if (string.IsNullOrEmpty(contentLibRoot))
+                {
+                    Mq.Trace($"[SCCM INI Resolution] Could not find ContentLib root for: {fullPath}");
+                    return;
+                }
+
+                // Read the INI file and extract hash
+                string iniContent = File.ReadAllText(iniFile.FullName);
+                var hashMatch = System.Text.RegularExpressions.Regex.Match(
+                    iniContent,
+                    @"Hash[^=]*=([A-Fa-f0-9]+)",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                );
+
+                if (!hashMatch.Success)
+                {
+                    Mq.Trace($"[SCCM INI Resolution] No hash found in: {iniFile.Name}");
+                    return;
+                }
+
+                string hashValue = hashMatch.Groups[1].Value;
+                string originalFilename = Path.GetFileNameWithoutExtension(iniFile.Name);
+
+                // Add mapping for display purposes
+                SCCMFileMapping.AddMapping(hashValue, originalFilename);
+
+                // Extract package ID and version from path
+                string packageId = ExtractPackageIdFromPath(iniFile.FullName);
+                string version = ExtractVersionFromPath(iniFile.FullName);
+
+                // Store metadata for the INI file itself
+                SCCMFileMapping.AddMetadata(iniFile.FullName, new SCCMFileMetadata
+                {
+                    OriginalName = originalFilename,
+                    PackageId = packageId,
+                    Version = version,
+                    ContentType = "DataLib-INI"
+                });
+
+                // Try to find the actual content file in FileLib
+                string fileLibPath = Path.Combine(contentLibRoot, "FileLib");
+                if (!Directory.Exists(fileLibPath))
+                {
+                    Mq.Trace($"[SCCM INI Resolution] FileLib not found at: {fileLibPath}");
+                    return;
+                }
+
+                // FileLib structure: FileLib/{first-4-chars}/{full-hash}
+                string hashFolder = hashValue.Length >= 4 ? hashValue.Substring(0, 4) : hashValue;
+                string contentPath = Path.Combine(fileLibPath, hashFolder, hashValue);
+
+                if (File.Exists(contentPath))
+                {
+                    // Store mapping and metadata
+                    SCCMFileMapping.AddPathMapping(contentPath, originalFilename);
+                    SCCMFileMapping.AddMetadata(contentPath, new SCCMFileMetadata
+                    {
+                        OriginalName = originalFilename,
+                        PackageId = packageId,
+                        Version = version,
+                        Hash = hashValue,
+                        ContentType = "FileLib"
+                    });
+
+                    // Queue the content file for scanning
+                    FileInfo contentFileInfo = new FileInfo(contentPath);
+                    TreeWalker treeWalker = SnaffCon.GetTreeWalker();
+                    treeWalker.ProcessSCCMFile(contentPath);
+
+                    Mq.Degub($"[SCCM INI Resolution] Resolved: {originalFilename} -> {contentPath}");
+                }
+                else
+                {
+                    Mq.Trace($"[SCCM INI Resolution] Content file not found: {contentPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Mq.Trace($"[SCCM INI Resolution] Error resolving {iniFile.FullName}: {ex.Message}");
+            }
+        }
+
+        private string FindContentLibRoot(string filePath)
+        {
+            try
+            {
+                // Look for SCCMContentLib or ContentLib directory in the path
+                string[] pathParts = filePath.Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+                for (int i = 0; i < pathParts.Length; i++)
+                {
+                    if (pathParts[i].Equals("SCCMContentLib", StringComparison.OrdinalIgnoreCase) ||
+                        pathParts[i].Equals("ContentLib", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Reconstruct path up to and including ContentLib directory
+                        string[] rootParts = new string[i + 1];
+                        Array.Copy(pathParts, rootParts, i + 1);
+
+                        // Handle UNC paths
+                        if (filePath.StartsWith("\\\\"))
+                        {
+                            return "\\\\" + string.Join("\\", rootParts);
+                        }
+                        else
+                        {
+                            return string.Join("\\", rootParts);
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private string ExtractPackageIdFromPath(string filePath)
+        {
+            try
+            {
+                // Path format: ...DataLib/{PackageID}/{Version}/file.INI
+                string dirPath = Path.GetDirectoryName(filePath);
+                if (string.IsNullOrEmpty(dirPath))
+                    return null;
+
+                // Get parent directory (version)
+                string versionDir = Path.GetDirectoryName(dirPath);
+                if (string.IsNullOrEmpty(versionDir))
+                    return null;
+
+                // Get grandparent directory (package ID)
+                string packageDir = Path.GetFileName(versionDir);
+                return packageDir;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private string ExtractVersionFromPath(string filePath)
+        {
+            try
+            {
+                // Path format: ...DataLib/{PackageID}/{Version}/file.INI
+                string dirPath = Path.GetDirectoryName(filePath);
+                if (string.IsNullOrEmpty(dirPath))
+                    return null;
+
+                // Get directory name (version)
+                string version = Path.GetFileName(dirPath);
+                return version;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

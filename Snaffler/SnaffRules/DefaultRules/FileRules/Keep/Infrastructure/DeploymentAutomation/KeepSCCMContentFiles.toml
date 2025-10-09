@@ -1,0 +1,65 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepSCCMDeploymentScripts"
+MatchAction = "Snaffle"
+Description = "Finds SCCM deployment scripts that may contain credentials or sensitive configs"
+MatchLocation = "FilePath"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["\\\\(DataLib|FileLib|PkgLib|SMSPKG)\\\\.*\\.(ps1|cmd|bat|vbs)$"]
+Triage = "Red"
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepSCCMConfigFiles"
+MatchAction = "Snaffle"
+Description = "Finds SCCM configuration files in DataLib and SMSPKG (excludes PkgLib metadata)"
+MatchLocation = "FilePath"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["\\\\(DataLib|SMSPKG)\\\\.*\\.(xml|config|ini|json)$", "\\\\FileLib\\\\.*\\.(xml|config|json)$"]
+Triage = "Yellow"
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepSCCMUnattendFiles"
+MatchAction = "Snaffle"
+Description = "Finds unattended installation files in SCCM packages"
+MatchLocation = "FilePath"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["\\\\(DataLib|FileLib|PkgLib|SMSPKG)\\\\.*(?i)(unattend|autounattend|sysprep|answer)\\.(xml|txt|ini)$"]
+Triage = "Red"
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepSCCMCertificates"
+MatchAction = "Snaffle"
+Description = "Finds certificates in SCCM packages"
+MatchLocation = "FilePath"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["\\\\(DataLib|FileLib|PkgLib|SMSPKG)\\\\.*\\.(cer|pem|pfx|p12|key|crt)$"]
+Triage = "Red"
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepSCCMRegistryFiles"
+MatchAction = "Snaffle"
+Description = "Finds registry files in SCCM packages that may contain settings"
+MatchLocation = "FilePath"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["\\\\(DataLib|FileLib|PkgLib|SMSPKG)\\\\.*\\.reg$"]
+Triage = "Yellow"
+
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepSCCMInstallers"
+MatchAction = "Relay"
+Description = "Finds installer packages in SCCM ContentLib"
+MatchLocation = "FilePath"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["\\\\(DataLib|FileLib|PkgLib|SMSPKG)\\\\.*\\.(msi|msp|mst)$"]
+Triage = "Green"

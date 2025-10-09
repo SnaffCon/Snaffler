@@ -1,4 +1,4 @@
-﻿using SnaffCore.Classifiers;
+using SnaffCore.Classifiers;
 using System;
 using System.Collections.Generic;
 using System.Linq;

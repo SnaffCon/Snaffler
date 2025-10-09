@@ -23,6 +23,22 @@ namespace SnaffCore.TreeWalk
             FileScanner = SnaffCon.GetFileScanner();
         }
 
+        public void ProcessSCCMFile(string filePath)
+        {
+            FileTaskScheduler.New(() =>
+            {
+                try
+                {
+                    FileScanner.ScanFile(filePath);
+                }
+                catch (Exception e)
+                {
+                    Mq.Error($"Exception in FileScanner task for {filePath}");
+                    Mq.Trace(e.ToString());
+                }
+            });
+        }
+
         public void WalkTree(string currentDir)
         {
              // Walks a tree checking files and generating results as it goes.

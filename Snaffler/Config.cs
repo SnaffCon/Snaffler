@@ -1,6 +1,7 @@
 using CommandLineParser.Arguments;
 using Nett;
 using NLog;
+using SnaffCore.Classifiers;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using System;
@@ -74,7 +75,8 @@ namespace Snaffler
                 "Path for output file. You probably want this if you're not using -s.");
             ValueArgument<string> verboseArg = new ValueArgument<string>('v', "verbosity",
                 "Controls verbosity level, options are Trace (most verbose), Debug (less verbose), Info (less verbose still, default), and Data (results only). e.g '-v debug' ");
-            SwitchArgument helpArg = new SwitchArgument('h', "help", "Displays this help.", false);
+            // Note: Removed custom help arg as CommandLineParser library may provide its own
+            // SwitchArgument helpArg = new SwitchArgument('h', "help", "Displays this help.", false);
             SwitchArgument stdOutArg = new SwitchArgument('s', "stdout",
                 "Enables outputting results to stdout as soon as they're found. You probably want this if you're not using -o.",
                 false);
@@ -106,32 +108,41 @@ namespace Snaffler
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
                 "Interval between status updates (in minutes) also acts as a timeout for AD data to be gathered via LDAP. Turn this knob up if you aren't getting any computers from AD when you run Snaffler through a proxy or other slow link. Default = 5");
-            // list of letters i haven't used yet: gnqw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
-            parser.Arguments.Add(timeOutArg);
-            parser.Arguments.Add(configFileArg);
-            parser.Arguments.Add(outFileArg);
-            parser.Arguments.Add(helpArg);
-            parser.Arguments.Add(stdOutArg);
-            parser.Arguments.Add(snaffleArg);
-            parser.Arguments.Add(snaffleSizeArg);
-            parser.Arguments.Add(dirTargetArg);
-            parser.Arguments.Add(interestLevel);
-            parser.Arguments.Add(domainArg);
-            parser.Arguments.Add(verboseArg);
-            parser.Arguments.Add(domainControllerArg);
-            parser.Arguments.Add(maxGrepSizeArg);
-            parser.Arguments.Add(grepContextArg);
-            parser.Arguments.Add(domainUserArg);
-            parser.Arguments.Add(tsvArg);
-            parser.Arguments.Add(dfsArg);
-            parser.Arguments.Add(findSharesOnlyArg);
-            parser.Arguments.Add(maxThreadsArg);
-            parser.Arguments.Add(compTargetArg);
-            parser.Arguments.Add(ruleDirArg);
-            parser.Arguments.Add(logType);
-            parser.Arguments.Add(compExclusionArg);
+            parser.ShowUsageOnEmptyCommandline = false;
+            try
+            {
+                parser.Arguments.Add(timeOutArg);
+                parser.Arguments.Add(configFileArg);
+                parser.Arguments.Add(outFileArg);
+                // parser.Arguments.Add(helpArg); // Commented out - library provides default
+                parser.Arguments.Add(stdOutArg);
+                parser.Arguments.Add(snaffleArg);
+                parser.Arguments.Add(snaffleSizeArg);
+                parser.Arguments.Add(dirTargetArg);
+                parser.Arguments.Add(interestLevel);
+                parser.Arguments.Add(domainArg);
+                parser.Arguments.Add(verboseArg);
+                parser.Arguments.Add(domainControllerArg);
+                parser.Arguments.Add(maxGrepSizeArg);
+                parser.Arguments.Add(grepContextArg);
+                parser.Arguments.Add(domainUserArg);
+                parser.Arguments.Add(tsvArg);
+                parser.Arguments.Add(dfsArg);
+                parser.Arguments.Add(findSharesOnlyArg);
+                parser.Arguments.Add(maxThreadsArg);
+                parser.Arguments.Add(compTargetArg);
+                parser.Arguments.Add(ruleDirArg);
+                parser.Arguments.Add(logType);
+                parser.Arguments.Add(compExclusionArg);
+            }
+            catch (ArgumentException ex)
+            {
+                Mq.Error("Error setting up command line parser: " + ex.Message);
+                Mq.Error("This is likely a bug in Snaffler. Please report it.");
+                throw;
+            }
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -149,6 +160,19 @@ namespace Snaffler
             try
             {
                 parser.ParseCommandLine(args);
+            }
+            catch (ArgumentException ex)
+            {
+                Mq.Error("Error parsing command line arguments: " + ex.Message);
+                Mq.Error("Possible causes:");
+                Mq.Error("  - Duplicate arguments (e.g., using -d twice)");
+                Mq.Error("  - Invalid argument format");
+                Mq.Error("Use --help to see valid arguments.");
+                return null;
+            }
+
+            try
+            {
 
                 if (timeOutArg.Parsed && !String.IsNullOrWhiteSpace(timeOutArg.Value))
                 {
@@ -243,7 +267,7 @@ namespace Snaffler
                     {
                         compTargets.AddRange(File.ReadLines(compTargetArg.Value).Select(line => line.Trim()));
                     }
-                    else if (compTargetArg.Value.Contains(","))
+                    else if (compTargetArg.Value.Contains(','))
                     {
                         compTargets.AddRange(compTargetArg.Value.Split(',').Select(x => x.Trim()));
                     }
@@ -416,7 +440,7 @@ namespace Snaffler
                         {
                         // get all the embedded toml file resources
                         string[] resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-                        StringBuilder sb = new StringBuilder();
+                        List<ClassifierRule> allRules = new List<ClassifierRule>();
 
                         foreach (string resourceName in resourceNames)
                         {
@@ -426,32 +450,51 @@ namespace Snaffler
                                 continue;
                             }
                             string ruleFile = ReadResource(resourceName);
-                            sb.AppendLine(ruleFile);
+                            
+                            // Parse each TOML file individually
+                            try
+                            {
+                                RuleSet ruleSet = Toml.ReadString<RuleSet>(ruleFile, settings);
+                                if (ruleSet.ClassifierRules != null)
+                                {
+                                    allRules.AddRange(ruleSet.ClassifierRules);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Mq.Error($"Failed to parse rule file {resourceName}: {e.Message}");
+                            }
                         }
 
-                        string bulktoml = sb.ToString();
-
-                        // deserialise the toml to an actual ruleset
-                        RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
-
                         // stick the rules in our config!
-                        parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
+                        parsedConfig.ClassifierRules = allRules;
                     }
                     else
                     {
                         string[] tomlfiles = Directory.GetFiles(parsedConfig.RuleDir, "*.toml", SearchOption.AllDirectories);
-                        StringBuilder sb = new StringBuilder();
+                        List<ClassifierRule> allRules = new List<ClassifierRule>();
+                        
                         foreach (string tomlfile in tomlfiles)
                         {
                             string tomlstring = File.ReadAllText(tomlfile);
-                            sb.AppendLine(tomlstring);
+                            
+                            // Parse each TOML file individually
+                            try
+                            {
+                                RuleSet ruleSet = Toml.ReadString<RuleSet>(tomlstring, settings);
+                                if (ruleSet.ClassifierRules != null)
+                                {
+                                    allRules.AddRange(ruleSet.ClassifierRules);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Mq.Error($"Failed to parse rule file {tomlfile}: {e.Message}");
+                            }
                         }
-                        string bulktoml = sb.ToString();
-                        // deserialise the toml to an actual ruleset
-                        RuleSet ruleSet = Toml.ReadString<RuleSet>(bulktoml, settings);
 
                         // stick the rules in our config!
-                        parsedConfig.ClassifierRules = ruleSet.ClassifierRules;
+                        parsedConfig.ClassifierRules = allRules;
                     }
                 }
 

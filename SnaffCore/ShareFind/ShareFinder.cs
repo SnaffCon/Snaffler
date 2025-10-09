@@ -1,4 +1,4 @@
-﻿using SnaffCore.Classifiers;
+using SnaffCore.Classifiers;
 using SnaffCore.Concurrency;
 using SnaffCore.TreeWalk;
 using System;
@@ -10,6 +10,7 @@ using System.Text;
 using SnaffCore.ActiveDirectory;
 using SnaffCore.Classifiers.EffectiveAccess;
 using static SnaffCore.Config.Options;
+using SnaffCore.SCCM;
 
 
 namespace SnaffCore.ShareFind
@@ -19,6 +20,7 @@ namespace SnaffCore.ShareFind
         private BlockingMq Mq { get; set; }
         private BlockingStaticTaskScheduler TreeTaskScheduler { get; set; }
         private TreeWalker TreeWalker { get; set; }
+        private SCCMContentLibResolver SCCMResolver { get; set; }
         //private EffectivePermissions effectivePermissions { get; set; } = new EffectivePermissions(MyOptions.CurrentUser);
 
         public ShareFinder()
@@ -26,6 +28,7 @@ namespace SnaffCore.ShareFind
             Mq = BlockingMq.GetMq();
             TreeTaskScheduler = SnaffCon.GetTreeTaskScheduler();
             TreeWalker = SnaffCon.GetTreeWalker();
+            SCCMResolver = new SCCMContentLibResolver(MyOptions.LogLevelString == "debug" || MyOptions.LogLevelString == "trace");
         }
 
         internal void GetComputerShares(string computer)
@@ -183,19 +186,89 @@ namespace SnaffCore.ShareFind
 
                             if (MyOptions.ScanFoundShares)
                             {
-                                Mq.Trace("Creating a TreeWalker task for " + shareResult.SharePath);
-                                TreeTaskScheduler.New(() =>
+                                if (SCCMResolver.IsSCCMShare(shareResult.SharePath))
                                 {
-                                    try
+                                    Mq.Trace("Creating a TreeWalker task for SCCM share " + shareResult.SharePath);
+
+                                    TreeTaskScheduler.New(() =>
                                     {
-                                        TreeWalker.WalkTree(shareResult.SharePath);
-                                    }
-                                    catch (Exception e)
+                                        try
+                                        {
+                                            var resolvedPaths = SCCMResolver.ResolveSCCMContentPaths(shareResult.SharePath);
+
+                                            if (resolvedPaths.Count > 0)
+                                            {
+                                                Mq.Degub($"Processing {resolvedPaths.Count} SCCM files with directory classifiers");
+
+                                                // Group files by directory for directory-level classification
+                                                var directoryMap = SCCMResolver.GroupFilesByDirectory(resolvedPaths);
+
+                                                foreach (var directory in directoryMap.Keys)
+                                                {
+                                                    bool dirMatched = false;
+
+                                                    // Apply directory classifiers
+                                                    foreach (ClassifierRule dirRule in MyOptions.DirClassifiers)
+                                                    {
+                                                        DirClassifier dirClassifier = new DirClassifier(dirRule);
+                                                        DirResult result = dirClassifier.ClassifyDir(directory);
+                                                        if (result != null)  // Directory matched a rule
+                                                        {
+                                                            // Directory matched a discard rule, skip its files
+                                                            dirMatched = true;
+                                                            break;
+                                                        }
+                                                    }
+
+                                                    // If directory wasn't filtered out, process its files
+                                                    if (!dirMatched)
+                                                    {
+                                                        foreach (var filePath in directoryMap[directory])
+                                                        {
+                                                            TreeWalker.ProcessSCCMFile(filePath);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                Mq.Degub("No SCCM files resolved, using standard tree walk");
+                                                TreeWalker.WalkTree(shareResult.SharePath);
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Mq.Error("Exception in SCCM ContentLib processing for share " + shareResult.SharePath);
+                                            Mq.Trace(e.ToString());
+                                            Mq.Degub("SCCM resolution error, using standard tree walk");
+                                            try
+                                            {
+                                                TreeWalker.WalkTree(shareResult.SharePath);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Mq.Error("Fallback tree walk also failed: " + ex.Message);
+                                                Mq.Trace(ex.ToString());
+                                            }
+                                        }
+                                    });
+                                }
+                                else
+                                {
+                                    Mq.Trace("Creating a TreeWalker task for " + shareResult.SharePath);
+                                    TreeTaskScheduler.New(() =>
                                     {
-                                        Mq.Error("Exception in TreeWalker task for share " + shareResult.SharePath);
-                                        Mq.Error(e.ToString());
-                                    }
-                                });
+                                        try
+                                        {
+                                            TreeWalker.WalkTree(shareResult.SharePath);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Mq.Error("Exception in TreeWalker task for share " + shareResult.SharePath);
+                                            Mq.Error(e.ToString());
+                                        }
+                                    });
+                                }
                             }
                             Mq.ShareResult(shareResult);
                         }

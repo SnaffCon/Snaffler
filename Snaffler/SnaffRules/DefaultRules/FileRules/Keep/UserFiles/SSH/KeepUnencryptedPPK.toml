@@ -1,0 +1,11 @@
+[[ClassifierRules]]
+EnumerationScope = "ContentsEnumeration"
+RuleName = "KeepUnencryptedPPK"
+MatchAction = "Snaffle"
+Description = "Unencrypted PPK files (contains 'Encryption: none')"
+MatchLocation = "FileContentAsString"
+WordListType = "Regex"
+MatchLength = 0
+WordList = ["Encryption:\\s*none"]
+Triage = "Black"
+

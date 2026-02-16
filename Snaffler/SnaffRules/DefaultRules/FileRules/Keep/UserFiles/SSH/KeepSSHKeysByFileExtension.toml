@@ -1,10 +1,11 @@
 [[ClassifierRules]]
 EnumerationScope = "FileEnumeration"
-RuleName = "KeepSSHKeysByFileExtension"
-MatchAction = "Snaffle"
-Description = "SSHKeys"
+RuleName = "RelayPPKForContentScan"
+MatchAction = "Relay"
+RelayTargets = ["KeepUnencryptedPPK"]
+Description = "PPK files are relayed to content scanning for unencrypted detection"
 MatchLocation = "FileExtension"
 WordListType = "Exact"
 MatchLength = 0
 WordList = ["\\.ppk"]
-Triage = "Black"
+Triage = "Green"

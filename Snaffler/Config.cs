@@ -78,6 +78,9 @@ namespace Snaffler
             SwitchArgument stdOutArg = new SwitchArgument('s', "stdout",
                 "Enables outputting results to stdout as soon as they're found. You probably want this if you're not using -o.",
                 false);
+            SwitchArgument adwsEnum = new SwitchArgument('w', "adws",
+            "Using a opsec method to query domain computer.",
+            false);
             ValueArgument<int> interestLevel = new ValueArgument<int>('b', "interest", "Interest level to report (0-3)");
             ValueArgument<string> snaffleArg = new ValueArgument<string>('m', "snaffle",
                 "Enables and assigns an output dir for Snaffler to automatically snaffle a copy of any found files.");
@@ -114,6 +117,9 @@ namespace Snaffler
             parser.Arguments.Add(outFileArg);
             parser.Arguments.Add(helpArg);
             parser.Arguments.Add(stdOutArg);
+            parser.Arguments.Add(adwsEnum);
+
+
             parser.Arguments.Add(snaffleArg);
             parser.Arguments.Add(snaffleSizeArg);
             parser.Arguments.Add(dirTargetArg);
@@ -137,7 +143,7 @@ namespace Snaffler
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
             {
                 parser.ShowUsage();
-                return null; 
+                return null;
             }
 
             TomlSettings settings = TomlSettings.Create(cfg => cfg
@@ -235,7 +241,7 @@ namespace Snaffler
                         throw new Exception("Failed to get a valid list of excluded computers from the excluded computers list.");
                     }
                 }
-                
+
                 if (compTargetArg.Parsed)
                 {
                     List<string> compTargets = new List<string>();
@@ -285,6 +291,7 @@ namespace Snaffler
 
                 // if enabled, display findings to the console
                 parsedConfig.LogToConsole = stdOutArg.Parsed;
+                parsedConfig.ADWS = adwsEnum.Parsed;
                 Mq.Degub("Enabled logging to stdout.");
 
                 // args that tell us about targeting
@@ -336,7 +343,7 @@ namespace Snaffler
                         }
                         parsedConfig.PathTargets.Add(pathTarget);
                     }
-                    
+
                     //Console.WriteLine(parsedConfig.PathTargets[0]);
                     foreach (string pathTarget in parsedConfig.PathTargets)
                     {
@@ -413,7 +420,7 @@ namespace Snaffler
                 if (parsedConfig.ClassifierRules.Count <= 0)
                 {
                     if (String.IsNullOrWhiteSpace(parsedConfig.RuleDir))
-                        {
+                    {
                         // get all the embedded toml file resources
                         string[] resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
                         StringBuilder sb = new StringBuilder();

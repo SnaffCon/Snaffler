@@ -52,11 +52,12 @@ namespace SnaffCore.Config
         public bool LogToConsole { get; set; } = true;
         public string LogLevelString { get; set; } = "info";
 
+        public bool ADWS { get; set; } = false;
         // ShareFinder Options
         public bool ShareFinderEnabled { get; set; } = true;
         public string TargetDomain { get; set; }
         public string TargetDc { get; set; }
-        public bool LogDeniedShares { get; set; } = false; 
+        public bool LogDeniedShares { get; set; } = false;
 
         // FileScanner Options
         public bool DomainUserRules { get; set; } = false;
@@ -109,7 +110,7 @@ namespace SnaffCore.Config
             "configmgr"
         };
 
-        public List<string> DomainUserStrictStrings { get; set; } 
+        public List<string> DomainUserStrictStrings { get; set; }
 
         public List<string> DomainUsersWordlistRules { get; set; } = new List<string>()
         {

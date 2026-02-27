@@ -1,0 +1,1007 @@
+{
+  "": [
+    "object"
+  ],
+  "entries": [
+    "array"
+  ],
+  "entries[]": [
+    "object"
+  ],
+  "entries[].eventProperties": [
+    "object"
+  ],
+  "entries[].eventProperties.Black": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.DateTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.Parent": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Parent.Root": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Directory.Root.Root": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.DirectoryName": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.IsReadOnly": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Length": [
+    "integer"
+  ],
+  "entries[].eventProperties.Black.FileResult.FileInfo.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.Description": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.EnumerationScope": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.MatchAction": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.MatchLength": [
+    "integer"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.MatchLocation": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.Regexes": [
+    "array"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.Regexes[]": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.Regexes[].MatchTimeout": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.Regexes[].Options": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.Regexes[].RightToLeft": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.RuleName": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.Triage": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.WordList": [
+    "array"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.WordListType": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.MatchedRule.WordList[]": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.RwStatus": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.FileResult.RwStatus.CanModify": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Black.FileResult.RwStatus.CanRead": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Black.FileResult.RwStatus.CanWrite": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Black.FileResult.TextResult": [
+    "object"
+  ],
+  "entries[].eventProperties.Black.FileResult.TextResult.MatchContext": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.FileResult.TextResult.MatchedStrings": [
+    "array"
+  ],
+  "entries[].eventProperties.Black.FileResult.TextResult.MatchedStrings[]": [
+    "string"
+  ],
+  "entries[].eventProperties.Black.Type": [
+    "string"
+  ],
+  "entries[].eventProperties.Green": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.DateTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.Parent": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Parent.Root": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Directory.Root.Root": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.DirectoryName": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.IsReadOnly": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Length": [
+    "integer"
+  ],
+  "entries[].eventProperties.Green.FileResult.FileInfo.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.Description": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.EnumerationScope": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.MatchAction": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.MatchLength": [
+    "integer"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.MatchLocation": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.Regexes": [
+    "array"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.Regexes[]": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.Regexes[].MatchTimeout": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.Regexes[].Options": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.Regexes[].RightToLeft": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.RuleName": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.Triage": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.WordList": [
+    "array"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.WordListType": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.MatchedRule.WordList[]": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.RwStatus": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.FileResult.RwStatus.CanModify": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Green.FileResult.RwStatus.CanRead": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Green.FileResult.RwStatus.CanWrite": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Green.FileResult.TextResult": [
+    "object"
+  ],
+  "entries[].eventProperties.Green.FileResult.TextResult.MatchContext": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.FileResult.TextResult.MatchedStrings": [
+    "array"
+  ],
+  "entries[].eventProperties.Green.FileResult.TextResult.MatchedStrings[]": [
+    "string"
+  ],
+  "entries[].eventProperties.Green.Type": [
+    "string"
+  ],
+  "entries[].eventProperties.Red": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.DateTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.Parent": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Parent.Root": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Directory.Root.Root": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.DirectoryName": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.IsReadOnly": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Length": [
+    "integer"
+  ],
+  "entries[].eventProperties.Red.FileResult.FileInfo.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.Description": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.EnumerationScope": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.MatchAction": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.MatchLength": [
+    "integer"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.MatchLocation": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.Regexes": [
+    "array"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.Regexes[]": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.Regexes[].MatchTimeout": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.Regexes[].Options": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.Regexes[].RightToLeft": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.RuleName": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.Triage": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.WordList": [
+    "array"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.WordListType": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.MatchedRule.WordList[]": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.RwStatus": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.FileResult.RwStatus.CanModify": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Red.FileResult.RwStatus.CanRead": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Red.FileResult.RwStatus.CanWrite": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Red.FileResult.TextResult": [
+    "object"
+  ],
+  "entries[].eventProperties.Red.FileResult.TextResult.MatchContext": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.FileResult.TextResult.MatchedStrings": [
+    "array"
+  ],
+  "entries[].eventProperties.Red.FileResult.TextResult.MatchedStrings[]": [
+    "string"
+  ],
+  "entries[].eventProperties.Red.Type": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.DateTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.Parent": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Parent.Root": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.Attributes": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.CreationTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.CreationTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Directory.Root.Root": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.DirectoryName": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Exists": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Extension": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.FullName": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.IsReadOnly": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.LastAccessTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.LastAccessTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.LastWriteTime": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.LastWriteTimeUtc": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Length": [
+    "integer"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.FileInfo.Name": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.Description": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.EnumerationScope": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.MatchAction": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.MatchLength": [
+    "integer"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.MatchLocation": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.Regexes": [
+    "array"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.Regexes[]": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.Regexes[].MatchTimeout": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.Regexes[].Options": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.Regexes[].RightToLeft": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.RuleName": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.Triage": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.WordList": [
+    "array"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.WordListType": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.MatchedRule.WordList[]": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.RwStatus": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.RwStatus.CanModify": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.RwStatus.CanRead": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.RwStatus.CanWrite": [
+    "boolean"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.TextResult": [
+    "object"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.TextResult.MatchContext": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.TextResult.MatchedStrings": [
+    "array"
+  ],
+  "entries[].eventProperties.Yellow.FileResult.TextResult.MatchedStrings[]": [
+    "string"
+  ],
+  "entries[].eventProperties.Yellow.Type": [
+    "string"
+  ],
+  "entries[].level": [
+    "string"
+  ],
+  "entries[].message": [
+    "string"
+  ],
+  "entries[].time": [
+    "string"
+  ]
+}

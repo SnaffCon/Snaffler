@@ -1,22 +1,26 @@
-using SnaffCore.Classifiers;
 using SnaffCore.ActiveDirectory;
+using SnaffCore.ADWS;
+using SnaffCore.ADWS.Enumeration;
+using SnaffCore.Classifiers;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
+using SnaffCore.FileScan;
 using SnaffCore.ShareFind;
 using SnaffCore.TreeWalk;
-using SnaffCore.FileScan;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Timers;
 using static SnaffCore.Config.Options;
 using Timer = System.Timers.Timer;
-using System.Net;
-
 namespace SnaffCore
 {
     public class SnaffCon
@@ -28,7 +32,7 @@ namespace SnaffCore
         private static BlockingStaticTaskScheduler ShareTaskScheduler;
         private static BlockingStaticTaskScheduler TreeTaskScheduler;
         private static BlockingStaticTaskScheduler FileTaskScheduler;
-        
+
         private static ShareFinder ShareFinder;
         private static TreeWalker TreeWalker;
         private static FileScanner FileScanner;
@@ -94,7 +98,7 @@ namespace SnaffCore
 
             // If we want to hunt for user IDs, we need data from the running user's domain.
             // Future - walk trusts
-            if ( MyOptions.DomainUserRules)
+            if (MyOptions.DomainUserRules)
             {
                 DomainUserDiscovery();
             }
@@ -176,12 +180,16 @@ namespace SnaffCore
             }
         }
 
+        private static string GetCurrentDomain()
+        {
+            return IPGlobalProperties.GetIPGlobalProperties().DomainName;
+        }
         private void DomainTargetDiscovery()
         {
             List<string> targetComputers;
 
             // Give preference to explicit targets in the options file over LDAP computer discovery
-            if (MyOptions.ComputerTargets != null)  
+            if (MyOptions.ComputerTargets != null)
             {
                 Mq.Info("Using computer list from user-specified options.");
 
@@ -197,9 +205,40 @@ namespace SnaffCore
                 // We do this single threaded cos it's fast and not easily divisible.
                 Mq.Info("Getting computers from AD.");
 
-                _adData.SetDomainComputers(MyOptions.ComputerTargetsLdapFilter);
+                if (MyOptions.ADWS)
+                {
+                    targetComputers = new List<string>();
+                    NetworkCredential Credential = null;
+                    string domain = MyOptions.TargetDomain;
+                    if (String.IsNullOrEmpty(domain))
+                    {
+                        domain = GetCurrentDomain();
+                    }
+                    ADWSConnection adwsConnection = new ADWSConnection(domain, "ldap:389", Credential);
+                    EnumerateRequest enumerateRequest = new EnumerateRequest(adwsConnection);
+                    List<ADObject> userObjects = enumerateRequest.Enumerate("(objectClass=computer)", adwsConnection.DefaultNamingContext, "subtree", new string[] { "DNSHostName" });
+                    foreach (ADObject userObject in userObjects)
+                    {
+                        if (userObject.Class == "computer" && !(String.IsNullOrEmpty(userObject.DNSHostName)))
+                        {
+                            string DNSHostName = userObject.DNSHostName;
+                            if (!(DNSHostName.ToLower().Contains(domain)))
+                            {
+                                DNSHostName += "." + domain;
+                            }
+                            targetComputers.Add(DNSHostName);
+                        }
+                    }
 
-                targetComputers = _adData.GetDomainComputers();
+                }
+                else
+                {
+                    _adData.SetDomainComputers(MyOptions.ComputerTargetsLdapFilter);
+
+                    targetComputers = _adData.GetDomainComputers();
+                }
+
+
                 Mq.Info(string.Format("Got {0} computers from AD.", targetComputers.Count));
 
                 // if we're only scanning DFS shares then we can skip the SMB sharefinder and work from the list in AD, then jump to FileDiscovery().
@@ -356,7 +395,8 @@ namespace SnaffCore
                     return true;
                 }
             }
-            else { 
+            else
+            {
                 try
                 {
                     // resolve it
@@ -371,7 +411,8 @@ namespace SnaffCore
 
                             // exclude it
                             return true;
-                        };
+                        }
+                        ;
                     }
                 }
                 catch (Exception ex)

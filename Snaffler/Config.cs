@@ -102,11 +102,12 @@ namespace Snaffler
                 "Stops after finding shares, doesn't walk their filesystems.", false);
             ValueArgument<string> compExclusionArg = new ValueArgument<string>('k', "exclusions", "Path to a file, or inline comma-separated list, of hostnames/IPs/CIDRs to exclude from scanning. e.g. -k exclusions.txt or -k 10.1.2.0/24,192.168.5.10");
             ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "List of computers in a file(e.g C:\targets.txt), a single Computer (or comma separated list) to target.");
+            ValueArgument<string> cidrTargetArg = new ValueArgument<string>('q', "cidrtarget", "Comma-separated list of CIDRs to target. Queries AD for computers, then only scans those resolving within the specified CIDRs. e.g. -q 10.1.2.0/24,10.1.4.0/24");
             ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
                 "Interval between status updates (in minutes) also acts as a timeout for AD data to be gathered via LDAP. Turn this knob up if you aren't getting any computers from AD when you run Snaffler through a proxy or other slow link. Default = 5");
-            // list of letters i haven't used yet: gnqw
+            // list of letters i haven't used yet: gnw
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(timeOutArg);
@@ -132,6 +133,7 @@ namespace Snaffler
             parser.Arguments.Add(ruleDirArg);
             parser.Arguments.Add(logType);
             parser.Arguments.Add(compExclusionArg);
+            parser.Arguments.Add(cidrTargetArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -256,6 +258,19 @@ namespace Snaffler
                     else
                     {
                         throw new Exception("Failed to get a valid list of excluded computers from the excluded computers list.");
+                    }
+                }
+
+                if (cidrTargetArg.Parsed)
+                {
+                    parsedConfig.CidrInclusions = cidrTargetArg.Value.Split(',')
+                        .Select(l => l.Trim())
+                        .Where(l => SnaffCore.NetworkUtils.CidrRegex.IsMatch(l))
+                        .ToList();
+
+                    if (parsedConfig.CidrInclusions.Count == 0)
+                    {
+                        throw new Exception("No valid CIDRs found in -q argument. Expected format: 10.1.2.0/24");
                     }
                 }
 

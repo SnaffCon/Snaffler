@@ -33,6 +33,7 @@ namespace SnaffCore
         private static TreeWalker TreeWalker;
         private static FileScanner FileScanner;
 
+
         private AdData _adData = AdData.AdDataInstance;
 
         private DateTime StartTime { get; set; }
@@ -288,11 +289,19 @@ namespace SnaffCore
         private void ShareDiscovery(string[] computerTargets)
         {
             Mq.Info("Starting to look for readable shares...");
+            int excludedCount = 0;
+            int cidrFilteredCount = 0;
+            bool hasCidrInclusions = MyOptions.CidrInclusions.Count > 0;
             foreach (string computer in computerTargets)
             {
                 if (CheckExclusions(computer))
                 {
-                    // skip any that are in the exclusion list
+                    excludedCount++;
+                    continue;
+                }
+                if (hasCidrInclusions && !CheckInclusions(computer))
+                {
+                    cidrFilteredCount++;
                     continue;
                 }
                 // Perform reverse lookup if the computer is an IP address
@@ -334,6 +343,16 @@ namespace SnaffCore
                     }
                 });
             }
+            int postExclusion = computerTargets.Length - excludedCount;
+            int included = postExclusion - cidrFilteredCount;
+            if (excludedCount > 0)
+            {
+                Mq.Info("Excluded " + excludedCount + " of " + computerTargets.Length + " computers (exclusion list or DNS resolution failure).");
+            }
+            if (cidrFilteredCount > 0)
+            {
+                Mq.Info("CIDR target filter: kept " + included + " of " + postExclusion + " remaining computers.");
+            }
             Mq.Info("Created all sharefinder tasks.");
         }
 
@@ -348,15 +367,16 @@ namespace SnaffCore
             // check if it's an IP already
             if (isIP(computer))
             {
-                // check if it's in the exclusions list
-                if (MyOptions.ComputerExclusions.Contains(computer))
+                IPAddress addr = IPAddress.Parse(computer);
+                // check if it's in the exclusions list or falls within an excluded CIDR
+                if (MyOptions.ComputerExclusions.Contains(computer) || IsInAnyCidr(addr))
                 {
                     // if so, skip it
                     Mq.Degub("Excluded " + computer);
                     return true;
                 }
             }
-            else { 
+            else {
                 try
                 {
                     // resolve it
@@ -364,8 +384,8 @@ namespace SnaffCore
                     // handle multiple IPs in response
                     foreach (IPAddress ipAddress in result.AddressList)
                     {
-                        // if any of them is in the exclusion list
-                        if (MyOptions.ComputerExclusions.Contains(ipAddress.ToString()))
+                        // if any of them is in the exclusion list or falls within an excluded CIDR
+                        if (MyOptions.ComputerExclusions.Contains(ipAddress.ToString()) || IsInAnyCidr(ipAddress))
                         {
                             Mq.Degub("Excluded " + computer + " at " + ipAddress);
 
@@ -385,6 +405,52 @@ namespace SnaffCore
             }
             Mq.Degub("Included " + computer);
 
+            return false;
+        }
+
+        private bool IsInAnyCidr(IPAddress address)
+        {
+            foreach (string entry in MyOptions.ComputerExclusions)
+            {
+                if (NetworkUtils.CidrRegex.IsMatch(entry) && NetworkUtils.IsInCidr(address, entry))
+                    return true;
+            }
+            return false;
+        }
+
+        private bool CheckInclusions(string computer)
+        {
+            // Returns true if the computer resolves to an IP within any of the CIDR inclusions
+            try
+            {
+                IPAddress[] addresses;
+                if (isIP(computer))
+                {
+                    addresses = new[] { IPAddress.Parse(computer) };
+                }
+                else
+                {
+                    addresses = Dns.GetHostEntry(computer).AddressList;
+                }
+
+                foreach (IPAddress addr in addresses)
+                {
+                    foreach (string cidr in MyOptions.CidrInclusions)
+                    {
+                        if (NetworkUtils.IsInCidr(addr, cidr))
+                        {
+                            Mq.Degub("CIDR included " + computer + " at " + addr);
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Mq.Degub(ex.Message);
+            }
+
+            Mq.Degub("CIDR filtered out " + computer);
             return false;
         }
 

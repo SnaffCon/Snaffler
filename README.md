@@ -54,6 +54,10 @@ The key incantations are:
 
 `-n`   Disables computer discovery, takes a comma-separated list of hosts or input file to do share and file discovery on. Note if supplying a file, the input needs to be a path so C:\targets.txt or .\targets.txt as an example.
 
+`-k`   Excludes specific hosts from scanning. Accepts a comma-separated list of hostnames, IPs, and/or CIDR ranges (e.g. `-k 10.1.2.0/24,192.168.5.10`), or a path to a file containing one entry per line. Hostnames are resolved to IPs at startup. CIDR ranges are matched against each computer's resolved IP at scan time.
+
+`-q`   Queries AD for computers, then only scans those resolving within the specified CIDRs. Comma-separated. e.g. `-q 10.1.2.0/24,10.1.4.0/24`. Can be combined with `-k` to further exclude specific hosts.
+
 `-y`   TSV-formats the output.
 
 `-b`   Skips the LAIM rules that will find less-interesting stuff, tune it with a number between 0 and 3.

@@ -33,6 +33,7 @@ namespace SnaffCore
         private static TreeWalker TreeWalker;
         private static FileScanner FileScanner;
 
+
         private AdData _adData = AdData.AdDataInstance;
 
         private DateTime StartTime { get; set; }
@@ -348,15 +349,16 @@ namespace SnaffCore
             // check if it's an IP already
             if (isIP(computer))
             {
-                // check if it's in the exclusions list
-                if (MyOptions.ComputerExclusions.Contains(computer))
+                IPAddress addr = IPAddress.Parse(computer);
+                // check if it's in the exclusions list or falls within an excluded CIDR
+                if (MyOptions.ComputerExclusions.Contains(computer) || IsInAnyCidr(addr))
                 {
                     // if so, skip it
                     Mq.Degub("Excluded " + computer);
                     return true;
                 }
             }
-            else { 
+            else {
                 try
                 {
                     // resolve it
@@ -364,8 +366,8 @@ namespace SnaffCore
                     // handle multiple IPs in response
                     foreach (IPAddress ipAddress in result.AddressList)
                     {
-                        // if any of them is in the exclusion list
-                        if (MyOptions.ComputerExclusions.Contains(ipAddress.ToString()))
+                        // if any of them is in the exclusion list or falls within an excluded CIDR
+                        if (MyOptions.ComputerExclusions.Contains(ipAddress.ToString()) || IsInAnyCidr(ipAddress))
                         {
                             Mq.Degub("Excluded " + computer + " at " + ipAddress);
 
@@ -385,6 +387,16 @@ namespace SnaffCore
             }
             Mq.Degub("Included " + computer);
 
+            return false;
+        }
+
+        private bool IsInAnyCidr(IPAddress address)
+        {
+            foreach (string entry in MyOptions.ComputerExclusions)
+            {
+                if (NetworkUtils.CidrRegex.IsMatch(entry) && NetworkUtils.IsInCidr(address, entry))
+                    return true;
+            }
             return false;
         }
 

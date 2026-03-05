@@ -100,7 +100,7 @@ namespace Snaffler
             SwitchArgument dfsArg = new SwitchArgument('f', "dfs", "Limits Snaffler to finding file shares via DFS, for \"OPSEC\" reasons.", false);
             SwitchArgument findSharesOnlyArg = new SwitchArgument('a', "sharesonly",
                 "Stops after finding shares, doesn't walk their filesystems.", false);
-            ValueArgument<string> compExclusionArg = new ValueArgument<string>('k', "exclusions", "Path to a file containing a list of computers to exclude from scanning.");
+            ValueArgument<string> compExclusionArg = new ValueArgument<string>('k', "exclusions", "Path to a file, or inline comma-separated list, of hostnames/IPs/CIDRs to exclude from scanning. e.g. -k exclusions.txt or -k 10.1.2.0/24,192.168.5.10");
             ValueArgument<string> compTargetArg = new ValueArgument<string>('n', "comptarget", "List of computers in a file(e.g C:\targets.txt), a single Computer (or comma separated list) to target.");
             ValueArgument<string> ruleDirArg = new ValueArgument<string>('p', "rulespath", "Path to a directory full of toml-formatted rules. Snaffler will load all of these in place of the default ruleset.");
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
@@ -137,7 +137,7 @@ namespace Snaffler
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
             {
                 parser.ShowUsage();
-                return null; 
+                return null;
             }
 
             TomlSettings settings = TomlSettings.Create(cfg => cfg
@@ -201,18 +201,41 @@ namespace Snaffler
                 if (compExclusionArg.Parsed)
                 {
                     List<string> compExclusions = new List<string>();
-                    string[] fileLines = File.ReadAllLines(compExclusionArg.Value);
-                    foreach (string line in fileLines)
+                    IEnumerable<string> entries;
+
+                    if (compExclusionArg.Value.Contains(','))
                     {
-                        if (isIP(line))
+                        entries = compExclusionArg.Value.Split(',')
+                            .Select(l => l.Trim())
+                            .Where(l => !string.IsNullOrEmpty(l));
+                    }
+                    else if (SnaffCore.NetworkUtils.CidrRegex.IsMatch(compExclusionArg.Value.Trim()))
+                    {
+                        entries = new[] { compExclusionArg.Value.Trim() };
+                    }
+                    else if (compExclusionArg.Value.Contains(Path.DirectorySeparatorChar))
+                    {
+                        entries = File.ReadAllLines(compExclusionArg.Value)
+                            .Select(l => l.Trim())
+                            .Where(l => !string.IsNullOrEmpty(l));
+                        parsedConfig.ComputerExclusionFile = compExclusionArg.Value;
+                    }
+                    else
+                    {
+                        entries = new[] { compExclusionArg.Value.Trim() };
+                    }
+
+                    foreach (string entry in entries)
+                    {
+                        if (SnaffCore.NetworkUtils.CidrRegex.IsMatch(entry) || isIP(entry))
                         {
-                            compExclusions.Add(line);
+                            compExclusions.Add(entry);
                         }
                         else
                         {
                             try
                             {
-                                IPHostEntry result = Dns.GetHostEntry(line);
+                                IPHostEntry result = Dns.GetHostEntry(entry);
                                 foreach (IPAddress ipAddress in result.AddressList)
                                 {
                                     compExclusions.Add(ipAddress.ToString());
@@ -225,17 +248,17 @@ namespace Snaffler
                             }
                         }
                     }
+
                     if (compExclusions.Count > 0)
                     {
                         parsedConfig.ComputerExclusions = compExclusions;
-                        parsedConfig.ComputerExclusionFile = compExclusionArg.Value;
                     }
                     else
                     {
                         throw new Exception("Failed to get a valid list of excluded computers from the excluded computers list.");
                     }
                 }
-                
+
                 if (compTargetArg.Parsed)
                 {
                     List<string> compTargets = new List<string>();
@@ -336,7 +359,7 @@ namespace Snaffler
                         }
                         parsedConfig.PathTargets.Add(pathTarget);
                     }
-                    
+
                     //Console.WriteLine(parsedConfig.PathTargets[0]);
                     foreach (string pathTarget in parsedConfig.PathTargets)
                     {
@@ -362,7 +385,7 @@ namespace Snaffler
                     Mq.Degub("Requested interest level: " + parsedConfig.InterestLevel);
                 }
 
-                // how many bytes 
+                // how many bytes
                 if (grepContextArg.Parsed)
                 {
                     parsedConfig.MatchContextBytes = grepContextArg.Value;

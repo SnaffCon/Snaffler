@@ -289,11 +289,12 @@ namespace SnaffCore
         private void ShareDiscovery(string[] computerTargets)
         {
             Mq.Info("Starting to look for readable shares...");
+            int excludedCount = 0;
             foreach (string computer in computerTargets)
             {
                 if (CheckExclusions(computer))
                 {
-                    // skip any that are in the exclusion list
+                    excludedCount++;
                     continue;
                 }
                 // Perform reverse lookup if the computer is an IP address
@@ -334,6 +335,10 @@ namespace SnaffCore
                         Mq.Error(e.ToString());
                     }
                 });
+            }
+            if (excludedCount > 0)
+            {
+                Mq.Info("Excluded " + excludedCount + " of " + computerTargets.Length + " computers from scanning.");
             }
             Mq.Info("Created all sharefinder tasks.");
         }

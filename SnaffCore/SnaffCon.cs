@@ -343,13 +343,15 @@ namespace SnaffCore
                     }
                 });
             }
+            int postExclusion = computerTargets.Length - excludedCount;
+            int included = postExclusion - cidrFilteredCount;
             if (excludedCount > 0)
             {
-                Mq.Info("Excluded " + excludedCount + " of " + computerTargets.Length + " computers from scanning.");
+                Mq.Info("Excluded " + excludedCount + " of " + computerTargets.Length + " computers (exclusion list or DNS resolution failure).");
             }
             if (cidrFilteredCount > 0)
             {
-                Mq.Info("CIDR target filter: kept " + (computerTargets.Length - excludedCount - cidrFilteredCount) + " of " + computerTargets.Length + " computers.");
+                Mq.Info("CIDR target filter: kept " + included + " of " + postExclusion + " remaining computers.");
             }
             Mq.Info("Created all sharefinder tasks.");
         }

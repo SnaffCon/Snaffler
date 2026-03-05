@@ -254,6 +254,10 @@ namespace Snaffler
                     if (compExclusions.Count > 0)
                     {
                         parsedConfig.ComputerExclusions = compExclusions;
+                        var cidrs = compExclusions.Where(e => SnaffCore.NetworkUtils.CidrRegex.IsMatch(e)).ToList();
+                        var ips = compExclusions.Where(e => !SnaffCore.NetworkUtils.CidrRegex.IsMatch(e)).ToList();
+                        if (cidrs.Count > 0) Mq.Info("CIDR exclusions active: " + string.Join(", ", cidrs));
+                        if (ips.Count > 0) Mq.Info("Excluding " + ips.Count + " host(s) by IP.");
                     }
                     else
                     {
@@ -272,6 +276,8 @@ namespace Snaffler
                     {
                         throw new Exception("No valid CIDRs found in -q argument. Expected format: 10.1.2.0/24");
                     }
+
+                    Mq.Info("CIDR target filter active: " + string.Join(", ", parsedConfig.CidrInclusions));
                 }
 
                 if (compTargetArg.Parsed)

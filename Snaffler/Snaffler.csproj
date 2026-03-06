@@ -64,6 +64,19 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Xml" />
+    <!-- Explicit paths so old-style csproj PackageReference resolves on Linux/dotnet SDK -->
+    <Reference Include="CommandLineArgumentsParser">
+      <HintPath>$(NuGetPackageRoot)commandlineargumentsparser/3.0.22/lib/net45/CommandLineArgumentsParser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nett">
+      <HintPath>$(NuGetPackageRoot)nett/0.15.0/lib/net40/Nett.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NLog">
+      <HintPath>$(NuGetPackageRoot)nlog/4.7.15/lib/net45/NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
@@ -103,6 +116,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Nett">
       <Version>0.15.0</Version>
     </PackageReference>
@@ -112,4 +129,7 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- Manually import dnMerge since PackageReference build targets aren't auto-imported on Linux/dotnet SDK for old-style csproj -->
+  <Import Project="$(NuGetPackageRoot)dnmerge/0.5.15/build/dnMerge.targets"
+          Condition="Exists('$(NuGetPackageRoot)dnmerge/0.5.15/build/dnMerge.targets')" />
 </Project>

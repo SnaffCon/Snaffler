@@ -66,10 +66,12 @@ namespace SnaffCore.TreeWalk
                     if (!Directory.Exists(dataLibDir))
                     {
                         Mq.Error("SCCM content library found but no DataLib found: " + dataLibDir);
+                        checkpointMgr?.MarkDirectoryScanned(currentDir);
                         return;
                     }
                     Mq.Info("SCCM content library: Entering into datalib: " + dataLibDir);
                     WalkSccmTree(dataLibDir, currentDir); // With base path name
+                    checkpointMgr?.MarkDirectoryScanned(currentDir);
                     return;
                 }
             }

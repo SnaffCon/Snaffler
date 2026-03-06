@@ -261,6 +261,8 @@ namespace SnaffCore.Checkpoint
             catch (Exception ex)
             {
                 Console.WriteLine("[Checkpoint] WARNING – could not load checkpoint (" + ex.Message + "). Starting fresh.");
+                _scannedDirectories.Clear();
+                _scannedComputers.Clear();
                 IsRestoring = false;
             }
         }

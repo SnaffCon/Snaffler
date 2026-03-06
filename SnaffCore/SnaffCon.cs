@@ -1,5 +1,6 @@
 using SnaffCore.Classifiers;
 using SnaffCore.ActiveDirectory;
+using SnaffCore.Checkpoint;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using SnaffCore.ShareFind;
@@ -37,6 +38,8 @@ namespace SnaffCore
 
         private DateTime StartTime { get; set; }
 
+        private Timer _checkpointTimer;
+
         public SnaffCon(Options options)
         {
             MyOptions = options;
@@ -53,6 +56,12 @@ namespace SnaffCore
             FileScanner = new FileScanner();
             TreeWalker = new TreeWalker();
             ShareFinder = new ShareFinder();
+
+            // Initialise checkpoint manager if the user supplied a checkpoint file.
+            if (!string.IsNullOrWhiteSpace(MyOptions.CheckpointFile))
+            {
+                CheckpointManager.Initialize(MyOptions.CheckpointFile);
+            }
         }
 
         public static ShareFinder GetShareFinder()
@@ -90,6 +99,22 @@ namespace SnaffCore
                 { AutoReset = true }; // Set the time (1 min in this case)
             statusUpdateTimer.Elapsed += TimedStatusUpdate;
             statusUpdateTimer.Start();
+
+            // Start the periodic checkpoint timer if checkpointing is enabled.
+            var checkpointMgr = CheckpointManager.GetInstance();
+            if (checkpointMgr != null)
+            {
+                double intervalMs = TimeSpan.FromMinutes(MyOptions.CheckpointIntervalMinutes).TotalMilliseconds;
+                _checkpointTimer = new Timer(intervalMs) { AutoReset = true };
+                _checkpointTimer.Elapsed += (s, e) => checkpointMgr.SaveCheckpoint();
+                _checkpointTimer.Start();
+
+                string resumeMsg = checkpointMgr.IsRestoring
+                    ? string.Format("Resuming from checkpoint – skipping {0} directories and {1} computers.",
+                        checkpointMgr.ScannedDirectoryCount, checkpointMgr.ScannedComputerCount)
+                    : "Checkpointing enabled (no prior checkpoint found). Starting fresh.";
+                Mq.Info("[Checkpoint] " + resumeMsg);
+            }
 
 
             // If we want to hunt for user IDs, we need data from the running user's domain.
@@ -150,6 +175,14 @@ namespace SnaffCore
             }
 
             waitHandle.WaitOne();
+
+            // Stop the checkpoint timer and write a final checkpoint.
+            if (_checkpointTimer != null)
+            {
+                _checkpointTimer.Stop();
+                _checkpointTimer.Dispose();
+                CheckpointManager.GetInstance()?.SaveCheckpoint();
+            }
 
             StatusUpdate();
             DateTime finished = DateTime.Now;
@@ -288,6 +321,7 @@ namespace SnaffCore
         private void ShareDiscovery(string[] computerTargets)
         {
             Mq.Info("Starting to look for readable shares...");
+            var checkpointMgr = CheckpointManager.GetInstance();
             foreach (string computer in computerTargets)
             {
                 if (CheckExclusions(computer))
@@ -295,6 +329,7 @@ namespace SnaffCore
                     // skip any that are in the exclusion list
                     continue;
                 }
+
                 // Perform reverse lookup if the computer is an IP address
                 var computerName = "";
                 if (isIP(computer))
@@ -317,6 +352,15 @@ namespace SnaffCore
                 {
                     // Use the provided computer name if it's not an IP address
                     computerName = computer;
+                }
+
+                // Skip computers that were fully processed in a prior run.
+                // Check is done after DNS resolution so that the resolved hostname
+                // matches what MarkComputerScanned recorded (avoids IP vs hostname mismatch).
+                if (checkpointMgr != null && checkpointMgr.IsComputerScanned(computerName))
+                {
+                    Mq.Info("[Checkpoint] Skipping already-scanned computer: " + computerName);
+                    continue;
                 }
                 // ShareFinder Task Creation - this kicks off the rest of the flow
                 Mq.Trace("Creating a ShareFinder task for " + computerName);
@@ -390,8 +434,16 @@ namespace SnaffCore
 
         private void FileDiscovery(string[] pathTargets)
         {
+            var checkpointMgr = CheckpointManager.GetInstance();
             foreach (string pathTarget in pathTargets)
             {
+                // Skip top-level path targets that were already fully scanned.
+                if (checkpointMgr != null && checkpointMgr.IsDirectoryScanned(pathTarget))
+                {
+                    Mq.Info("[Checkpoint] Skipping already-scanned path: " + pathTarget);
+                    continue;
+                }
+
                 // TreeWalker Task Creation - this kicks off the rest of the flow
                 Mq.Info("Creating a TreeWalker task for " + pathTarget);
                 TreeTaskScheduler.New(() =>

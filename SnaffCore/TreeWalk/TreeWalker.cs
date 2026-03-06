@@ -1,4 +1,5 @@
 ﻿using SnaffCore.Classifiers;
+using SnaffCore.Checkpoint;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using SnaffCore.FileScan;
@@ -28,11 +29,30 @@ namespace SnaffCore.TreeWalk
         public void WalkTree(string currentDir)
         {
             // Walks a tree checking files and generating results as it goes.
-             
+
             if (!Directory.Exists(currentDir))
             {
                 return;
             }
+
+            // If resuming from a checkpoint, skip directories we already processed.
+            var checkpointMgr = CheckpointManager.GetInstance();
+            if (checkpointMgr != null && checkpointMgr.IsDirectoryScanned(currentDir))
+            {
+                Mq.Trace("[Checkpoint] Skipping already-scanned directory: " + currentDir);
+                return;
+            }
+
+            // NOTE: We mark this directory as scanned at the *end* of this method
+            // (after all file tasks and subdir tasks for this level have been queued),
+            // not on entry.  This ensures that if the process is killed before the
+            // queued file tasks have a chance to run, the directory is not falsely
+            // recorded as complete and will be re-walked on resume.
+            // Trade-off: if the parent WalkTree for a path completes and is marked,
+            // but a child WalkTree that was dispatched async has not yet been marked,
+            // that child dir will not be re-discovered on resume (blocked by the
+            // marked parent).  This is an inherent limitation of directory-level
+            // tracking without individual file-task persistence.
 
             // SCCM ContentLib($)
             try
@@ -46,10 +66,12 @@ namespace SnaffCore.TreeWalk
                     if (!Directory.Exists(dataLibDir))
                     {
                         Mq.Error("SCCM content library found but no DataLib found: " + dataLibDir);
+                        checkpointMgr?.MarkDirectoryScanned(currentDir);
                         return;
                     }
                     Mq.Info("SCCM content library: Entering into datalib: " + dataLibDir);
                     WalkSccmTree(dataLibDir, currentDir); // With base path name
+                    checkpointMgr?.MarkDirectoryScanned(currentDir);
                     return;
                 }
             }
@@ -173,6 +195,12 @@ namespace SnaffCore.TreeWalk
                 Mq.Trace(e.ToString());
                 //continue;
             }
+
+            // Mark this directory as fully walked (all direct file and subdir
+            // tasks have been queued for this level).  Placed here — after all
+            // work for this directory is dispatched — so that a crash before
+            // file tasks execute does not falsely mark the dir as complete.
+            checkpointMgr?.MarkDirectoryScanned(currentDir);
         }
         public void WalkSccmTree(string currentDir, string sccmBaseDir)
         {

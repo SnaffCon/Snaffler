@@ -39,7 +39,7 @@ namespace SnaffCore.TreeWalk
             var checkpointMgr = CheckpointManager.GetInstance();
             if (checkpointMgr != null && checkpointMgr.IsDirectoryScanned(currentDir))
             {
-                Mq.Trace("[Checkpoint] Skipping already-scanned directory: " + currentDir);
+                Mq.Info("[Checkpoint] Skipping already-scanned directory: " + currentDir);
                 return;
             }
 

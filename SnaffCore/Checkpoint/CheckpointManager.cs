@@ -70,6 +70,12 @@ namespace SnaffCore.Checkpoint
 
         private CheckpointManager(string filePath)
         {
+            // If the caller supplied a directory path (e.g. "." or "C:\Logs"),
+            // automatically create a file inside it rather than trying to
+            // treat the directory itself as the checkpoint file.
+            if (Directory.Exists(filePath))
+                filePath = Path.Combine(filePath, "snaffler_checkpoint.json");
+
             _filePath = filePath;
 
             if (File.Exists(filePath))

@@ -333,7 +333,7 @@ namespace SnaffCore
                 // Skip computers that were fully processed in a prior run.
                 if (checkpointMgr != null && checkpointMgr.IsComputerScanned(computer))
                 {
-                    Mq.Trace("[Checkpoint] Skipping already-scanned computer: " + computer);
+                    Mq.Info("[Checkpoint] Skipping already-scanned computer: " + computer);
                     continue;
                 }
                 // Perform reverse lookup if the computer is an IP address

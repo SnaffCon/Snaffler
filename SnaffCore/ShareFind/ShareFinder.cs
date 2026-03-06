@@ -1,4 +1,5 @@
 ﻿using SnaffCore.Classifiers;
+using SnaffCore.Checkpoint;
 using SnaffCore.Concurrency;
 using SnaffCore.TreeWalk;
 using System;
@@ -206,6 +207,9 @@ namespace SnaffCore.ShareFind
                     }
                 }
             }
+
+            // Record this computer so it is skipped on any future resume.
+            CheckpointManager.GetInstance()?.MarkComputerScanned(computer);
         }
 
         internal bool IsShareReadable(string share)

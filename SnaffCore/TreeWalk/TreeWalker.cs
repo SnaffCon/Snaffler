@@ -1,4 +1,5 @@
 ﻿using SnaffCore.Classifiers;
+using SnaffCore.Checkpoint;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using SnaffCore.FileScan;
@@ -28,11 +29,22 @@ namespace SnaffCore.TreeWalk
         public void WalkTree(string currentDir)
         {
             // Walks a tree checking files and generating results as it goes.
-             
+
             if (!Directory.Exists(currentDir))
             {
                 return;
             }
+
+            // If resuming from a checkpoint, skip directories we already processed.
+            var checkpointMgr = CheckpointManager.GetInstance();
+            if (checkpointMgr != null && checkpointMgr.IsDirectoryScanned(currentDir))
+            {
+                Mq.Trace("[Checkpoint] Skipping already-scanned directory: " + currentDir);
+                return;
+            }
+
+            // Record this directory so it is skipped on any future resume.
+            checkpointMgr?.MarkDirectoryScanned(currentDir);
 
             // SCCM ContentLib($)
             try

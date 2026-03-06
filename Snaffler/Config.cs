@@ -106,7 +106,13 @@ namespace Snaffler
             ValueArgument<string> logType = new ValueArgument<string>('t', "logtype", "Type of log you would like to output. Currently supported options are plain and JSON. Defaults to plain.");
             ValueArgument<string> timeOutArg = new ValueArgument<string>('e', "timeout",
                 "Interval between status updates (in minutes) also acts as a timeout for AD data to be gathered via LDAP. Turn this knob up if you aren't getting any computers from AD when you run Snaffler through a proxy or other slow link. Default = 5");
-            // list of letters i haven't used yet: gnqw
+            ValueArgument<string> checkpointArg = new ValueArgument<string>('g', "checkpoint",
+                "Path to a checkpoint file. Snaffler saves progress every --checkpointinterval minutes. " +
+                "If the file already exists the run is automatically resumed from it, skipping work already done. " +
+                "Example: -g snaffler-checkpoint.json");
+            ValueArgument<int> checkpointIntervalArg = new ValueArgument<int>('w', "checkpointinterval",
+                "How many minutes between checkpoint saves. Defaults to 10. Only applies when --checkpoint is set.");
+            // list of letters i haven't used yet: nq
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(timeOutArg);
@@ -132,6 +138,8 @@ namespace Snaffler
             parser.Arguments.Add(ruleDirArg);
             parser.Arguments.Add(logType);
             parser.Arguments.Add(compExclusionArg);
+            parser.Arguments.Add(checkpointArg);
+            parser.Arguments.Add(checkpointIntervalArg);
 
             // extra check to handle builtin behaviour from cmd line arg parser
             if ((args.Contains("--help") || args.Contains("/?") || args.Contains("help") || args.Contains("-h") || args.Length == 0))
@@ -401,6 +409,18 @@ namespace Snaffler
                         parsedConfig = Toml.ReadFile<Options>(configFile, settings);
                         Mq.Info("Read config file from " + configFile);
                     }
+                }
+
+                if (checkpointArg.Parsed && !string.IsNullOrWhiteSpace(checkpointArg.Value))
+                {
+                    parsedConfig.CheckpointFile = checkpointArg.Value;
+                    Mq.Info("Checkpointing enabled. File: " + parsedConfig.CheckpointFile);
+                }
+
+                if (checkpointIntervalArg.Parsed)
+                {
+                    parsedConfig.CheckpointIntervalMinutes = checkpointIntervalArg.Value;
+                    Mq.Info("Checkpoint interval set to " + parsedConfig.CheckpointIntervalMinutes + " minutes.");
                 }
 
                 if (!parsedConfig.LogToConsole && !parsedConfig.LogToFile)

@@ -127,6 +127,15 @@ namespace SnaffCore.Config
         // Content processing options
         public int MatchContextBytes { get; set; } = 200;
 
+        // Checkpoint / Resume options
+        // Path to the checkpoint JSON file.  When set, Snaffler writes a
+        // checkpoint every CheckpointIntervalMinutes.  If the file already
+        // exists on startup the run is automatically resumed from it.
+        public string CheckpointFile { get; set; }
+
+        // How many minutes between automatic checkpoint writes.  Default 10.
+        public int CheckpointIntervalMinutes { get; set; } = 10;
+
         public Options()
         {
             //PrepareClassifiers();

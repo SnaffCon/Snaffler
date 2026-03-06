@@ -330,12 +330,6 @@ namespace SnaffCore
                     continue;
                 }
 
-                // Skip computers that were fully processed in a prior run.
-                if (checkpointMgr != null && checkpointMgr.IsComputerScanned(computer))
-                {
-                    Mq.Info("[Checkpoint] Skipping already-scanned computer: " + computer);
-                    continue;
-                }
                 // Perform reverse lookup if the computer is an IP address
                 var computerName = "";
                 if (isIP(computer))
@@ -358,6 +352,15 @@ namespace SnaffCore
                 {
                     // Use the provided computer name if it's not an IP address
                     computerName = computer;
+                }
+
+                // Skip computers that were fully processed in a prior run.
+                // Check is done after DNS resolution so that the resolved hostname
+                // matches what MarkComputerScanned recorded (avoids IP vs hostname mismatch).
+                if (checkpointMgr != null && checkpointMgr.IsComputerScanned(computerName))
+                {
+                    Mq.Info("[Checkpoint] Skipping already-scanned computer: " + computerName);
+                    continue;
                 }
                 // ShareFinder Task Creation - this kicks off the rest of the flow
                 Mq.Trace("Creating a ShareFinder task for " + computerName);

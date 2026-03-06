@@ -18,7 +18,7 @@ namespace SnaffCore.Checkpoint
 
         /// <summary>
         /// Full UNC / local paths of every directory whose tree-walk has been
-        /// initiated.  On resume, any path in this set is skipped by TreeWalker.
+        /// fully dispatched.  On resume, any path in this set is skipped by TreeWalker.
         /// </summary>
         [DataMember]
         public List<string> ScannedDirectories { get; set; } = new List<string>();

@@ -419,6 +419,11 @@ namespace Snaffler
 
                 if (checkpointIntervalArg.Parsed)
                 {
+                    if (checkpointIntervalArg.Value < 1)
+                    {
+                        Mq.Error("Checkpoint interval must be at least 1 minute (got " + checkpointIntervalArg.Value + ").");
+                        throw new ArgumentException("Checkpoint interval must be at least 1 minute.");
+                    }
                     parsedConfig.CheckpointIntervalMinutes = checkpointIntervalArg.Value;
                     Mq.Info("Checkpoint interval set to " + parsedConfig.CheckpointIntervalMinutes + " minutes.");
                 }

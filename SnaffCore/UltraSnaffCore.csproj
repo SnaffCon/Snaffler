@@ -57,10 +57,13 @@
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.Protocols" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveDirectory\AdData.cs" />
+    <Compile Include="Checkpoint\CheckpointData.cs" />
+    <Compile Include="Checkpoint\CheckpointManager.cs" />
     <Compile Include="ActiveDirectory\DfsFinder.cs" />
     <Compile Include="ActiveDirectory\DirectorySearch.cs" />
     <Compile Include="ActiveDirectory\Extensions.cs" />

@@ -25,8 +25,7 @@ namespace SnaffCore.Checkpoint
 
         /// <summary>
         /// Create (and optionally restore) the singleton.
-        /// Call once during startup before <see cref="SnaffCore.SnaffCon"/> is
-        /// constructed.
+        /// Called once during <see cref="SnaffCore.SnaffCon"/> construction.
         /// </summary>
         /// <param name="checkpointFilePath">Path to write / read checkpoint JSON.</param>
         public static CheckpointManager Initialize(string checkpointFilePath)
@@ -150,12 +149,23 @@ namespace SnaffCore.Checkpoint
 
                     string json = Serialise(data);
 
-                    // Write to a temp file first, then rename – avoids a
-                    // corrupt checkpoint if the process is killed mid-write.
+                    // Write to a temp file first, then atomically replace the
+                    // destination – avoids a corrupt checkpoint if the process
+                    // is killed mid-write.
+                    // File.Replace performs an atomic swap on NTFS and keeps a
+                    // .bak as a safety net.  On the very first save the
+                    // destination does not yet exist, so File.Move is used
+                    // instead (also atomic on the same volume).
                     string tmp = _filePath + ".tmp";
                     File.WriteAllText(tmp, json, Encoding.UTF8);
-                    File.Copy(tmp, _filePath, overwrite: true);
-                    File.Delete(tmp);
+                    if (File.Exists(_filePath))
+                    {
+                        File.Replace(tmp, _filePath, _filePath + ".bak");
+                    }
+                    else
+                    {
+                        File.Move(tmp, _filePath);
+                    }
 
                     BlockingMq.GetMq()?.Info(
                         string.Format("[Checkpoint] Saved checkpoint ({0} dirs, {1} computers) → {2}",
@@ -195,21 +205,39 @@ namespace SnaffCore.Checkpoint
                 // set lean and speeds up future IsDirectoryScanned lookups.
                 // Example: if both \\srv\share AND \\srv\share\sub are present,
                 // \\srv\share\sub is redundant and can be removed.
+                //
+                // Algorithm: sort the keys so that every descendant of a path
+                // immediately follows it, then do a single linear pass.
+                // Naïve lexicographic order is NOT sufficient here because the
+                // path-separator character '\' (ASCII 92) sorts after digits and
+                // uppercase letters, which would interleave children with siblings
+                // (e.g. "SHARE2" < "SHARE\A" in ordinal order).  To fix this, we
+                // sort by a transformed key where both separators are replaced with
+                // '\x01' (ASCII 1, lower than every printable character) so that
+                // child paths always follow their parent in the sorted sequence.
+                var sortedKeys = new System.Collections.Generic.List<string>(_scannedDirectories.Keys);
+                sortedKeys.Sort((a, b) =>
+                    string.Compare(
+                        a.Replace('\\', '\x01').Replace('/', '\x01'),
+                        b.Replace('\\', '\x01').Replace('/', '\x01'),
+                        StringComparison.Ordinal));
+
                 var toRemove = new System.Collections.Generic.List<string>();
-                foreach (string dir in _scannedDirectories.Keys)
+                string lastKept = null;
+                foreach (string dir in sortedKeys)
                 {
-                    // Check if any OTHER entry is a proper prefix of this one.
-                    // Use the normalised (uppercased, trimmed) form for comparison.
-                    foreach (string other in _scannedDirectories.Keys)
+                    if (lastKept != null &&
+                        (dir.StartsWith(lastKept + "\\", StringComparison.OrdinalIgnoreCase) ||
+                         dir.StartsWith(lastKept + "/",  StringComparison.OrdinalIgnoreCase)))
                     {
-                        if (other == dir) continue;
-                        // 'other' is a parent if 'dir' starts with 'other\' or 'other/'
-                        if (dir.StartsWith(other + "\\", StringComparison.OrdinalIgnoreCase) ||
-                            dir.StartsWith(other + "/",  StringComparison.OrdinalIgnoreCase))
-                        {
-                            toRemove.Add(dir);
-                            break;
-                        }
+                        // dir is a descendant of lastKept – redundant.
+                        // Do NOT update lastKept so that deeper descendants
+                        // are still caught by the same ancestor check.
+                        toRemove.Add(dir);
+                    }
+                    else
+                    {
+                        lastKept = dir;
                     }
                 }
                 foreach (string redundant in toRemove)

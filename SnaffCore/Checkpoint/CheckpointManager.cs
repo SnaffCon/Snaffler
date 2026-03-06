@@ -182,18 +182,47 @@ namespace SnaffCore.Checkpoint
                 foreach (string c in data.ScannedComputers ?? new System.Collections.Generic.List<string>())
                     _scannedComputers.TryAdd(NormaliseHost(c), 0);
 
+                // Deduplication: remove child-directory entries whose parent is
+                // also in the completed set.  If a parent dir is marked complete,
+                // WalkTree will skip it entirely — the child entries are dead weight
+                // that will never be checked.  Pruning them here keeps the in-memory
+                // set lean and speeds up future IsDirectoryScanned lookups.
+                // Example: if both \\srv\share AND \\srv\share\sub are present,
+                // \\srv\share\sub is redundant and can be removed.
+                var toRemove = new System.Collections.Generic.List<string>();
+                foreach (string dir in _scannedDirectories.Keys)
+                {
+                    // Check if any OTHER entry is a proper prefix of this one.
+                    // Use the normalised (uppercased, trimmed) form for comparison.
+                    foreach (string other in _scannedDirectories.Keys)
+                    {
+                        if (other == dir) continue;
+                        // 'other' is a parent if 'dir' starts with 'other\' or 'other/'
+                        if (dir.StartsWith(other + "\\", StringComparison.OrdinalIgnoreCase) ||
+                            dir.StartsWith(other + "/",  StringComparison.OrdinalIgnoreCase))
+                        {
+                            toRemove.Add(dir);
+                            break;
+                        }
+                    }
+                }
+                foreach (string redundant in toRemove)
+                {
+                    byte dummy;
+                    _scannedDirectories.TryRemove(redundant, out dummy);
+                }
+
                 IsRestoring = true;
 
-                // Use Console.WriteLine here because the Mq logger may not be
-                // configured yet when Initialize() is called.
                 Console.WriteLine(string.Format(
                     "[Checkpoint] Loaded checkpoint from {0} (written {1} UTC).",
                     _filePath,
                     data.CheckpointTime.ToString("u")));
                 Console.WriteLine(string.Format(
-                    "[Checkpoint] Resuming – will skip {0} directories and {1} computers.",
+                    "[Checkpoint] Resuming – will skip {0} directories and {1} computers ({2} redundant dir entries pruned).",
                     _scannedDirectories.Count,
-                    _scannedComputers.Count));
+                    _scannedComputers.Count,
+                    toRemove.Count));
             }
             catch (Exception ex)
             {

@@ -43,8 +43,16 @@ namespace SnaffCore.TreeWalk
                 return;
             }
 
-            // Record this directory so it is skipped on any future resume.
-            checkpointMgr?.MarkDirectoryScanned(currentDir);
+            // NOTE: We mark this directory as scanned at the *end* of this method
+            // (after all file tasks and subdir tasks for this level have been queued),
+            // not on entry.  This ensures that if the process is killed before the
+            // queued file tasks have a chance to run, the directory is not falsely
+            // recorded as complete and will be re-walked on resume.
+            // Trade-off: if the parent WalkTree for a path completes and is marked,
+            // but a child WalkTree that was dispatched async has not yet been marked,
+            // that child dir will not be re-discovered on resume (blocked by the
+            // marked parent).  This is an inherent limitation of directory-level
+            // tracking without individual file-task persistence.
 
             // SCCM ContentLib($)
             try
@@ -185,6 +193,12 @@ namespace SnaffCore.TreeWalk
                 Mq.Trace(e.ToString());
                 //continue;
             }
+
+            // Mark this directory as fully walked (all direct file and subdir
+            // tasks have been queued for this level).  Placed here — after all
+            // work for this directory is dispatched — so that a crash before
+            // file tasks execute does not falsely mark the dir as complete.
+            checkpointMgr?.MarkDirectoryScanned(currentDir);
         }
         public void WalkSccmTree(string currentDir, string sccmBaseDir)
         {

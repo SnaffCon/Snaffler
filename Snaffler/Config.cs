@@ -112,7 +112,7 @@ namespace Snaffler
                 "Example: -g snaffler-checkpoint.json");
             ValueArgument<int> checkpointIntervalArg = new ValueArgument<int>('w', "checkpointinterval",
                 "How many minutes between checkpoint saves. Defaults to 10. Only applies when --checkpoint is set.");
-            // list of letters i haven't used yet: nq
+            // list of letters i haven't used yet: q
 
             CommandLineParser.CommandLineParser parser = new CommandLineParser.CommandLineParser();
             parser.Arguments.Add(timeOutArg);

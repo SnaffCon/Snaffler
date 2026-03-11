@@ -446,6 +446,53 @@ namespace Snaffler
 
                 string filepath = message.FileResult.FileInfo.FullName;
 
+                if (SnaffCore.SCCM.SCCMFileMapping.IsSCCMHashFile(filepath))
+                {
+                    var metadata = SnaffCore.SCCM.SCCMFileMapping.GetMetadata(filepath);
+                    if (metadata != null)
+                    {
+                        // Format with full metadata: path(Package:ID|version|original.exe)
+                        string metaInfo = metadata.OriginalName ?? "Unknown";
+                        if (!string.IsNullOrEmpty(metadata.PackageId))
+                        {
+                            metaInfo = $"Pkg:{metadata.PackageId}";
+                            if (!string.IsNullOrEmpty(metadata.Version))
+                            {
+                                metaInfo += $"|v{metadata.Version}";
+                            }
+                            metaInfo += $"|{metadata.OriginalName}";
+                        }
+                        filepath = $"{filepath}({metaInfo})";
+                    }
+                    else
+                    {
+                        // Fallback to simple name resolution
+                        string originalName = SnaffCore.SCCM.SCCMFileMapping.GetOriginalFilenameFromPath(filepath);
+                        if (!string.IsNullOrEmpty(originalName))
+                        {
+                            filepath = $"{filepath}({originalName})";
+                        }
+                    }
+                }
+                else
+                {
+                    // Check if it has metadata even if not a hash file (e.g., INI files)
+                    var metadata = SnaffCore.SCCM.SCCMFileMapping.GetMetadata(filepath);
+                    if (metadata != null && !string.IsNullOrEmpty(metadata.PackageId))
+                    {
+                        string metaInfo = $"Pkg:{metadata.PackageId}";
+                        if (!string.IsNullOrEmpty(metadata.Version))
+                        {
+                            metaInfo += $"|v{metadata.Version}";
+                        }
+                        if (!string.IsNullOrEmpty(metadata.ContentType))
+                        {
+                            metaInfo += $"|{metadata.ContentType}";
+                        }
+                        filepath = $"{filepath}({metaInfo})";
+                    }
+                }
+
                 string matchcontext = "";
                 if (message.FileResult.TextResult != null)
                 {

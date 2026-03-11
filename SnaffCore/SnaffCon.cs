@@ -5,6 +5,7 @@ using SnaffCore.Config;
 using SnaffCore.ShareFind;
 using SnaffCore.TreeWalk;
 using SnaffCore.FileScan;
+using SnaffCore.SCCM;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -92,11 +93,14 @@ namespace SnaffCore
             statusUpdateTimer.Start();
 
 
-            // If we want to hunt for user IDs, we need data from the running user's domain.
-            // Future - walk trusts
             if ( MyOptions.DomainUserRules)
             {
                 DomainUserDiscovery();
+            }
+
+            if (MyOptions.ShareFinderEnabled && !string.IsNullOrEmpty(MyOptions.TargetDomain))
+            {
+                SCCMServerDiscovery();
             }
 
             // Explicit folder setting overrides DFS
@@ -247,6 +251,52 @@ namespace SnaffCore
 
             // build the regexes for use in the file scans
             PrepDomainUserRules();
+        }
+
+        private void SCCMServerDiscovery()
+        {
+            try
+            {
+                List<SCCMServer> servers = new List<SCCMServer>();
+
+                var discovery = new SCCMDiscovery(
+                    MyOptions.TargetDomain,
+                    username: null,
+                    password: null,
+                    debug: MyOptions.LogLevelString == "debug" || MyOptions.LogLevelString == "degub" || MyOptions.LogLevelString == "trace",
+                    ldapPort: 389
+                );
+
+                servers = discovery.DiscoverSCCMServers();
+
+                if (servers.Count == 0)
+                {
+                    Mq.Degub("[SCCM] No SCCM servers found in domain");
+                    return;
+                }
+
+                Mq.Degub($"[SCCM] Auto-discovered {servers.Count} SCCM server(s) in domain");
+
+                var targetPaths = discovery.BuildTargetPaths(servers);
+
+                Mq.Degub($"[SCCM] Adding {targetPaths.Count} SCCM shares to scan queue");
+
+                foreach (var path in targetPaths)
+                {
+                    if (!MyOptions.PathTargets.Contains(path))
+                    {
+                        MyOptions.PathTargets.Add(path);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Mq.Degub($"[SCCM] Discovery error: {ex.Message}");
+                if (MyOptions.LogLevelString == "debug" || MyOptions.LogLevelString == "degub" || MyOptions.LogLevelString == "trace")
+                {
+                    Mq.Degub($"[SCCM] Stack trace: {ex.StackTrace}");
+                }
+            }
         }
 
         public void PrepDomainUserRules()

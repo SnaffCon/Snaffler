@@ -64,7 +64,7 @@ namespace Snaffler
                 // set up the  TSV output if the flag is set
                 if (Options.LogTSV)
                 {
-                    fileResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6}" + Options.Separator + "{7:u}" + Options.Separator + "{8}" + Options.Separator + "{9}";
+                    fileResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}" + Options.Separator + "{3}" + Options.Separator + "{4}" + Options.Separator + "{5}" + Options.Separator + "{6}" + Options.Separator + "{7:u}" + Options.Separator + "{8}" + Options.Separator + "{9}" + Options.Separator + "{10}";
                     shareResultTemplate = "{0}" + Options.Separator + "{1}" + Options.Separator + "{2}";
                     dirResultTemplate = "{0}" + Options.Separator + "{1}";
                 }
@@ -72,7 +72,7 @@ namespace Snaffler
                 else
                 {
                     // treat all as strings except LastWriteTime {6}
-                    fileResultTemplate = "{{{0}}}<{1}|{2}{3}{4}|{5}|{6}|{7:u}>({8}) {9}";
+                    fileResultTemplate = "{{{0}}}<{1}|{2}{3}{4}|{5}|{6}|{7:u}>({8}{9}) {10}";
                     shareResultTemplate = "{{{0}}}<{1}>({2}) {3}";
                     dirResultTemplate = "{{{0}}}({1})";
                 }
@@ -501,8 +501,27 @@ namespace Snaffler
                     matchcontext = Regex.Replace(matchcontext, @"\r\n?|\n", "\\n"); // Replace newlines with \n for consistent log lines
                 }
 
+                string altname = "";
+                //message.FileResult.Al
+
+                if (message.FileResult.AlternativeFileInfo == null)
+                {
+                    altname = "";
+                }
+                else
+                {
+                    if (message.FileResult.AlternativeFileInfo.AlternativeFullFileName == null)
+                    {
+                        altname = ""; // This should not happen
+                    }
+                    else
+                    {
+                        altname = "#_as_#" + message.FileResult.AlternativeFileInfo.AlternativeFullFileName;
+                    }
+                }
+
                 return string.Format(fileResultTemplate, triageString, matchedclassifier, canread, canwrite, canmodify, matchedstring, fileSizeString, modifiedStamp,
-                    filepath, matchcontext);
+                        filepath, altname, matchcontext);
             }
             catch (Exception e)
             {

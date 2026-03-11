@@ -1,0 +1,14 @@
+[[ClassifierRules]]
+EnumerationScope = "FileEnumeration"
+RuleName = "KeepVMDisksByExtension"
+MatchAction = "Snaffle"
+Description = "Virtual Machine Disks can contain sensitive data or credentials."
+MatchLocation = "FileExtension"
+WordListType = "Exact"
+MatchLength = 0
+WordList = [
+"\\.vmdk",
+"\\.vdi",
+"\\.vhd",
+"\\.vhdx"]
+Triage = "Red"

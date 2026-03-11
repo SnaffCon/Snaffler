@@ -20,7 +20,7 @@ namespace SnaffCore.Classifiers
             this.ClassifierRule = inRule;
         }
 
-        public void ClassifyContent(FileInfo fileInfo)
+        public void ClassifyContent(FileInfo fileInfo, AlternativeFileInfo altFileInfo = null)
         {
             BlockingMq Mq = BlockingMq.GetMq();
             FileResult fileResult;
@@ -35,7 +35,7 @@ namespace SnaffCore.Classifiers
                             byte[] fileBytes = File.ReadAllBytes(fileInfo.FullName);
                             if (ByteMatch(fileBytes))
                             {
-                                fileResult = new FileResult(fileInfo)
+                                fileResult = new FileResult(fileInfo, altFileInfo)
                                 {
                                     MatchedRule = ClassifierRule
                                 };
@@ -71,7 +71,7 @@ namespace SnaffCore.Classifiers
                                 TextResult textResult = textClassifier.TextMatch(fileString);
                                 if (textResult != null)
                                 {
-                                    fileResult = new FileResult(fileInfo)
+                                    fileResult = new FileResult(fileInfo, altFileInfo)
                                     {
                                         MatchedRule = ClassifierRule,
                                         TextResult = textResult
@@ -94,7 +94,7 @@ namespace SnaffCore.Classifiers
                             bool lengthResult = SizeMatch(fileInfo);
                             if (lengthResult)
                             {
-                                fileResult = new FileResult(fileInfo)
+                                fileResult = new FileResult(fileInfo, altFileInfo)
                                 {
                                     MatchedRule = ClassifierRule
                                 };
@@ -108,7 +108,7 @@ namespace SnaffCore.Classifiers
                             bool Md5Result = MD5Match(fileInfo);
                             if (Md5Result)
                             {
-                                fileResult = new FileResult(fileInfo)
+                                fileResult = new FileResult(fileInfo, altFileInfo)
                                 {
                                     MatchedRule = ClassifierRule
                                 };

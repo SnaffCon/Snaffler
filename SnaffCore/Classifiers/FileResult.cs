@@ -12,7 +12,9 @@ namespace SnaffCore.Classifiers
         public RwStatus RwStatus { get; set; }
         public ClassifierRule MatchedRule { get; set; }
 
-        public FileResult(FileInfo fileInfo)
+        public AlternativeFileInfo AlternativeFileInfo { get; set; }
+
+        public FileResult(FileInfo fileInfo, AlternativeFileInfo altFileInfo = null)
         {
             //EffectivePermissions effPerms = new EffectivePermissions(MyOptions.CurrentUser);
 
@@ -39,6 +41,13 @@ namespace SnaffCore.Classifiers
                     SnaffleFile(fileInfo, MyOptions.SnafflePath);
                 }
             }
+
+            this.AlternativeFileInfo = altFileInfo;
+            //if(altFileInfo != null)
+            //{
+            //    Console.WriteLine("SCCM File Reslt: " + this.AlternativeFileInfo.AlternativeFullFileName);
+            //}
+
         }
 
         public void SnaffleFile(FileInfo fileInfo, string snafflePath)

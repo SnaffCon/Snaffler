@@ -13,6 +13,25 @@ using SnaffCore.TreeWalk;
 
 namespace SnaffCore.Classifiers
 {
+    public class AlternativeFileInfo
+    {
+        public string AlternativeFileName { get; set; }
+        public string AlternativeFullFileName { get; set; }
+        public string AlternativeExtension { get; set; }
+        public AlternativeFileInfo(string alternativeFullFileName = null) {
+            BlockingMq Mq = BlockingMq.GetMq();
+            try
+            {
+                AlternativeFullFileName = alternativeFullFileName;
+                AlternativeFileName = Path.GetFileName(alternativeFullFileName);
+                AlternativeExtension = Path.GetExtension(alternativeFullFileName);
+            }
+            catch (Exception e) {
+                Mq.Error("Error on creating alternativeFileInfo: " + e.Message);
+            }
+        }
+
+    }
     public class FileClassifier
     {
         private ClassifierRule ClassifierRule { get; set; }
@@ -22,21 +41,43 @@ namespace SnaffCore.Classifiers
             this.ClassifierRule = inRule;
         }
 
-        public bool ClassifyFile(FileInfo fileInfo)
+        public bool ClassifyFile(FileInfo fileInfo, AlternativeFileInfo altFileInfo = null)
         {
             BlockingMq Mq = BlockingMq.GetMq();
             // figure out what part we gonna look at
             string stringToMatch = null;
 
+            // Setup file info
+            string fileName = null;
+            string fullFileName = null;
+            string extension = null;
+            if (altFileInfo != null)
+            {
+                fileName = altFileInfo.AlternativeFileName;
+                fullFileName = altFileInfo.AlternativeFullFileName;
+                extension = altFileInfo.AlternativeExtension;
+                //Mq.Info("File " + fileInfo.FullName + " is now handled as " +fullFileName);
+            }
+            else
+            {
+                fileName = fileInfo.Name;
+                fullFileName = fileInfo.FullName;
+                extension = fileInfo.Extension;
+            }
+
+
+            //  AltFileName, AltFullName, AltExtension
             switch (ClassifierRule.MatchLocation)
             {
                 case MatchLoc.FileExtension:
-                    stringToMatch = fileInfo.Extension;
+                    stringToMatch = extension;
+                    //stringToMatch = fileInfo.Extension;
                     // special handling to treat files named like 'thing.kdbx.bak'
                     if (stringToMatch == ".bak")
                     {
                         // strip off .bak
-                        string subName = fileInfo.Name.Replace(".bak", "");
+                        //string subName = fileInfo.Name.Replace(".bak", "");
+                        string subName = fileName.Substring(0, (fileName.Length - 4)); // Remove ".bak";
                         stringToMatch = Path.GetExtension(subName);
                         // if this results in no file extension, put it back.
                         if (stringToMatch == "")
@@ -52,10 +93,12 @@ namespace SnaffCore.Classifiers
                     }
                     break;
                 case MatchLoc.FileName:
-                    stringToMatch = fileInfo.Name;
+                    //stringToMatch = fileInfo.Name;
+                    stringToMatch = fileName;
                     break;
                 case MatchLoc.FilePath:
-                    stringToMatch = fileInfo.FullName;
+                    //stringToMatch = fileInfo.FullName;
+                    stringToMatch = fullFileName;
                     break;
                 case MatchLoc.FileLength:
                     if (!SizeMatch(fileInfo))
@@ -68,6 +111,7 @@ namespace SnaffCore.Classifiers
                     return false;
             }
 
+            // Rules against file name, path name, etc; 
             TextResult textResult = null;
 
             if (!String.IsNullOrEmpty(stringToMatch))
@@ -96,7 +140,7 @@ namespace SnaffCore.Classifiers
                         foreach (ClassifierRule rule in MyOptions.PostMatchClassifiers)
                         {
                             PostMatchClassifier pmClassifier = new PostMatchClassifier(rule);
-                            if (pmClassifier.ClassifyPostMatch(fileInfo))
+                            if (pmClassifier.ClassifyPostMatch(fileInfo, altFileInfo))
                             {
                                 // only support discard rules for PostMatch, so anything that returns true means we bail out.
                                 return true;
@@ -105,7 +149,7 @@ namespace SnaffCore.Classifiers
                     }
 
                     // we've passed the final postmatch test, so let's snaffle that bad boy
-                    fileResult = new FileResult(fileInfo)
+                    fileResult = new FileResult(fileInfo, altFileInfo)
                     {
                         MatchedRule = ClassifierRule,
                         TextResult = textResult
@@ -123,13 +167,13 @@ namespace SnaffCore.Classifiers
                     return false;
                 case MatchAction.CheckForKeys:
                     // do a special x509 dance
-                    List<string> x509MatchReason = x509Match(fileInfo);
+                    List<string> x509MatchReason = x509Match(fileInfo, altFileInfo);
                     if (x509MatchReason.Count >= 0)
                     {
                         // if there were any matchreasons, cat them together...
                         string matchContext = String.Join(",", x509MatchReason);
                         // and sling the results on the queue
-                        fileResult = new FileResult(fileInfo)
+                        fileResult = new FileResult(fileInfo, altFileInfo)
                         {
                             MatchedRule = ClassifierRule,
                             TextResult = new TextResult()
@@ -170,12 +214,12 @@ namespace SnaffCore.Classifiers
                                 }
 
                                 ContentClassifier nextContentClassifier = new ContentClassifier(nextRule);
-                                nextContentClassifier.ClassifyContent(fileInfo);
+                                nextContentClassifier.ClassifyContent(fileInfo, altFileInfo);
                             }
                             else if (nextRule.EnumerationScope == EnumerationScope.FileEnumeration)
                             {
                                 FileClassifier nextFileClassifier = new FileClassifier(nextRule);
-                                nextFileClassifier.ClassifyFile(fileInfo);
+                                nextFileClassifier.ClassifyFile(fileInfo, altFileInfo);
                             }
                             else
                             {
@@ -261,10 +305,32 @@ namespace SnaffCore.Classifiers
             return parsedCert;
         }
 
-        public List<string> x509Match(FileInfo fileInfo)
+        public List<string> x509Match(FileInfo fileInfo, AlternativeFileInfo altFileInfo = null)
         {
             BlockingMq Mq = BlockingMq.GetMq();
-            string certPath = fileInfo.FullName;
+
+
+            // Setup file info
+            string fileName = null;
+            string fullFileName = null;
+            string extension = null;
+
+            if (altFileInfo != null)
+            {
+                fileName = altFileInfo.AlternativeFileName;
+                fullFileName = altFileInfo.AlternativeFullFileName;
+                extension = altFileInfo.AlternativeExtension;
+                //Mq.Info("File " + fileInfo.FullName + " is now handled as " +fullFileName);
+            }
+            else
+            {
+                fileName = fileInfo.Name;
+                fullFileName = fileInfo.FullName;
+                extension = fileInfo.Extension;
+            }
+
+
+            string certPath = fullFileName;
             List<string> matchReasons = new List<string>();
             X509Certificate2 parsedCert = null;
             bool nopwrequired = false;
@@ -286,7 +352,7 @@ namespace SnaffCore.Classifiers
 
                 // build the list of passwords to try including the filename
                 List<string> passwords = MyOptions.CertPasswords;
-                passwords.Add(Path.GetFileNameWithoutExtension(fileInfo.Name));
+                passwords.Add(Path.GetFileNameWithoutExtension(fileName));
 
                 // try each of our very obvious passwords
                 foreach (string password in MyOptions.CertPasswords)
@@ -305,7 +371,7 @@ namespace SnaffCore.Classifiers
                     }
                     catch (CryptographicException ee)
                     {
-                        Mq.Trace("Password " + password + " invalid for cert file " + fileInfo.FullName + " " + ee.ToString());
+                        Mq.Trace("Password " + password + " invalid for cert file " + fullFileName + " " + ee.ToString());
                     }
                 }
                 if (matchReasons.Count == 0) 
@@ -316,7 +382,7 @@ namespace SnaffCore.Classifiers
             }
             catch (Exception e)
             {
-                Mq.Error("Unhandled exception parsing cert: " + fileInfo.FullName + " " + e.ToString());
+                Mq.Error("Unhandled exception parsing cert: " + fullFileName + " " + e.ToString());
             }
 
             if (parsedCert != null)
@@ -331,29 +397,29 @@ namespace SnaffCore.Classifiers
                     matchReasons.Add("Subject:" + parsedCert.Subject);
 
                     // take a look at the extensions
-                    X509ExtensionCollection extensions = parsedCert.Extensions;
+                    X509ExtensionCollection x509extensions = parsedCert.Extensions;
 
                     // this feels dumb but whatever
-                    foreach (X509Extension extension in extensions)
+                    foreach (X509Extension x509extension in x509extensions)
                     {
-                        AsnEncodedData asndata = new AsnEncodedData(extension.Oid, extension.RawData);
+                        AsnEncodedData asndata = new AsnEncodedData(x509extension.Oid, x509extension.RawData);
                         string asndataString = asndata.Format(false);
-                        if (extension.Oid.FriendlyName == "Basic Constraints")
+                        if (x509extension.Oid.FriendlyName == "Basic Constraints")
                         {
                             if (asndataString.Contains("Subject Type=CA"))
                             {
                                 matchReasons.Add("IsCACert");
                             }
                         }
-                        if (extension.GetType() == typeof(X509KeyUsageExtension))
+                        if (x509extension.GetType() == typeof(X509KeyUsageExtension))
                         {
-                            matchReasons.Add((extension as X509KeyUsageExtension).KeyUsages.ToString());
+                            matchReasons.Add((x509extension as X509KeyUsageExtension).KeyUsages.ToString());
                         }
-                        if (extension.GetType() == typeof(X509EnhancedKeyUsageExtension))
+                        if (x509extension.GetType() == typeof(X509EnhancedKeyUsageExtension))
                         {
                             List<string> ekus = new List<string>();
 
-                            X509EnhancedKeyUsageExtension ekuExtension = (X509EnhancedKeyUsageExtension)extension;
+                            X509EnhancedKeyUsageExtension ekuExtension = (X509EnhancedKeyUsageExtension)x509extension;
                             foreach (Oid eku in ekuExtension.EnhancedKeyUsages)
                             {
                                 ekus.Add(eku.FriendlyName);
@@ -362,9 +428,9 @@ namespace SnaffCore.Classifiers
                             string ekustring = String.Join("|", ekus);
                             matchReasons.Add(ekustring);
                         };
-                        if (extension.Oid.FriendlyName == "Subject Alternative Name")
+                        if (x509extension.Oid.FriendlyName == "Subject Alternative Name")
                         {
-                            byte[] sanbytes = extension.RawData;
+                            byte[] sanbytes = x509extension.RawData;
                             string san = Encoding.UTF8.GetString(sanbytes, 0, sanbytes.Length);
                             matchReasons.Add(asndataString);
                         }

@@ -14,16 +14,17 @@ namespace SnaffCore.FileScan
         {
             Mq = BlockingMq.GetMq();
         }
-        public void ScanFile(string file)
+        public void ScanFile(string file, AlternativeFileInfo altFileInfo = null)
         {
             try
             {
                 FileInfo fileInfo = new FileInfo(file);
                 // send the file to all the classifiers.
+
                 foreach (ClassifierRule classifier in MyOptions.FileClassifiers)
                 {
                     FileClassifier fileClassifier = new FileClassifier(classifier);
-                    if (fileClassifier.ClassifyFile(fileInfo))
+                    if (fileClassifier.ClassifyFile(fileInfo, altFileInfo))
                     {
                         return;
                     };
